@@ -1,3 +1,4 @@
+```react
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
@@ -953,3 +954,6 @@ function SamplesView({ initialData, customers, offline }) {
     </div>
   );
 }
+
+
+```
