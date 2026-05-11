@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR (Değiştirilmedi, SVG olarak korundu)
+// İKONLAR (SVG Formatında Korundu)
 // ============================================================================
-const SvgIcon = ({ children, size = 24, className = '', fill = 'none', ...props }) => (
+const SvgIcon = ({ children, size = 20, className = '', fill = 'none', ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
     {children}
   </svg>
@@ -18,13 +18,9 @@ const FileText = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 
 const Menu = (p) => <SvgIcon {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></SvgIcon>;
 const X = (p) => <SvgIcon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></SvgIcon>;
 const Search = (p) => <SvgIcon {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></SvgIcon>;
-const Bell = (p) => <SvgIcon {...p}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></SvgIcon>;
 const Plus = (p) => <SvgIcon {...p}><path d="M5 12h14"/><path d="M12 5v14"/></SvgIcon>;
 const Calculator = (p) => <SvgIcon {...p}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/></SvgIcon>;
-const ArrowRight = (p) => <SvgIcon {...p}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></SvgIcon>;
-const Clock = (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SvgIcon>;
 const CheckCircle = (p) => <SvgIcon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></SvgIcon>;
-const Smartphone = (p) => <SvgIcon {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></SvgIcon>;
 const Zap = (p) => <SvgIcon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgIcon>;
 const Edit2 = (p) => <SvgIcon {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></SvgIcon>;
 const Trash2 = (p) => <SvgIcon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></SvgIcon>;
@@ -35,15 +31,14 @@ const Archive = (p) => <SvgIcon {...p}><rect width="20" height="5" x="2" y="3" r
 const FileBarChart = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></SvgIcon>;
 
 // ============================================================================
-// SUPABASE (Sabitler) & MOCK VERİLER (Yükleme hatasına karşı can yeleği)
+// SUPABASE & MOCK VERİLER
 // ============================================================================
 const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
 const PHOTO_BUCKET = 'numune-photos';
 
-let supabase = null; 
+let supabase = null;
 
-// Arayüzün boş görünmesini engelleyecek Örnek (Mock) Veriler
 const MOCK_CUSTOMERS = [ { firma_adi: 'ZARA' }, { firma_adi: 'H&M' }, { firma_adi: 'MANGO' }, { firma_adi: 'LC WAIKIKI' } ];
 const MOCK_SAMPLES = [
   { id: 101, firma: 'ZARA', numune: 'ZR-24-KABAN', fiyat: '$18.50', durum: 'Onaylandı', aciklama: 'Kumaş kalınlaştırılacak', arsiv: false, created_at: new Date().toISOString() },
@@ -73,41 +68,15 @@ const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 // ============================================================================
-// TEMA SABİTLERİ
-// ============================================================================
-const T = {
-  sidebarBg:      '#0F172A',
-  sidebarHeadBg:  '#0A1520',
-  sidebarBorder:  'rgba(255,255,255,0.07)',
-  navText:        'rgba(255,255,255,0.5)',
-  navHover:       'rgba(255,255,255,0.08)',
-  navActiveBg:    'linear-gradient(135deg, #0672A0, #0891B2)',
-  navActiveGlow:  '0 4px 14px rgba(8,145,178,0.35)',
-  pageBg:         '#F3F5F7',
-  surface:        '#FFFFFF',
-  border:         'rgba(30,45,61,0.1)',
-  border2:        'rgba(30,45,61,0.16)',
-  textPrimary:    '#0A1520',
-  textSecondary:  '#4A6880',
-  teal:           '#0891B2',
-  tealLight:      '#38BDF8',
-  tealSoft:       'rgba(8,145,178,0.1)',
-  tealGlow:       'rgba(8,145,178,0.2)',
-  green:          '#15803D',
-  red:            '#991B1B',
-  navy:           '#1E2D3D',
-};
-
-// ============================================================================
-// YER TUTUCU MODÜL (Boş sayfa görünümünü engeller)
+// YER TUTUCU MODÜL (Diğer Sekmeler İçin)
 // ============================================================================
 const PlaceholderModule = ({ title, icon: Icon }) => (
-  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', padding:40, color: T.textSecondary, textAlign:'center' }}>
-    <div style={{ width: 80, height: 80, borderRadius: 24, background: T.surface, border: `1px solid ${T.border2}`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom: 20, boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-       <Icon size={40} color={T.teal} />
+  <div className="flex flex-col items-center justify-center h-full p-8 text-center text-slate-500">
+    <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm">
+       <Icon size={40} className="text-cyan-600" />
     </div>
-    <h3 style={{ fontSize: 20, fontWeight: 800, color: T.textPrimary, marginBottom: 8 }}>{title}</h3>
-    <p style={{ maxWidth: 300, fontSize: 14, lineHeight: 1.6 }}>Bu modül entegrasyon aşamasındadır. Lütfen "Numuneler" sekmesini kullanın.</p>
+    <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
+    <p className="max-w-xs text-sm leading-relaxed">Bu modül entegrasyon aşamasındadır. Lütfen yan menüden "Numuneler" sekmesini seçin.</p>
   </div>
 );
 
@@ -115,14 +84,14 @@ const PlaceholderModule = ({ title, icon: Icon }) => (
 // ANA UYGULAMA (App.jsx Root)
 // ============================================================================
 export default function App() {
-  const [activeTab, setActiveTab]     = useState('samples'); 
+  const [activeTab, setActiveTab] = useState('samples'); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading]     = useState(true);
-  const [dbError, setDbError]         = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dbError, setDbError] = useState(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   const [customers, setCustomers] = useState([]);
-  const [samples,   setSamples]   = useState([]);
+  const [samples, setSamples] = useState([]);
 
   const navItems = [
     { id: 'dashboard', label: 'Özet Panel',  icon: LayoutDashboard },
@@ -134,7 +103,7 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // Supabase Yükleme ve Güvenli Veri Çekme Mantığı
+  // Supabase Yükleme
   useEffect(() => {
     let isMounted = true;
     let timeoutId;
@@ -150,8 +119,6 @@ export default function App() {
 
     const loadData = async () => {
       setIsLoading(true);
-
-      // Emniyet Kemeri: Eğer veritabanı veya script yüklenmesi 3 saniyeyi geçerse MOCK veri göster.
       timeoutId = setTimeout(() => {
         if(isLoading && isMounted) applyMockData();
       }, 3000);
@@ -198,147 +165,154 @@ export default function App() {
           setIsLoading(false);
         }
       } catch (err) {
-        throw err; // catch bloğuna düşürüp mock veriyi tetikler
+        throw err; 
       }
     };
 
     loadData();
-
     return () => { isMounted = false; clearTimeout(timeoutId); };
   }, []);
 
   const handleNavClick = (id) => {
     setActiveTab(id);
-    setIsSidebarOpen(false);
+    setIsSidebarOpen(false); // Mobilde menüyü kapat
   };
 
   return (
     <>
       <style>{`
+        /* Ekstra scrollbar ve pürüzsüzleştirme ayarları */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: ${T.pageBg}; margin: 0; overflow: hidden; }
-        
-        .yp-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
-        .yp-scrollbar::-webkit-scrollbar { width: 4px; }
-        .yp-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
-        .yp-anim { animation: fadeUp .22s both; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-        .yp-spin { animation: spin .9s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-
-        .yp-sidebar {
-          position: fixed; top: 0; left: 0; bottom: 0;
-          transform: translateX(-100%);
-          transition: transform .28s cubic-bezier(.32,.72,0,1);
-          z-index: 50;
-        }
-        .yp-sidebar.open { transform: translateX(0); }
-
-        /* DİKKAT: 1024px'ten 768px'e düşürüldü. Canvas ekranında menü artık kaybolmayacak! */
-        @media (min-width: 768px) {
-          .yp-sidebar { position: relative !important; transform: translateX(0) !important; transition: none !important; flex-shrink: 0; }
-          .yp-menu-btn { display: none !important; }
-          .yp-sidebar-close { display: none !important; }
-          .yp-search { display: flex !important; }
-        }
-        @media (max-width: 767px) { .yp-search { display: none !important; } }
+        html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
       `}</style>
 
-      {/* height: 100vh yerine position: absolute, inset: 0 kullanarak boşluk/kayma sorunları çözüldü */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', background: T.pageBg, color: T.textPrimary, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+      {/* Ana Konteyner - Tam Ekran (Responsive flex) */}
+      <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden relative">
         
-        {/* Mobil Arkaplan Karartması */}
+        {/* Mobil Karartma (Overlay) */}
         {isSidebarOpen && (
-          <div onClick={() => setIsSidebarOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(10,21,32,0.65)', zIndex:40, backdropFilter:'blur(3px)' }} />
+          <div 
+            className="fixed inset-0 bg-slate-900/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+            onClick={() => setIsSidebarOpen(false)}
+          />
         )}
 
-        {/* Sidebar */}
-        <aside style={{ width: 252, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, boxShadow: '4px 0 24px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' }} className={`yp-sidebar${isSidebarOpen ? ' open' : ''}`}>
-          <div style={{ height: 72, padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.sidebarHeadBg, borderBottom: `1px solid ${T.sidebarBorder}`, flexShrink: 0 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 9, background: 'linear-gradient(135deg, #0672A0, #0891B2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', boxShadow:'0 2px 10px rgba(8,145,178,0.4)' }}>
+        {/* Yan Menü (Sidebar) */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out
+          lg:relative lg:translate-x-0
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          {/* Sidebar Başlık */}
+          <div className="h-16 px-5 flex items-center justify-between bg-slate-950 border-b border-slate-800/50 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
                 <Zap size={18} />
               </div>
-              <span style={{ fontSize:18, fontWeight:800, color:'#fff', letterSpacing:'-.01em' }}>Yanteks<span style={{ color: T.tealLight }}>Pro</span></span>
+              <span className="text-[17px] font-extrabold text-white tracking-tight">
+                Yanteks<span className="text-cyan-400">Pro</span>
+              </span>
             </div>
-            <button onClick={() => setIsSidebarOpen(false)} className="yp-sidebar-close" style={{ background:'none', border:'none', color:'rgba(255,255,255,0.45)', cursor:'pointer', padding:6, borderRadius:8, display:'flex' }}>
-              <X size={18} />
+            {/* Mobilde Kapat Butonu */}
+            <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+              <X size={20} />
             </button>
           </div>
           
-          <nav className="yp-scrollbar" style={{ flex:1, overflowY:'auto', padding:'12px 0' }}>
-            <p style={{ padding:'8px 20px 6px', fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.25)', letterSpacing:'.13em', textTransform:'uppercase' }}>ANA MENÜ</p>
+          {/* Menü Linkleri */}
+          <nav className="flex-1 overflow-y-auto py-4 px-3 hide-scroll">
+            <p className="px-3 pb-2 text-[10px] font-bold text-slate-500 tracking-wider uppercase">ANA MENÜ</p>
             {navItems.map(({ id, label, icon: Icon }) => {
               const active = activeTab === id;
               return (
-                <button key={id} onClick={() => handleNavClick(id)} style={{ width: 'calc(100% - 16px)', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', margin: '2px 8px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontSize: 13, fontWeight: 600, transition: 'background .15s, color .15s', background: active ? T.navActiveBg : 'transparent', boxShadow: active ? T.navActiveGlow : 'none', color: active ? '#fff' : T.navText }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = T.navHover; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = T.navText; } }}>
-                  <span style={{ width:22, textAlign:'center', flexShrink:0, opacity: active ? 1 : 0.75 }}><Icon size={18} /></span>
+                <button 
+                  key={id} 
+                  onClick={() => handleNavClick(id)} 
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2.5 mb-1 rounded-xl text-sm font-semibold transition-all duration-200
+                    ${active ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
+                  `}
+                >
+                  <Icon size={18} className={active ? 'text-white' : 'opacity-70'} />
                   <span>{label}</span>
-                  {active && <span style={{ marginLeft:'auto', width:6, height:6, borderRadius:'50%', background:'rgba(255,255,255,0.7)' }} />}
+                  {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />}
                 </button>
               );
             })}
           </nav>
-          <div style={{ padding: '14px 20px', borderTop: `1px solid ${T.sidebarBorder}`, fontSize: 10, fontWeight:600, color:'rgba(255,255,255,0.2)', letterSpacing:'.06em' }}>YANTEKS PRO v2.0</div>
+          
+          {/* Sidebar Alt */}
+          <div className="p-4 border-t border-slate-800/50 text-[10px] font-semibold text-slate-500 tracking-wider">
+            YANTEKS PRO v2.0
+          </div>
         </aside>
 
         {/* Ana İçerik Alanı */}
-        <main style={{ flex:1, display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', minWidth:0, position:'relative' }}>
+        <main className="flex-1 flex flex-col h-full min-w-0 bg-slate-50 relative">
           
-          <header style={{ height: 72, background: T.surface, borderBottom: `1.5px solid ${T.border2}`, boxShadow: '0 1px 0 rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', flexShrink: 0, zIndex: 10 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-              <button onClick={() => setIsSidebarOpen(true)} className="yp-menu-btn" style={{ background:'none', border: `1px solid ${T.border}`, borderRadius:10, padding:8, cursor:'pointer', color: T.textSecondary, display:'flex', alignItems:'center' }}>
-                <Menu size={20} />
+          {/* Üst Bilgi Çubuğu (Header) */}
+          <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 z-10">
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Mobil Menü Açma Butonu */}
+              <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <Menu size={22} />
               </button>
               <div>
-                <h2 style={{ fontSize:18, fontWeight:800, color: T.textPrimary, letterSpacing:'-.02em' }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
-                <p style={{ fontSize:11, color: T.textSecondary, fontWeight:500, marginTop:1 }}>Sisteme hoş geldiniz, iyi çalışmalar.</p>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight leading-none">
+                  {navItems.find(i => i.id === activeTab)?.label}
+                </h2>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5 hidden sm:block">
+                  Sisteme hoş geldiniz, iyi çalışmalar.
+                </p>
               </div>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <div className="yp-search" style={{ position:'relative' }}>
-                <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color: T.textSecondary, display:'flex' }}><Search size={15} /></span>
-                <input type="text" placeholder="Arama yap..." style={{ paddingLeft: 36, paddingRight: 16, paddingTop: 9, paddingBottom: 9, width: 220, background: T.pageBg, border: `1px solid ${T.border2}`, borderRadius: 22, fontSize: 12, fontWeight:500, color: T.textPrimary, fontFamily:'Inter,sans-serif', outline:'none' }}
-                  onFocus={e => { e.target.style.borderColor = T.teal; e.target.style.boxShadow = `0 0 0 3px ${T.tealGlow}`; }}
-                  onBlur={e =>  { e.target.style.borderColor = T.border2; e.target.style.boxShadow = 'none'; }} />
-              </div>
-              <button title="Durum" style={{ background:'none', border:`1px solid ${T.border}`, borderRadius:10, padding:8, color: isOfflineMode ? '#D97706' : '#16A34A', display:'flex' }}>
-                <span className={isLoading ? 'yp-spin' : ''} style={{ display:'flex' }}><RefreshCw size={18} /></span>
+
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Durum Göstergesi */}
+              <button className="p-2 text-slate-400 hover:text-cyan-600 transition-colors rounded-lg flex items-center">
+                <span className={isLoading ? 'animate-spin' : ''}>
+                  <RefreshCw size={18} className={isOfflineMode ? 'text-amber-500' : 'text-slate-400'} />
+                </span>
               </button>
-              <div style={{ width: 38, height: 38, borderRadius:'50%', background: 'linear-gradient(135deg, #0672A0, #0891B2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:13, cursor:'pointer', boxShadow:'0 2px 8px rgba(8,145,178,0.35)', border:'3px solid #fff' }}>YP</div>
+              {/* Profil */}
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-cyan-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xs sm:text-sm border-2 border-white shadow-sm cursor-pointer">
+                YP
+              </div>
             </div>
           </header>
 
-          <div style={{ flex:1, overflowY:'auto', position:'relative' }} className="yp-scrollbar">
+          {/* Dinamik Sayfa İçeriği */}
+          <div className="flex-1 overflow-y-auto relative hide-scroll">
+            
             {dbError && (
-              <div style={{ background:'#FFFBEB', borderLeft:`4px solid #D97706`, padding:'16px 20px', margin:'20px 20px 0', borderRadius:'0 12px 12px 0' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, color:'#B45309', fontWeight:700, marginBottom:4 }}><AlertCircle size={18} /> Sistem Uyarısı</div>
-                <p style={{ fontSize:13, color:'#92400E', fontWeight:500 }}>{dbError}</p>
+              <div className="mx-4 sm:mx-6 lg:mx-8 mt-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl shadow-sm">
+                <div className="flex items-center gap-2 text-amber-700 font-bold mb-1">
+                  <AlertCircle size={18} /> Sistem Uyarısı
+                </div>
+                <p className="text-amber-900 text-sm font-medium">{dbError}</p>
               </div>
             )}
             
             {isLoading ? (
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14 }}>
-                <span className="yp-spin" style={{ color: T.teal, display:'flex' }}><RefreshCw size={38} /></span>
-                <p style={{ color: T.textSecondary, fontWeight:500 }}>Sistem Hazırlanıyor…</p>
+              <div className="flex flex-col items-center justify-center h-64 gap-4">
+                <RefreshCw size={36} className="text-cyan-600 animate-spin" />
+                <p className="text-slate-500 font-medium">Sistem Hazırlanıyor…</p>
               </div>
             ) : (
-              <>
-                {/* Numuneler Sekmesi Aktif Modül */}
+              <div className="h-full">
                 {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
-                
-                {/* Diğer Modüller İçin Boş / Yer Tutucu Arayüz */}
                 {activeTab === 'dashboard' && <PlaceholderModule title="Özet Panel" icon={LayoutDashboard} />}
                 {activeTab === 'customers' && <PlaceholderModule title="Müşteriler" icon={Users} />}
                 {activeTab === 'prices'    && <PlaceholderModule title="Fiyatlar" icon={CircleDollarSign} />}
                 {activeTab === 'cost'      && <PlaceholderModule title="Maliyet" icon={Calculator} />}
                 {activeTab === 'offers'    && <PlaceholderModule title="Teklifler" icon={Send} />}
                 {activeTab === 'notes'     && <PlaceholderModule title="Notlarım" icon={FileText} />}
-              </>
+              </div>
             )}
           </div>
         </main>
@@ -348,13 +322,12 @@ export default function App() {
 }
 
 // ============================================================================
-// NUMUNELER GÖRÜNÜMÜ 
+// NUMUNELER GÖRÜNÜMÜ (Tamamen Tailwind ile Responsive)
 // ============================================================================
 function SamplesView({ initialData, customers, offline }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   
-  // UI States
   const [filter, setFilter] = useState('Hepsi');
   const [sort, setSort] = useState('date');
   const [searchQuery, setSearchQuery] = useState('');
@@ -362,33 +335,28 @@ function SamplesView({ initialData, customers, offline }) {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [toastMsg, setToastMsg] = useState(null);
 
-  // Photos Cache: { sampleId: [ {url, path, name} ] }
   const [photoCache, setPhotoCache] = useState({});
   const [uploading, setUploading] = useState(false);
   const [uploadText, setUploadText] = useState('');
 
-  // Modals
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   
-  // Drawer Form State
   const [formFirma, setFormFirma] = useState('');
   const [firmaSearchQ, setFirmaSearchQ] = useState('');
   const [isFirmaDdOpen, setIsFirmaDdOpen] = useState(false);
   const [formRows, setFormRows] = useState([{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }]);
 
-  // Photo Viewer
   const [pvOpen, setPvOpen] = useState(false);
   const [pvPhotos, setPvPhotos] = useState([]);
   const [pvIndex, setPvIndex] = useState(0);
 
-  // Constants
   const VALID_STATUS = ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'];
+  
   const uniqueCustomers = useMemo(() => {
     return [...new Set((customers || []).map(m => (m.firma_adi || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
   }, [customers]);
 
-  // Load Data
   useEffect(() => {
     const sorted = [...(initialData || [])].sort((a,b) => {
       const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
@@ -397,37 +365,27 @@ function SamplesView({ initialData, customers, offline }) {
     });
     setData(sorted);
     
-    // Yalnızca veritabanı aktifse fotoğrafları çekmeyi dene
     if (!offline) {
       const ids = sorted.slice(0, 50).map(r => r.id); 
       preloadPhotos(ids);
     }
   }, [initialData, offline]);
 
-  // Filter Data
   useEffect(() => {
     let result = [...data];
-    
-    if (filter === 'Arşiv') {
-      result = result.filter(i => i.arsiv === true);
-    } else {
+    if (filter === 'Arşiv') result = result.filter(i => i.arsiv === true);
+    else {
       result = result.filter(i => i.arsiv !== true);
-      if (filter !== 'Hepsi') {
-        result = result.filter(i => i.durum === filter);
-      }
+      if (filter !== 'Hepsi') result = result.filter(i => i.durum === filter);
     }
-
     if (firmaBanner) result = result.filter(i => (i.firma || '').toUpperCase() === firmaBanner);
-    
     if (searchQuery) {
       const q = trl(searchQuery);
       result = result.filter(i => trl(i.firma).includes(q) || trl(i.numune).includes(q) || trl(i.aciklama).includes(q));
     }
-
     setFilteredData(result);
   }, [data, filter, searchQuery, firmaBanner]);
 
-  // Group & Sort Logic for Render
   const groupedData = useMemo(() => {
     const G = {};
     filteredData.forEach(i => {
@@ -454,11 +412,8 @@ function SamplesView({ initialData, customers, offline }) {
 
     return fKeys.map(firma => {
       let items = [...G[firma]];
-      if(sort === 'alpha') {
-        items.sort((a,b) => dName(a.numune).localeCompare(dName(b.numune), 'tr'));
-      } else if(sort === 'status') {
-        items.sort((a,b) => VALID_STATUS.indexOf(a.durum || 'Beklemede') - VALID_STATUS.indexOf(b.durum || 'Beklemede'));
-      }
+      if(sort === 'alpha') items.sort((a,b) => dName(a.numune).localeCompare(dName(b.numune), 'tr'));
+      else if(sort === 'status') items.sort((a,b) => VALID_STATUS.indexOf(a.durum || 'Beklemede') - VALID_STATUS.indexOf(b.durum || 'Beklemede'));
       
       const anaItems = items.filter(i => !isV(i.numune));
       const varItems = items.filter(i => isV(i.numune));
@@ -501,11 +456,8 @@ function SamplesView({ initialData, customers, offline }) {
     if(offline) return;
     const needed = ids.filter(id => !(id in photoCache));
     if(needed.length === 0) return;
-    
     const newCache = { ...photoCache };
-    await Promise.all(needed.map(async id => {
-      newCache[id] = await fetchPhotos(id);
-    }));
+    await Promise.all(needed.map(async id => { newCache[id] = await fetchPhotos(id); }));
     setPhotoCache(prev => ({ ...prev, ...newCache }));
   };
 
@@ -515,9 +467,7 @@ function SamplesView({ initialData, customers, offline }) {
     if(!files.length) return;
     e.target.value = '';
     
-    setUploading(true);
-    setUploadText(`Fotoğraf yükleniyor (0/${files.length})`);
-    
+    setUploading(true); setUploadText(`Fotoğraf yükleniyor (0/${files.length})`);
     let ok = 0;
     for(let i=0; i<files.length; i++) {
       const file = files[i];
@@ -541,14 +491,12 @@ function SamplesView({ initialData, customers, offline }) {
       const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
       const fname = Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
       const path = 'numune_' + numeneId + '/' + fname;
-      
       const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, compressed, { contentType: compressed.type || 'image/jpeg' });
       if(!error) ok++;
     }
     
     const newPhotos = await fetchPhotos(numeneId);
     setPhotoCache(prev => ({ ...prev, [numeneId]: newPhotos }));
-    
     setUploading(false);
     showToast(ok ? `${ok} fotoğraf eklendi` : 'Yükleme başarısız', ok ? 'ok' : 'err');
   };
@@ -561,21 +509,16 @@ function SamplesView({ initialData, customers, offline }) {
     else {
       const newPhotos = await fetchPhotos(numeneId);
       setPhotoCache(prev => ({ ...prev, [numeneId]: newPhotos }));
-      
       if(pvOpen) {
         const remaining = newPhotos.map(p => ({...p, numeneId}));
         if(remaining.length === 0) setPvOpen(false);
-        else {
-          setPvPhotos(remaining);
-          setPvIndex(Math.min(pvIndex, remaining.length - 1));
-        }
+        else { setPvPhotos(remaining); setPvIndex(Math.min(pvIndex, remaining.length - 1)); }
       }
       showToast('Fotoğraf silindi', 'ok');
     }
     setUploading(false);
   };
 
-  // --- Database Operations ---
   const showToast = (msg, type='info') => {
     setToastMsg({ msg, type });
     setTimeout(() => setToastMsg(null), 3000);
@@ -584,13 +527,11 @@ function SamplesView({ initialData, customers, offline }) {
   const updateField = async (id, field, value) => {
     if(offline) {
       setData(prev => prev.map(item => item.id == id ? { ...item, [field]: value } : item));
-      if(field === 'durum') showToast(`Durum: ${value} (Yerel Değişiklik)`, 'ok');
+      if(field === 'durum') showToast(`Durum: ${value} (Yerel)`, 'ok');
       return;
     }
-    
     const { error } = await supabase.from('numuneler').update({ [field]: value }).eq('id', id);
     if(error) { showToast('Güncelleme hatası', 'err'); return; }
-    
     setData(prev => prev.map(item => item.id == id ? { ...item, [field]: value } : item));
     if(field === 'durum') showToast(`Durum: ${value}`, 'ok');
   };
@@ -602,12 +543,10 @@ function SamplesView({ initialData, customers, offline }) {
 
   const deleteSample = async (id) => {
     if(!window.confirm('Bu numune silinsin mi?')) return;
-    
     if(!offline) {
       const { error } = await supabase.from('numuneler').delete().eq('id', id);
       if(error) { showToast('Silinemedi', 'err'); return; }
     }
-    
     setData(prev => prev.filter(item => item.id != id));
     setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     showToast('Silindi', 'ok');
@@ -616,12 +555,10 @@ function SamplesView({ initialData, customers, offline }) {
   const handleBulkStatus = async (status) => {
     if(selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
-    
     if(!offline) {
       const { error } = await supabase.from('numuneler').update({ durum: status }).in('id', ids);
       if(error) { showToast('Toplu güncelleme hatası', 'err'); return; }
     }
-    
     setData(prev => prev.map(i => ids.includes(i.id) ? { ...i, durum: status } : i));
     setSelectedIds(new Set());
     showToast(`${ids.length} numune: ${status}`, 'ok');
@@ -631,44 +568,35 @@ function SamplesView({ initialData, customers, offline }) {
     if(selectedIds.size === 0) return;
     if(!window.confirm(`${selectedIds.size} numune silinsin mi?`)) return;
     const ids = Array.from(selectedIds);
-    
     if(!offline) {
       const { error } = await supabase.from('numuneler').delete().in('id', ids);
       if(error) { showToast('Silinemedi', 'err'); return; }
     }
-    
     setData(prev => prev.filter(i => !ids.includes(i.id)));
     setSelectedIds(new Set());
     showToast(`${ids.length} silindi`, 'ok');
   };
 
-  // --- Excel Export ---
   const exportData = () => {
     if(filteredData.length === 0) { showToast('Dışa aktarılacak veri yok', 'err'); return; }
-    
     const runExport = async () => {
       try {
         const wb = new window.ExcelJS.Workbook();
         const sh = wb.addWorksheet('Numuneler');
         sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']);
-        
         [...filteredData].sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => {
           const v = isV(i.numune), pc = (i.aciklama||'').split('|')[0], note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama;
           const excelAd = v ? (pc ? pc+'-'+dName(i.numune) : dName(i.numune)) : dName(i.numune);
           const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : '';
           sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]);
         });
-        
         const buf = await wb.xlsx.writeBuffer();
         const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
         a.click();
         showToast('Excel indirildi', 'ok');
-      } catch (err) {
-        showToast('Excel oluşturulamadı', 'err');
-      }
+      } catch (err) { showToast('Excel oluşturulamadı', 'err'); }
     };
 
     if(!window.ExcelJS) {
@@ -678,15 +606,11 @@ function SamplesView({ initialData, customers, offline }) {
       script.onload = () => { setUploading(false); runExport(); };
       script.onerror = () => { setUploading(false); showToast('Excel kütüphanesi yüklenemedi.', 'err'); };
       document.body.appendChild(script);
-    } else {
-      runExport();
-    }
+    } else runExport();
   };
 
-  // --- Drawer (Form) Logic ---
   const openNewDrawer = () => {
-    setEditId(null);
-    setFormFirma(firmaBanner || '');
+    setEditId(null); setFormFirma(firmaBanner || '');
     setFormRows([{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }]);
     setIsDrawerOpen(true);
   };
@@ -705,17 +629,12 @@ function SamplesView({ initialData, customers, offline }) {
 
   const handleSaveDrawer = async () => {
     if(editId) {
-      // Update single
       const row = formRows[0];
       if(!row.kod) { showToast('Kod zorunlu', 'err'); return; }
       const item = data.find(i => i.id == editId);
       const v = isV(item.numune);
-      
       let ac = row.not;
-      if(v) {
-        const pc = (item.aciklama||'').split('|')[0];
-        ac = `${pc}|${row.not}`;
-      }
+      if(v) { const pc = (item.aciklama||'').split('|')[0]; ac = `${pc}|${row.not}`; }
 
       const payload = {
         numune: v ? '↳ ' + row.kod : row.kod,
@@ -734,7 +653,6 @@ function SamplesView({ initialData, customers, offline }) {
       showToast('Güncellendi', 'ok');
       setIsDrawerOpen(false);
     } else {
-      // Insert new
       const f = formFirma.toUpperCase().trim();
       if(!f) { showToast('Firma seçin', 'err'); return; }
       
@@ -743,7 +661,6 @@ function SamplesView({ initialData, customers, offline }) {
         const k = r.kod.trim(), pr = r.fiyat.trim(), nt = r.not.trim(), vStr = r.var.trim();
         if(!k) return;
         const fs = pr ? (pr.startsWith('$') ? pr : '$'+pr) : '';
-        // Mock veri id'si üret
         const tempId = Date.now() + Math.floor(Math.random()*1000);
         pkg.push({ id: tempId, firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
         if(vStr) {
@@ -758,29 +675,25 @@ function SamplesView({ initialData, customers, offline }) {
       
       if(!offline) {
         setUploading(true); setUploadText('Kaydediliyor...');
-        // Remove temp ids for real insert
         const insertPkg = pkg.map(({id, ...rest}) => rest);
         const { data: inserted, error } = await supabase.from('numuneler').insert(insertPkg).select();
         setUploading(false);
         if(error) { showToast('Hata: '+error.message, 'err'); return; }
         setData(prev => [...inserted, ...prev]);
-      } else {
-        setData(prev => [...pkg, ...prev]);
-      }
+      } else setData(prev => [...pkg, ...prev]);
       
       showToast(`${pkg.length} kayıt eklendi`, 'ok');
       setIsDrawerOpen(false);
     }
   };
 
-  // --- Render Helpers ---
   const getStatusStyle = (st) => {
     const map = {
-      'Beklemede': { bg:'rgba(217,119,6,0.1)', color:'#B45309', border:'rgba(217,119,6,0.2)' },
-      'Takip Et':  { bg:'rgba(8,145,178,0.1)', color:'#0891B2', border:'rgba(8,145,178,0.2)' },
-      'Gönderildi':{ bg:'rgba(29,78,216,0.1)', color:'#1D4ED8', border:'rgba(29,78,216,0.2)' },
-      'Onaylandı': { bg:'rgba(21,128,61,0.1)', color:'#15803D', border:'rgba(21,128,61,0.2)' },
-      'Reddedildi':{ bg:'rgba(153,27,27,0.1)', color:'#991B1B', border:'rgba(153,27,27,0.2)' },
+      'Beklemede': { tw: 'bg-amber-100 text-amber-700 border-amber-200' },
+      'Takip Et':  { tw: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+      'Gönderildi':{ tw: 'bg-blue-100 text-blue-700 border-blue-200' },
+      'Onaylandı': { tw: 'bg-green-100 text-green-700 border-green-200' },
+      'Reddedildi':{ tw: 'bg-red-100 text-red-700 border-red-200' },
     };
     return map[st] || map['Beklemede'];
   };
@@ -788,115 +701,119 @@ function SamplesView({ initialData, customers, offline }) {
   const activeCount = data.filter(i => !i.arsiv).length;
 
   return (
-    <div style={{ position:'relative', minHeight:'100%', padding: '20px' }}>
-      <style>{`
-        .sample-row { transition: background 0.2s; }
-        .sample-row:hover { background: #F8FAFC; }
-        .sample-row.variant { background: #F8FAFC; border-left: 3px solid #E2E8F0; margin-left: 20px; }
-        .sample-row.variant:hover { background: #F1F5F9; }
-        .st-select { appearance: none; background: transparent; border: none; font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 6px; outline: none; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        
-        .photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(30,45,61,0.1); }
-        .photo-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1px solid rgba(30,45,61,0.1); }
-        .photo-wrap { position: relative; }
-        .photo-del { position: absolute; top: -4px; right: -4px; background: #DC2626; color: white; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-      `}</style>
-
-      {/* Toolbar & Filters */}
-      <div style={{ display:'flex', flexWrap:'wrap', gap: 16, marginBottom: 20, alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', gap: 10 }}>
-          <button onClick={openNewDrawer} style={{ background: '#0891B2', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
-            <Plus size={16} /> Yeni Numune
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto pb-24">
+      
+      {/* 1. Üst Aksiyon Çubuğu (Flex wrap) */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <button onClick={openNewDrawer} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-md shadow-cyan-600/20 transition-all">
+            <Plus size={18} /> Yeni Ekle
           </button>
-          <button onClick={exportData} style={{ background: '#FFFFFF', color: '#0A1520', border: `1px solid rgba(30,45,61,0.16)`, padding: '8px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
-            <FileBarChart size={16} /> Excel
+          <button onClick={exportData} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all">
+            <FileBarChart size={18} /> Excel
           </button>
         </div>
 
-        <div style={{ display:'flex', gap: 6, overflowX:'auto' }} className="hide-scroll">
+        {/* Filtre Çipler (Yatay kaydırılabilir) */}
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scroll">
           {['Hepsi', 'Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi', 'Arşiv'].map(f => {
             const count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? data.filter(i => i.arsiv).length : data.filter(i => !i.arsiv && i.durum === f).length;
             const active = filter === f;
             return (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                background: active ? '#1E2D3D' : '#FFFFFF', color: active ? '#fff' : '#4A6880',
-                border: `1px solid ${active ? '#1E2D3D' : 'rgba(30,45,61,0.1)'}`, padding: '6px 12px', borderRadius: 20,
-                fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', display:'flex', alignItems:'center', gap:6
-              }}>
-                {f} <span style={{ background: active ? 'rgba(255,255,255,0.2)' : '#F3F5F7', padding: '2px 6px', borderRadius: 10, fontSize: 10 }}>{count}</span>
+              <button 
+                key={f} 
+                onClick={() => setFilter(f)} 
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border
+                  ${active ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+              >
+                {f} <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Bulk Actions Bar */}
+      {/* 2. Toplu İşlem Çubuğu (Görünürse) */}
       {selectedIds.size > 0 && (
-        <div style={{ background: '#1E2D3D', color: '#fff', padding: '10px 20px', borderRadius: 12, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, animation: 'fadeUp .2s' }}>
-          <span style={{ fontWeight: 700 }}>{selectedIds.size} seçili</span>
-          <div style={{ display:'flex', gap: 8 }}>
-            {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'].map(s => (
-              <button key={s} onClick={() => handleBulkStatus(s)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer' }}>{s}</button>
+        <div className="bg-slate-900 text-white p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center mb-6 shadow-xl animate-[fadeUp_0.2s_ease]">
+          <span className="font-bold text-sm bg-white/10 px-3 py-1 rounded-lg">{selectedIds.size} seçili</span>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı'].map(s => (
+              <button key={s} onClick={() => handleBulkStatus(s)} className="bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">{s}</button>
             ))}
-            <button onClick={handleBulkDelete} style={{ background: '#DC2626', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginLeft: 10 }}>Sil</button>
-            <button onClick={() => setSelectedIds(new Set())} style={{ background: 'transparent', color: '#fff', border: 'none', padding: '6px', cursor: 'pointer' }}><X size={16} /></button>
+            <button onClick={handleBulkDelete} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors ml-auto sm:ml-2">Sil</button>
+            <button onClick={() => setSelectedIds(new Set())} className="p-1.5 text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
           </div>
         </div>
       )}
 
-      {/* Search & Sort */}
-      <div style={{ display:'flex', gap: 10, marginBottom: 20 }}>
-        <div style={{ position:'relative', flex: 1, maxWidth: 400 }}>
-          <Search size={16} style={{ position:'absolute', left: 12, top: 10, color: '#4A6880' }} />
-          <input type="text" placeholder="Firma, kod veya not ara..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} 
-            style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
-          {searchQuery && <X size={14} onClick={() => setSearchQuery('')} style={{ position:'absolute', right:12, top:11, color:'#4A6880', cursor:'pointer' }} />}
+      {/* 3. Arama & Sıralama */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1 group">
+          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Firma, kod veya not ile ara..." 
+            value={searchQuery} 
+            onChange={e => setSearchQuery(e.target.value)} 
+            className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:ring-2 focus:ring-cyan-600/20 focus:border-cyan-600 outline-none shadow-sm transition-all"
+          />
+          {searchQuery && (
+            <X size={16} onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer" />
+          )}
         </div>
-        <div style={{ display:'flex', gap:4, background: '#FFFFFF', border: `1px solid rgba(30,45,61,0.1)`, borderRadius:8, padding:4 }}>
+        
+        <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
           {[{id:'date', label:'Tarih'}, {id:'alpha', label:'A-Z'}, {id:'status', label:'Durum'}].map(s => (
-            <button key={s.id} onClick={() => setSort(s.id)} style={{ background: sort === s.id ? '#F3F5F7' : 'transparent', border:'none', padding:'6px 12px', borderRadius:6, fontSize:12, fontWeight:600, color: sort === s.id ? '#0A1520' : '#4A6880', cursor:'pointer' }}>{s.label}</button>
+            <button 
+              key={s.id} 
+              onClick={() => setSort(s.id)} 
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${sort === s.id ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              {s.label}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Firma Banner */}
+      {/* Firma Filtresi Aktifse Gösterilen Banner */}
       {firmaBanner && (
-        <div style={{ background: 'rgba(8,145,178,0.1)', border: `1px solid #0891B2`, padding: '10px 16px', borderRadius: 8, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, color: '#0891B2' }}>
-          <span style={{ fontWeight: 700 }}>🏢 {firmaBanner} firmasının numuneleri</span>
-          <button onClick={() => setFirmaBanner('')} style={{ background:'transparent', border:'none', color:'#0891B2', cursor:'pointer', fontWeight:700 }}>✕ Tüm firmalar</button>
+        <div className="bg-cyan-50 border border-cyan-200 p-3 sm:p-4 rounded-xl flex justify-between items-center mb-6 text-cyan-800">
+          <span className="font-bold text-sm flex items-center gap-2">🏢 {firmaBanner} <span className="font-normal opacity-75 hidden sm:inline">firmasına ait kayıtlar listeleniyor</span></span>
+          <button onClick={() => setFirmaBanner('')} className="text-cyan-700 hover:text-cyan-900 font-bold text-xs bg-cyan-100 px-3 py-1.5 rounded-lg">Tümünü Göster</button>
         </div>
       )}
 
-      {/* List */}
-      <div style={{ display:'flex', flexDirection:'column', gap: 20 }}>
+      {/* 4. Liste Alanı */}
+      <div className="flex flex-col gap-6">
         {groupedData.length === 0 ? (
-          <div style={{ textAlign:'center', padding: '60px 20px', color: '#4A6880', background: '#FFFFFF', borderRadius: 16, border: `1px dashed rgba(30,45,61,0.16)` }}>
-            <Package size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-            <p style={{ fontWeight: 600 }}>Sonuç bulunamadı. Lütfen "Yeni Numune" butonuyla veri ekleyin.</p>
+          <div className="flex flex-col items-center justify-center p-10 bg-white border border-slate-200 border-dashed rounded-2xl text-slate-500">
+            <Package size={48} className="opacity-20 mb-4" />
+            <p className="font-bold">Sonuç bulunamadı</p>
+            <p className="text-sm mt-1">Farklı bir arama yapın veya yeni kayıt ekleyin.</p>
           </div>
         ) : (
           groupedData.map(({ firma, items, originalItems }) => (
-            <div key={firma} style={{ background: '#FFFFFF', borderRadius: 12, border: `1px solid rgba(30,45,61,0.1)`, overflow:'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div key={firma} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               
-              {/* Firma Header */}
-              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderBottom: `1px solid rgba(30,45,61,0.1)`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
-                  <span style={{ fontWeight: 800, color: '#0A1520', cursor:'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
-                  <div style={{ display:'flex', gap: 4 }}>
+              {/* Grup Başlığı (Firma) */}
+              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-extrabold text-slate-900 cursor-pointer hover:text-cyan-600 transition-colors" onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
+                  <div className="flex flex-wrap gap-1.5">
                     {['Onaylandı', 'Takip Et', 'Gönderildi', 'Reddedildi', 'Beklemede'].map(st => {
                       const c = originalItems.filter(i => i.durum === st).length;
                       if(c === 0) return null;
                       const s = getStatusStyle(st);
-                      return <div key={st} style={{ background: s.color, color:'#fff', fontSize:10, fontWeight:700, padding:'2px 6px', borderRadius:10 }}>{c}</div>;
+                      return <span key={st} className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${s.tw}`}>{c} {st}</span>;
                     })}
                   </div>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#4A6880', background: '#F3F5F7', padding: '4px 8px', borderRadius: 12 }}>{items.length} numune</span>
+                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-sm">{items.length} kayıt</span>
               </div>
 
-              {/* Items */}
-              <div style={{ display:'flex', flexDirection:'column' }}>
+              {/* Grup İçeriği (Satırlar) */}
+              <div className="flex flex-col">
                 {items.map(item => {
                   const v = isV(item.numune);
                   const isSel = selectedIds.has(item.id);
@@ -906,61 +823,86 @@ function SamplesView({ initialData, customers, offline }) {
                   const photos = photoCache[item.id] || [];
 
                   return (
-                    <div key={item.id} className={`sample-row ${v ? 'variant' : ''}`} style={{ padding: '12px 16px', borderBottom: `1px solid rgba(30,45,61,0.1)`, background: isSel ? '#F0F9FF' : undefined }}>
-                      <div style={{ display:'flex', alignItems:'flex-start', gap: 12 }}>
+                    <div key={item.id} className={`p-3 sm:p-4 border-b border-slate-100 transition-colors ${isSel ? 'bg-cyan-50/50' : 'hover:bg-slate-50'} ${v ? 'ml-4 sm:ml-8 border-l-4 border-l-slate-200' : ''}`}>
+                      <div className="flex items-start gap-3">
                         
-                        <input type="checkbox" checked={isSel} onChange={(e) => {
-                          const n = new Set(selectedIds);
-                          e.target.checked ? n.add(item.id) : n.delete(item.id);
-                          setSelectedIds(n);
-                        }} style={{ marginTop: 4, cursor:'pointer' }} />
+                        <input 
+                          type="checkbox" 
+                          checked={isSel} 
+                          onChange={(e) => {
+                            const n = new Set(selectedIds);
+                            e.target.checked ? n.add(item.id) : n.delete(item.id);
+                            setSelectedIds(n);
+                          }} 
+                          className="mt-1 w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-600 cursor-pointer shrink-0" 
+                        />
                         
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                            <div style={{ fontWeight: 700, color: '#0A1520', fontSize: 13 }}>
+                        <div className="flex-1 min-w-0">
+                          {/* Satır 1: Başlık & Tarih */}
+                          <div className="flex justify-between items-start gap-2">
+                            <h4 className="font-bold text-slate-900 text-[13px] sm:text-sm break-words leading-tight">
                               {dName(item.numune) || 'İsimsiz'}
-                              {item.fiyat && <span className="mono" style={{ color: '#15803D', fontSize: 11, marginLeft: 8 }}>{item.fiyat}</span>}
-                            </div>
-                            <span style={{ fontSize: 11, color: '#4A6880' }}>{formatDate(item.updated_at || item.created_at)}</span>
+                              {item.fiyat && <span className="ml-2 font-mono text-green-700 bg-green-50 px-1.5 py-0.5 rounded text-xs border border-green-200">{item.fiyat}</span>}
+                            </h4>
+                            <span className="text-[10px] sm:text-xs font-medium text-slate-400 whitespace-nowrap shrink-0">{formatDate(item.updated_at || item.created_at)}</span>
                           </div>
                           
-                          <div style={{ display:'flex', alignItems:'center', gap: 8, marginTop: 8, flexWrap:'wrap' }}>
-                            {/* Editable Note */}
-                            <input type="text" defaultValue={note} placeholder="Not..." 
+                          {/* Satır 2: Not, Durum & Aksiyonlar (Mobilde alta kayar) */}
+                          <div className="mt-2.5 flex flex-col sm:flex-row gap-2 sm:items-center">
+                            
+                            {/* Not Input */}
+                            <input 
+                              type="text" 
+                              defaultValue={note} 
+                              placeholder="Not ekle..." 
                               onBlur={(e) => {
                                 const val = e.target.value.trim();
                                 if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
                               }}
                               onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                              style={{ flex: 1, minWidth: 150, padding: '6px 10px', fontSize: 12, borderRadius: 6, border: `1px solid rgba(30,45,61,0.16)`, background: '#fff', outline:'none' }} 
+                              className="w-full sm:flex-1 text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all placeholder-slate-400" 
                             />
                             
-                            {/* Status Select */}
-                            <select value={item.durum || 'Beklemede'} onChange={(e) => updateField(item.id, 'durum', e.target.value)} 
-                              className="st-select" style={{ background: stStyle.bg, color: stStyle.color, border: `1px solid ${stStyle.border}` }}>
-                              {VALID_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            
-                            {/* Actions */}
-                            <div style={{ display:'flex', gap: 4 }}>
-                              <label style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: photos.length ? 'rgba(8,145,178,0.1)' : '#FFFFFF', color: photos.length ? '#0891B2' : '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                            {/* Durum & Butonlar Grubu */}
+                            <div className="flex flex-wrap items-center gap-1.5 shrink-0 mt-1 sm:mt-0">
+                              <select 
+                                value={item.durum || 'Beklemede'} 
+                                onChange={(e) => updateField(item.id, 'durum', e.target.value)} 
+                                className={`appearance-none text-xs font-bold px-2.5 py-1.5 rounded-lg border outline-none cursor-pointer pr-6 ${stStyle.tw}`}
+                                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.25rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
+                              >
+                                {VALID_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                              
+                              <label className={`cursor-pointer p-1.5 rounded-lg border flex items-center justify-center transition-colors relative ${photos.length ? 'bg-cyan-50 border-cyan-200 text-cyan-600 hover:bg-cyan-100' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
                                 <Camera size={14} />
-                                {photos.length > 0 && <span style={{ width:6, height:6, borderRadius:'50%', background:'#0891B2', position:'absolute', top:2, right:2 }}/>}
-                                <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display:'none' }} />
+                                {photos.length > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-500 border-2 border-white"/>}
+                                <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} className="hidden" />
                               </label>
-                              <button onClick={() => openEditDrawer(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Edit2 size={14} /></button>
-                              <button onClick={() => toggleArchive(item.id, item.arsiv)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Archive size={14} /></button>
-                              <button onClick={() => deleteSample(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#DC2626', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
+                              
+                              <button onClick={() => openEditDrawer(item.id)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center"><Edit2 size={14} /></button>
+                              <button onClick={() => toggleArchive(item.id, item.arsiv)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center"><Archive size={14} /></button>
+                              <button onClick={() => deleteSample(item.id)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-red-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors flex items-center justify-center"><Trash2 size={14} /></button>
                             </div>
                           </div>
 
-                          {/* Photos Strip */}
+                          {/* Fotoğraf Şeridi */}
                           {photos.length > 0 && (
-                            <div className="photo-strip hide-scroll">
+                            <div className="flex gap-2 overflow-x-auto pt-3 mt-3 border-t border-slate-100 hide-scroll">
                               {photos.map((p, pIdx) => (
-                                <div key={pIdx} className="photo-wrap">
-                                  <img src={p.url} className="photo-thumb" onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} alt=""/>
-                                  <button className="photo-del" onClick={() => handleDeletePhoto(item.id, p.path)}><X size={10}/></button>
+                                <div key={pIdx} className="relative shrink-0 group">
+                                  <img 
+                                    src={p.url} 
+                                    className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:border-cyan-400 transition-colors" 
+                                    onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} 
+                                    alt="Numune"
+                                  />
+                                  <button 
+                                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white border-2 border-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" 
+                                    onClick={() => handleDeletePhoto(item.id, p.path)}
+                                  >
+                                    <X size={10} />
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -977,105 +919,175 @@ function SamplesView({ initialData, customers, offline }) {
         )}
       </div>
 
-      {/* Drawer (Add/Edit) Overlay */}
-      {isDrawerOpen && <div onClick={() => setIsDrawerOpen(false)} style={{ position:'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, backdropFilter:'blur(2px)' }} />}
-      
-      {/* Drawer Container */}
-      <div style={{ position:'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, zIndex: 101, transform: `translateY(${isDrawerOpen ? '0' : '100%'})`, transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)', maxHeight: '90vh', overflowY:'auto', boxShadow:'0 -10px 40px rgba(0,0,0,0.2)' }}>
-        <div style={{ width: 40, height: 4, background: 'rgba(30,45,61,0.16)', borderRadius: 2, margin: '0 auto 20px' }} />
-        <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>{editId ? '✏️ Düzenle' : '📦 Yeni Numune'}</h2>
+      {/* --- Çekmeceler ve Modallar --- */}
 
-        {/* Firma Alanı (Sadece yeni eklerken veya ana öğe düzenlerken) */}
+      {/* Drawer Arkaplan Karartması */}
+      {isDrawerOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 z-[90] backdrop-blur-sm transition-opacity" 
+          onClick={() => setIsDrawerOpen(false)} 
+        />
+      )}
+      
+      {/* Çekmece (Drawer / Bottom Sheet) */}
+      <div className={`
+        fixed inset-x-0 bottom-0 z-[100] bg-white rounded-t-3xl p-5 sm:p-8 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] 
+        transform transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto hide-scroll
+        ${isDrawerOpen ? 'translate-y-0' : 'translate-y-full'}
+      `}>
+        {/* Çekmece Tutamacı */}
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
+        
+        <h2 className="text-xl font-extrabold text-slate-900 mb-6">{editId ? '✏️ Kaydı Düzenle' : '📦 Yeni Numune Ekle'}</h2>
+
+        {/* Firma Seçimi */}
         {!editId && (
-          <div style={{ marginBottom: 16, position:'relative' }}>
-            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Firma</label>
-            <div style={{ position:'relative' }}>
-              <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} 
+          <div className="mb-5 relative">
+            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Firma</label>
+            <div className="relative">
+              <input 
+                type="text" 
+                value={isFirmaDdOpen ? firmaSearchQ : formFirma} 
                 onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }}
                 onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }}
-                placeholder="Firma ara veya yaz..." 
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none', fontSize: 14 }} 
+                placeholder="Firma ara veya yeni isim yaz..." 
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all" 
               />
               {isFirmaDdOpen && (
-                <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'#fff', border:`1px solid #1E2D3D`, borderRadius:8, marginTop:4, maxHeight:200, overflowY:'auto', zIndex:10, boxShadow:'0 10px 25px rgba(0,0,0,0.1)' }}>
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl max-h-48 overflow-y-auto z-10 shadow-xl py-1 hide-scroll">
                   {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,20).map((c, i) => (
-                    <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding:'10px 14px', cursor:'pointer', borderBottom:`1px solid rgba(30,45,61,0.1)`, fontSize:13, fontWeight:600 }}>{c}</div>
+                    <div 
+                      key={i} 
+                      onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} 
+                      className="px-4 py-2.5 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 text-sm font-semibold text-slate-700"
+                    >
+                      {c}
+                    </div>
                   ))}
+                  {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).length === 0 && firmaSearchQ && (
+                    <div className="px-4 py-3 text-xs text-slate-500 font-medium italic">
+                      "{firmaSearchQ}" yeni firma olarak eklenecek.
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Satırlar */}
+        {/* Form Satırları */}
         {formRows.map((r, i) => (
-          <div key={r.id} style={{ background: '#F3F5F7', padding: 16, borderRadius: 12, marginBottom: 12, position:'relative', border:`1px solid rgba(30,45,61,0.1)` }}>
+          <div key={r.id} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-4 relative">
             {!editId && formRows.length > 1 && (
-              <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position:'absolute', top:8, right:8, background:'transparent', border:'none', color:'#4A6880', cursor:'pointer' }}><X size={16}/></button>
+              <button 
+                onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} 
+                className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <X size={16}/>
+              </button>
             )}
             
-            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Kod / Fiyat</label>
-            <div style={{ display:'flex', gap: 10, marginBottom: 12 }}>
-              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: FDY 100" style={{ flex: 2, padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
-              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
+            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Kod / Fiyat</label>
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <input 
+                type="text" 
+                value={r.kod} 
+                onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} 
+                placeholder="Örn: FDY 100" 
+                className="flex-2 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none w-full" 
+              />
+              <input 
+                type="text" 
+                value={r.fiyat} 
+                onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} 
+                placeholder="Fiyat ($)" 
+                className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none w-full" 
+              />
             </div>
 
             {!editId && (
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Varyantlar (virgülle ayırın)</label>
-                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz, Kırmızı..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
+              <div className="mb-4">
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Varyantlar <span className="normal-case opacity-70">(Virgülle ayırın)</span></label>
+                <input 
+                  type="text" 
+                  value={r.var} 
+                  onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} 
+                  placeholder="Siyah, Beyaz, Kırmızı..." 
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none" 
+                />
               </div>
             )}
 
             <div>
-              <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Not</label>
-              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
+              <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Not</label>
+              <input 
+                type="text" 
+                value={r.not} 
+                onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} 
+                placeholder="Açıklama veya detay girin..." 
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none" 
+              />
             </div>
           </div>
         ))}
 
         {!editId && (
-          <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width:'100%', background: 'transparent', color: '#0891B2', border: `2px dashed rgba(8,145,178,0.3)`, padding: '12px', borderRadius: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 20 }}>
-            + BİR SATIR DAHA EKLE
+          <button 
+            onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} 
+            className="w-full mb-6 py-3.5 border-2 border-dashed border-cyan-200 text-cyan-600 rounded-2xl text-sm font-extrabold hover:bg-cyan-50 hover:border-cyan-300 transition-colors"
+          >
+            + YENİ SATIR EKLE
           </button>
         )}
 
-        <div style={{ display:'flex', gap: 10 }}>
-          <button onClick={() => setIsDrawerOpen(false)} style={{ flex:1, padding:'12px', borderRadius:8, border:`1px solid rgba(30,45,61,0.16)`, background:'#FFFFFF', fontWeight:600, cursor:'pointer' }}>İptal</button>
-          <button onClick={handleSaveDrawer} style={{ flex:2, padding:'12px', borderRadius:8, border:'none', background:'#1E2D3D', color:'#fff', fontWeight:700, cursor:'pointer' }}>{editId ? 'Güncelle' : 'Kaydet'}</button>
+        <div className="flex gap-3 pt-2">
+          <button onClick={() => setIsDrawerOpen(false)} className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">
+            İptal
+          </button>
+          <button onClick={handleSaveDrawer} className="flex-[2] py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-md transition-colors">
+            {editId ? 'Değişiklikleri Kaydet' : 'Numuneleri Ekle'}
+          </button>
         </div>
       </div>
 
-      {/* Photo Viewer Overlay */}
+      {/* Fotoğraf Görüntüleyici (Lightbox) */}
       {pvOpen && (
-        <div style={{ position:'fixed', inset: 0, background: '#000', zIndex: 200, display:'flex', flexDirection:'column' }}>
-          <div style={{ padding: '20px', display:'flex', justifyContent:'space-between', color:'#fff' }}>
-            <span style={{ fontWeight:600 }}>{pvIndex + 1} / {pvPhotos.length}</span>
-            <button onClick={() => setPvOpen(false)} style={{ background:'transparent', border:'none', color:'#fff', cursor:'pointer' }}><X size={24}/></button>
+        <div className="fixed inset-0 bg-black/95 z-[200] flex flex-col backdrop-blur-sm">
+          <div className="p-4 sm:p-6 flex justify-between items-center text-white shrink-0">
+            <span className="font-bold bg-white/10 px-3 py-1.5 rounded-lg text-sm">{pvIndex + 1} / {pvPhotos.length}</span>
+            <button onClick={() => setPvOpen(false)} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
           </div>
-          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
-            {pvIndex > 0 && <button onClick={() => setPvIndex(p=>p-1)} style={{ position:'absolute', left:20, background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', borderRadius:'50%', width:40, height:40, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>‹</button>}
-            <img src={pvPhotos[pvIndex]?.url} style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} alt=""/>
-            {pvIndex < pvPhotos.length - 1 && <button onClick={() => setPvIndex(p=>p+1)} style={{ position:'absolute', right:20, background:'rgba(255,255,255,0.2)', border:'none', color:'#fff', borderRadius:'50%', width:40, height:40, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>›</button>}
+          
+          <div className="flex-1 flex items-center justify-center relative p-4 min-h-0">
+            {pvIndex > 0 && (
+              <button onClick={() => setPvIndex(p=>p-1)} className="absolute left-4 sm:left-8 bg-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center backdrop-blur-md transition-colors z-10 text-xl font-light">‹</button>
+            )}
+            <img src={pvPhotos[pvIndex]?.url} className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg" alt="Büyük Görünüm"/>
+            {pvIndex < pvPhotos.length - 1 && (
+              <button onClick={() => setPvIndex(p=>p+1)} className="absolute right-4 sm:right-8 bg-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center backdrop-blur-md transition-colors z-10 text-xl font-light">›</button>
+            )}
           </div>
-          <div style={{ padding: '20px', display:'flex', justifyContent:'center' }}>
-            <button onClick={() => handleDeletePhoto(pvPhotos[pvIndex].numeneId, pvPhotos[pvIndex].path)} style={{ background:'#DC2626', color:'#fff', border:'none', padding:'10px 20px', borderRadius:8, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}><Trash2 size={16}/> Fotoğrafı Sil</button>
+          
+          <div className="p-6 flex justify-center shrink-0">
+            <button onClick={() => handleDeletePhoto(pvPhotos[pvIndex].numeneId, pvPhotos[pvIndex].path)} className="bg-red-500/20 hover:bg-red-500/40 text-red-200 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors border border-red-500/20">
+              <Trash2 size={18}/> Fotoğrafı Sil
+            </button>
           </div>
         </div>
       )}
 
-      {/* Uploading Overlay */}
+      {/* Yükleme Bildirimi */}
       {uploading && (
-        <div style={{ position:'fixed', bottom: 20, right: 20, background: '#1E2D3D', color: '#fff', padding: '12px 20px', borderRadius: 12, display:'flex', alignItems:'center', gap: 12, zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-          <span className="yp-spin"><RefreshCw size={18} /></span>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{uploadText}</span>
+        <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 bg-slate-900 text-white px-5 py-3.5 rounded-xl flex items-center gap-3 z-[999] shadow-xl border border-slate-700 animate-[fadeUp_0.3s_ease]">
+          <RefreshCw size={18} className="animate-spin text-cyan-400" />
+          <span className="text-sm font-bold">{uploadText}</span>
         </div>
       )}
 
-      {/* Toast Notification */}
+      {/* Başarı/Hata Bildirimi (Toast) */}
       {toastMsg && (
-        <div style={{ position:'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? '#DC2626' : '#1E2D3D', color: '#fff', padding: '12px 24px', borderRadius: 30, fontSize: 13, fontWeight: 700, zIndex: 999, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display:'flex', alignItems:'center', gap:8, animation: 'fadeUp 0.2s' }}>
-          {toastMsg.type === 'err' ? <AlertCircle size={16}/> : <CheckCircle size={16}/>}
+        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3.5 rounded-full text-white text-sm font-bold z-[999] shadow-xl flex items-center gap-2.5 animate-[fadeUp_0.2s_ease] ${toastMsg.type === 'err' ? 'bg-red-600' : 'bg-slate-900'}`}>
+          {toastMsg.type === 'err' ? <AlertCircle size={18} className="text-red-200" /> : <CheckCircle size={18} className="text-cyan-400" />}
           {toastMsg.msg}
         </div>
       )}
