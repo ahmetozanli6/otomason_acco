@@ -1,1065 +1,585 @@
-```html
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#1E2D3D">
-  
-  <!-- ÖNBELLEK (CACHE) ENGELLEYİCİ META ETİKETLERİ -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  
-  <title>Yanteks Pro | Mega Panel</title>
-  
-  <!-- Cache buster ve SW unregister kodları iframe kısıtlamaları (InvalidStateError) nedeniyle kaldırıldı -->
+```react
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { Menu, X, Plus, Search, Trash2, Save, Calculator, RefreshCw, FileText, Users, DollarSign, Send, Book, Box, AlertCircle } from 'lucide-react';
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+// ==========================================
+// SUPABASE BAĞLANTISI (Sizin Verdiğiniz Bilgiler)
+// ==========================================
+const supabaseUrl = 'https://zmlbdpjcergcvcurihuy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  <style>
-    :root {
-      --bg: #F3F5F7;
-      --surface: #FFFFFF;
-      --border: rgba(30,45,61,0.15);
-      --text: #0A1520;
-      --text-sec: #64748B;
-      --primary: #0891B2;
-      --navy: #0F172A;
-      --red: #DC2626;
-      --font: 'Inter', sans-serif;
-    }
+export default function App() {
+  const [activeTab, setActiveTab] = useState('Numune');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [globalError, setGlobalError] = useState(null);
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body, html { width: 100%; height: 100%; font-family: var(--font); background-color: var(--bg); color: var(--text); overflow: hidden; }
+  // Sahte Yükleme & Supabase Bağlantı Kontrolü
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        // Basit bir ping atarak bağlantıyı test edelim (Müşteriler veya Numuneler tablosundan 1 limitli veri çekerek)
+        const { error } = await supabase.from('numuneler').select('id').limit(1);
+        if (error && error.code !== '42P01') { // 42P01: Tablo yok hatası (kabul edilebilir)
+          throw error;
+        }
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Supabase Bağlantı Hatası:", err);
+        setGlobalError("Veritabanına bağlanılamadı. Çevrimdışı moddasınız veya bilgiler hatalı.");
+        setIsLoading(false); // Hataya rağmen paneli açalım ki takılma olmasın
+      }
+    };
     
-    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-    .hide-scroll::-webkit-scrollbar { display: none; }
+    checkConnection();
+  }, []);
 
-    /* Layout */
-    .app-container { display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative; }
-    
-    /* Sidebar */
-    .sidebar { width: 260px; background-color: var(--navy); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); position: relative;}
-    .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-    .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; text-decoration: none; }
-    .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .nav-button.active { background: linear-gradient(135deg, var(--primary), #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
+  const menuItems = [
+    { id: 'Numune', icon: <Box size={20} />, label: 'Numune' },
+    { id: 'Müşteri', icon: <Users size={20} />, label: 'Müşteri' },
+    { id: 'Fiyatlar', icon: <DollarSign size={20} />, label: 'Fiyatlar' },
+    { id: 'Teklifler', icon: <Send size={20} />, label: 'Teklifler' },
+    { id: 'Notlarım', icon: <Book size={20} />, label: 'Notlarım' },
+    { id: 'Dönüştürücü', icon: <RefreshCw size={20} />, label: 'Dönüştür' },
+    { id: 'Maliyet', icon: <Calculator size={20} />, label: 'Maliyet' },
+  ];
 
-    /* Main Content */
-    .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: var(--bg); }
-    .header { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
-    .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
-
-    /* Mobile adjustments */
-    @media (max-width: 1023px) {
-      .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .menu-toggle-btn { display: block; }
-      .desktop-only { display: none !important; }
-    }
-    @media (min-width: 1024px) {
-      .menu-toggle-btn { display: none; }
-      .overlay { display: none !important; }
-    }
-
-    .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; display: none; }
-    .overlay.open { display: block; }
-
-    /* Components */
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    .btn:active { transform: scale(0.96); }
-    .btn-primary { background-color: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
-    .btn-outline { background-color: var(--surface); color: var(--text-sec); border: 1px solid rgba(30,45,61,0.2); }
-    .btn-icon { background: var(--surface); border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--text-sec); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-    .btn-icon:hover { background: var(--bg); color: var(--text); }
-
-    .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: var(--surface); }
-    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
-
-    .card { background: var(--surface); border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
-    .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
-    .list-item:hover { background: #F8FAFC; }
-    .list-item:last-child { border-bottom: none; }
-    .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
-
-    .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: var(--surface); color: var(--text-sec); transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
-    .chip-filter.active { background: var(--navy); color: #fff; border-color: var(--navy); }
-
-    /* Drawer Modal */
-    .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
-    .drawer.open { transform: translateY(0); }
-    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; display: none; }
-    .drawer-overlay.open { display: block; }
-
-    /* Photo Viewer */
-    .photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; }
-    .photo-viewer.open { display: flex; }
-
-    /* Notifications */
-    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--navy); color: #fff; padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; transition: transform 0.3s ease; opacity: 0; }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    .toast.error { background: var(--red); }
-
-    /* Utilities */
-    .spin { animation: spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    
-    .status-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; border: 1px solid; }
-    .status-beklemede { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
-    .status-takip { background: #CFFAFE; color: #0E7490; border-color: #A5F3FC; }
-    .status-gonderildi { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
-    .status-onaylandi { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
-    .status-reddedildi { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
-    
-    .view-section { display: none; }
-    .view-section.active-view { display: block; }
-    .center-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 150; display: none; align-items: center; justify-content: center; }
-    .center-modal-overlay.open { display: flex; }
-    .center-modal { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-    .generic-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-    .generic-card { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .generic-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .generic-sub { font-size: 13px; color: var(--text-sec); font-family: 'JetBrains Mono', monospace; }
-  </style>
-</head>
-<body>
-
-  <div class="app-container">
-    <!-- Mobile Overlay -->
-    <div id="mobileOverlay" class="overlay" onclick="window.toggleSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <span style="font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">Yanteks<span style="color: #38BDF8;">Pro</span></span>
-        </div>
-        <button class="menu-toggle-btn" onclick="window.toggleSidebar()" style="background: none; border: none; color: #94A3B8; cursor: pointer;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F3F5F7]">
+        <div className="w-16 h-16 border-4 border-[#1E2D3D] border-t-[#0891B2] rounded-full animate-spin mb-4"></div>
+        <h2 className="text-[#1E2D3D] text-xl font-semibold">Veriler Çekiliyor...</h2>
+        <p className="text-gray-500 mt-2">Yanteks Pro hazırlanıyor</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-[#F3F5F7] font-sans text-[#0A1520]">
       
-      <nav class="hide-scroll" style="flex: 1; overflow-y: auto; padding: 16px 12px;">
-        <p style="padding: 0 16px 8px; font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1px;">ANA MENÜ</p>
-        
-        <button onclick="window.switchTab('dashboard')" id="nav-dashboard" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span>Özet Panel</span>
-        </button>
-        
-        <button onclick="window.switchTab('samples')" id="nav-samples" class="nav-button active">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Numuneler</span>
-        </button>
-        
-        <button onclick="window.switchTab('customers')" id="nav-customers" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Müşteriler</span>
-        </button>
-        
-        <button onclick="window.switchTab('prices')" id="nav-prices" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg><span>Fiyatlar</span>
-        </button>
-        
-        <button onclick="window.switchTab('costs')" id="nav-costs" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/></svg><span>Maliyet</span>
-        </button>
-        
-        <button onclick="window.switchTab('offers')" id="nav-offers" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Teklifler</span>
-        </button>
-        
-        <button onclick="window.switchTab('notes')" id="nav-notes" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg><span>Notlarım</span>
-        </button>
-        
-        <button onclick="window.switchTab('converter')" id="nav-converter" class="nav-button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="14" x2="21" y2="3"/><polyline points="8 21 3 21 3 16"/><line x1="20" y1="10" x2="3" y2="21"/></svg><span>Dönüştürücü</span>
-        </button>
-      </nav>
-      <div style="padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: 1px;">
-        YANTEKS PRO v4.1
-      </div>
-    </aside>
+      {/* Mobil Drawer Overlay */}
+      {isDrawerOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsDrawerOpen(false)}
+        />
+      )}
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="header">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <button class="menu-toggle-btn btn-icon" onclick="window.toggleSidebar()" style="border: none; padding: 4px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      {/* Sidebar / Drawer */}
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-[#1E2D3D] text-white z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#0891B2] rounded-xl flex items-center justify-center font-bold text-xl shadow-lg">
+              Y
+            </div>
+            <h1 className="text-xl font-bold tracking-wide">Yanteks Pro</h1>
+          </div>
+          <button className="md:hidden text-gray-300 hover:text-white" onClick={() => setIsDrawerOpen(false)}>
+            <X size={24} />
           </button>
-          <div>
-            <h2 id="header-title" style="font-size: 18px; font-weight: 800; margin: 0;">Numuneler</h2>
-            <p class="desktop-only" style="font-size: 12px; color: var(--text-sec); margin-top: 2px;">Sisteme hoş geldiniz.</p>
-          </div>
         </div>
-
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="desktop-only" style="position: relative;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="globalSearch" placeholder="Arama yap..." class="input" style="padding-left: 36px; width: 220px; border-radius: 20px;">
-          </div>
-          <button class="btn-icon" onclick="window.fetchData()" title="Yenile">
-            <svg id="refreshIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 0 20.49 15"/></svg>
-          </button>
-          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">YP</div>
-        </div>
-      </header>
-
-      <div class="scroll-area hide-scroll" style="max-width: 1200px; margin: 0 auto; width: 100%;">
         
-        <!-- Loading State -->
-        <div id="loadingState" style="height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--primary);">
-          <svg class="spin" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 0 20.49 15"/></svg>
-          <span style="font-weight: 600; color: var(--text-sec);">Sistem Hazırlanıyor...</span>
+        <nav className="p-4 space-y-2">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsDrawerOpen(false);
+              }}
+              className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 ${
+                activeTab === item.id 
+                  ? 'bg-[#0891B2] text-white shadow-md' 
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+              }`}
+            >
+              {item.icon}
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700 text-center text-xs text-gray-500">
+          v2.5 Supabase Entegre
         </div>
+      </aside>
 
-        <!-- ==============================================
-               1. ÖZET PANEL
-               ============================================== -->
-        <div id="view-dashboard" class="view-section">
-          <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 24px; color: var(--text);">Sistem Özeti</h3>
-          <div id="dashboardStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-            <!-- JS ile dolar -->
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex items-center gap-4">
+            <button className="md:hidden text-gray-600 hover:text-black transition-colors" onClick={() => setIsDrawerOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <h2 className="text-2xl font-bold text-[#1E2D3D]">{activeTab}</h2>
           </div>
-        </div>
-
-        <!-- ==============================================
-               2. NUMUNELER
-               ============================================== -->
-        <div id="view-samples" class="view-section active-view">
           
-          <!-- Toolbar -->
-          <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <div style="display: flex; gap: 12px;">
-              <button onclick="window.openDrawer()" class="btn btn-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Ekle</button>
-              <button onclick="window.exportExcel()" class="btn btn-outline"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></svg> Excel</button>
+          <div className="flex items-center gap-4">
+            <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Hızlı ara..." 
+                className="pl-10 pr-4 py-2 bg-[#F3F5F7] border border-transparent rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-[#0891B2] outline-none transition-all w-64"
+              />
             </div>
-
-            <div id="filterChips" class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
-              <!-- JS ile Doldurulacak -->
-            </div>
-          </div>
-
-          <!-- Bulk Actions -->
-          <div id="bulkActions" style="display: none; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 12px; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-            <span style="font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px;"><span id="selCount">0</span> Seçili</span>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              <button onclick="window.bulkUpdateStatus('Beklemede')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Beklemede</button>
-              <button onclick="window.bulkUpdateStatus('Takip Et')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Takip Et</button>
-              <button onclick="window.bulkUpdateStatus('Gönderildi')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Gönderildi</button>
-              <button onclick="window.bulkUpdateStatus('Onaylandı')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Onaylandı</button>
-              <button onclick="window.bulkDelete()" style="background: rgba(220,38,38,0.2); color: #FCA5A5; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Sil</button>
-              <button onclick="window.clearSelection()" style="background: transparent; border: none; color: #94A3B8; padding: 6px; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            <div className="w-10 h-10 rounded-full bg-[#1E2D3D] border-2 border-[#0891B2] overflow-hidden flex items-center justify-center font-bold text-white shadow-sm">
+              AD
             </div>
           </div>
+        </header>
 
-          <!-- Search & Sort -->
-          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
-            <div style="position: relative; flex: 1; min-width: 250px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="text" id="searchInput" placeholder="Kayıt arayın..." class="input" style="padding-left: 40px;" oninput="window.renderSamples()">
-            </div>
-            <div style="display: flex; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
-              <button onclick="window.changeSort('date')" id="sort_date" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Tarih</button>
-              <button onclick="window.changeSort('alpha')" id="sort_alpha" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">A-Z</button>
-              <button onclick="window.changeSort('status')" id="sort_status" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Durum</button>
-            </div>
-          </div>
-
-          <!-- Firma Banner -->
-          <div id="firmaBanner" style="display: none; background: #ECFEFF; border: 1px solid #A5F3FC; padding: 12px 20px; border-radius: 12px; justify-content: space-between; align-items: center; margin-bottom: 24px; color: #0E7490;">
-            <span style="font-weight: 700; font-size: 14px;">🏢 <span id="bannerFirmaName"></span> filtreli görünüm</span>
-            <button onclick="window.setFirmaFilter('')" style="background: #CFFAFE; border: none; color: var(--primary); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Tümünü Göster</button>
-          </div>
-
-          <!-- Data List -->
-          <div id="dataListContainer">
-            <!-- JS ile Doldurulacak -->
-          </div>
-
-        </div>
-
-        <!-- ==============================================
-             3. MÜŞTERİLER
-             ============================================== -->
-        <div id="view-customers" class="view-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Müşteri Listesi</h3>
-            <button class="btn btn-primary" onclick="window.openGenericModal('musteriler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Müşteri</button>
-          </div>
-          <div id="customersList" class="generic-grid"></div>
-        </div>
-
-        <!-- ==============================================
-             4. FİYATLAR
-             ============================================== -->
-        <div id="view-prices" class="view-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Listeleri</h3>
-            <button class="btn btn-primary" onclick="window.openGenericModal('fiyatlar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Fiyat</button>
-          </div>
-          <div id="pricesList" class="generic-grid"></div>
-        </div>
-
-        <!-- ==============================================
-             5. MALİYET
-             ============================================== -->
-        <div id="view-costs" class="view-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Maliyet Hesapları</h3>
-            <button class="btn btn-primary" onclick="window.openGenericModal('maliyetler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Maliyet</button>
-          </div>
-          <div id="costsList" class="generic-grid"></div>
-        </div>
-
-        <!-- ==============================================
-             6. TEKLİFLER
-             ============================================== -->
-        <div id="view-offers" class="view-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Teklifleri</h3>
-            <button class="btn btn-primary" onclick="window.openGenericModal('teklifler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Teklif</button>
-          </div>
-          <div id="offersList" class="generic-grid"></div>
-        </div>
-
-        <!-- ==============================================
-             7. NOTLARIM
-             ============================================== -->
-        <div id="view-notes" class="view-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Kişisel Notlar</h3>
-            <button class="btn btn-primary" onclick="window.openGenericModal('notlar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Not</button>
-          </div>
-          <div id="notesList" class="generic-grid"></div>
-        </div>
-
-        <!-- ==============================================
-             8. DÖNÜŞTÜRÜCÜ
-             ============================================== -->
-        <div id="view-converter" class="view-section">
-          <h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 24px;">İplik Birim Dönüştürücü</h3>
-          <div class="card" style="padding: 32px; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+        {globalError && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 m-6 mb-0 flex items-start gap-3 rounded-r-lg">
+            <AlertCircle className="text-red-500 mt-0.5" size={20} />
             <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Ne (İngiliz Pamuk)</label>
-              <input type="number" id="conv-ne" class="input" placeholder="Ne değeri girin..." oninput="window.calcConv('ne', this.value)" style="font-size: 16px; padding: 12px 16px;">
+              <h3 className="text-red-800 font-medium">Bağlantı Uyarı</h3>
+              <p className="text-red-600 text-sm mt-1">{globalError}</p>
             </div>
-            <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Nm (Metrik)</label>
-              <input type="number" id="conv-nm" class="input" placeholder="Nm değeri girin..." oninput="window.calcConv('nm', this.value)" style="font-size: 16px; padding: 12px 16px;">
-            </div>
-            <div>
-              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Denye (Denier)</label>
-              <input type="number" id="conv-den" class="input" placeholder="Denye değeri girin..." oninput="window.calcConv('den', this.value)" style="font-size: 16px; padding: 12px 16px;">
-            </div>
-            <button onclick="document.getElementById('conv-ne').value=''; document.getElementById('conv-nm').value=''; document.getElementById('conv-den').value='';" class="btn btn-outline" style="margin-top: 10px;">Sıfırla</button>
           </div>
+        )}
+
+        {/* Tab Content Area */}
+        <div className="flex-1 overflow-auto p-6 scroll-smooth">
+          {activeTab === 'Numune' && <NumuneTab supabase={supabase} />}
+          {activeTab === 'Müşteri' && <MusteriTab supabase={supabase} />}
+          {activeTab === 'Fiyatlar' && <FiyatlarTab supabase={supabase} />}
+          {activeTab === 'Teklifler' && <TekliflerTab />}
+          {activeTab === 'Notlarım' && <NotlarimTab supabase={supabase} />}
+          {activeTab === 'Dönüştürücü' && <DonusturucuTab />}
+          {activeTab === 'Maliyet' && <MaliyetTab />}
         </div>
-
-      </div>
-    </main>
-  </div>
-
-  <!-- Ortak Form Modalı (Müşteri, Fiyat vb. eklemek için) -->
-  <div id="genericModalOverlay" class="center-modal-overlay" onclick="window.closeGenericModal()">
-    <div class="center-modal" onclick="event.stopPropagation()">
-      <h3 id="genericModalTitle" style="font-size: 18px; font-weight: 800; margin-bottom: 20px;">Kayıt Ekle</h3>
-      <div id="genericModalInputs" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;"></div>
-      <div style="display: flex; gap: 12px;">
-        <button onclick="window.closeGenericModal()" class="btn btn-outline" style="flex: 1;">İptal</button>
-        <button id="genericSaveBtn" class="btn btn-primary" style="flex: 2;">Kaydet</button>
-      </div>
+      </main>
     </div>
-  </div>
+  );
+}
 
-  <!-- Drawer / Modal -->
-  <div id="drawerOverlay" class="drawer-overlay" onclick="window.closeDrawer()"></div>
-  <div id="drawer" class="drawer">
-    <div style="width: 40px; height: 6px; background: #E2E8F0; border-radius: 10px; margin: 0 auto 24px;"></div>
-    <h2 id="drawerTitle" style="font-size: 20px; font-weight: 800; margin-bottom: 24px; color: var(--text);">📦 Yeni Kayıt</h2>
+/* ========================================================
+   1. NUMUNE MODÜLÜ (Supabase Entegre)
+======================================================== */
+function NumuneTab({ supabase }) {
+  const [numuneler, setNumuneler] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    <div id="firmaSelectGroup" style="margin-bottom: 20px; position: relative;">
-      <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Firma Seçimi</label>
-      <input type="text" id="formFirma" placeholder="Firma adını yazın..." class="input" style="padding: 12px 16px; font-size: 14px;" oninput="window.filterFirmaDropdown()" onfocus="window.showFirmaDropdown()">
-      <div id="firmaDropdown" class="hide-scroll" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border: 1px solid var(--border); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-      </div>
-    </div>
+  useEffect(() => {
+    fetchNumuneler();
+  }, []);
 
-    <div id="formRowsContainer">
-      <!-- Satırlar buraya gelecek -->
-    </div>
-
-    <button id="addRowBtn" onclick="window.addFormRow()" style="width: 100%; padding: 14px; background: transparent; border: 2px dashed #A5F3FC; color: var(--primary); border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; margin-bottom: 24px;">+ SATIR EKLE</button>
-
-    <div style="display: flex; gap: 12px;">
-      <button onclick="window.closeDrawer()" style="flex: 1; padding: 14px; background: #F1F5F9; border: none; border-radius: 12px; font-weight: 700; color: #475569; cursor: pointer;">İptal</button>
-      <button id="saveBtn" onclick="window.saveData()" style="flex: 2; padding: 14px; background: var(--navy); border: none; border-radius: 12px; font-weight: 700; color: #fff; cursor: pointer;">Kaydet</button>
-    </div>
-  </div>
-
-  <!-- Photo Viewer -->
-  <div id="photoViewer" class="photo-viewer">
-    <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
-      <span id="pvCounter" style="color: #fff; font-weight: 700; background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">1 / 1</span>
-      <button onclick="window.closePhotoViewer()" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px; border-radius: 50%; cursor: pointer;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-    </div>
-    <div style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 24px;">
-      <button id="pvPrev" onclick="window.pvNav(-1)" style="position: absolute; left: 24px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer;">‹</button>
-      <img id="pvImage" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt=""/>
-      <button id="pvNext" onclick="window.pvNav(1)" style="position: absolute; right: 24px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer;">›</button>
-    </div>
-    <div style="padding: 32px; text-align: center;">
-      <button onclick="window.deleteCurrentPhoto()" style="background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.3); color: #FECACA; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Bu Fotoğrafı Sil</button>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast" class="toast">
-    <svg id="toastIconOk" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-    <svg id="toastIconErr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FECACA" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-    <span id="toastMsg"></span>
-  </div>
-
-  <script>
-    // ==========================================
-    // 0. TAB YÖNETİMİ (SPA)
-    // ==========================================
-    const tabTitles = {
-      'dashboard': 'Özet Panel', 'samples': 'Numuneler', 'customers': 'Müşteriler',
-      'prices': 'Fiyatlar', 'costs': 'Maliyet', 'offers': 'Teklifler',
-      'notes': 'Notlarım', 'converter': 'Dönüştürücü'
-    };
-
-    window.switchTab = function(tabId) {
-      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
-      const activeView = document.getElementById('view-' + tabId);
-      if(activeView) activeView.classList.add('active-view');
+  const fetchNumuneler = async () => {
+    try {
+      // Tablo adınız 'numuneler' olarak varsayılmıştır. Yoksa hata dönmez, boş liste gösterir.
+      const { data, error } = await supabase.from('numuneler').select('*').order('id', { ascending: false });
       
-      document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('nav-' + tabId);
-      if(activeBtn) activeBtn.classList.add('active');
-      
-      document.getElementById('header-title').innerText = tabTitles[tabId] || 'Yanteks Pro';
-      
-      if (window.innerWidth < 1024) {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('mobileOverlay').classList.remove('open');
-      }
-    };
-
-    // ==========================================
-    // 1. GLOBAL STATE & CONFIG
-    // ==========================================
-    window.SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
-    window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
-    window.dbClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-    
-    window.state = {
-      samples: [], customers: [], notes: [], prices: [], costs: [], offers: [],
-      photoCache: {}, filter: 'Hepsi', sortType: 'date', firmaFilter: '',
-      selectedIds: new Set(), editId: null, formRows: [],
-      currentPvPhotos: [], currentPvIndex: 0,
-      VALID_STATUS: ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi']
-    };
-
-    // ==========================================
-    // 2. HELPERS
-    // ==========================================
-    window.formatDate = function(dateStr) {
-      if (!dateStr) return '-';
-      try {
-        var d = new Date(dateStr), now = new Date();
-        var diff = Math.floor((now - d) / 86400000);
-        if (diff === 0) return 'bugün';
-        if (diff === 1) return 'dün';
-        if (diff < 7) return diff + 'g';
-        if (diff < 30) return Math.floor(diff / 7) + 'h';
-        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
-      } catch (e) { return dateStr; }
-    };
-
-    window.isV = function(n) { return typeof n === 'string' && n.startsWith('↳'); };
-    window.dName = function(n) { return typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : ''; };
-    
-    window.getStatusStyle = function(status) {
-      const map = {
-        'Beklemede': 'status-beklemede',
-        'Takip Et': 'status-takip',
-        'Gönderildi': 'status-gonderildi',
-        'Onaylandı': 'status-onaylandi',
-        'Reddedildi': 'status-reddedildi'
-      };
-      return map[status] || 'status-beklemede';
-    };
-
-    window.toggleSidebar = function() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('mobileOverlay').classList.toggle('open');
-    };
-
-    window.showToast = function(msg, type = 'ok') {
-      const t = document.getElementById('toast');
-      document.getElementById('toastMsg').innerText = msg;
-      document.getElementById('toastIconOk').style.display = type === 'ok' ? 'block' : 'none';
-      document.getElementById('toastIconErr').style.display = type === 'err' ? 'block' : 'none';
-      if(type === 'err') t.classList.add('error'); else t.classList.remove('error');
-      
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    };
-
-    // ==========================================
-    // 3. CORE LOGIC & SAFEFETCH
-    // ==========================================
-    async function safeFetch(table) {
-      try {
-        // order fonksiyonunu try catch ile korumaya aldık
-        let query = window.dbClient.from(table).select('*');
-        if (table === 'numuneler') {
-           query = query.order('created_at', {ascending: false});
-        }
-        const {data, error} = await query;
-        if(error) { console.warn(table + ' çekilemedi:', error); return []; }
-        return data || [];
-      } catch (err) {
-        console.warn(table + ' tablosu hatalı:', err);
-        return [];
-      }
-    }
-
-    window.fetchData = async function() {
-      if(!document.getElementById('refreshIcon')) return; // DOM yoksa bekle
-      
-      document.getElementById('refreshIcon').classList.add('spin');
-      document.getElementById('loadingState').style.display = 'flex';
-      document.getElementById('mainContent').style.display = 'none';
-
-      try {
-        // Tabloları teker teker ve güvenli bir şekilde çekiyoruz
-        window.state.samples = await safeFetch('numuneler');
-        window.state.customers = await safeFetch('musteriler');
-        window.state.notes = await safeFetch('notlar');
-        window.state.prices = await safeFetch('fiyatlar');
-        window.state.costs = await safeFetch('maliyetler');
-        window.state.offers = await safeFetch('teklifler');
-
-        // Numuneleri tarihe göre listeliyoruz (Yoksa da hata verdirmeyecek)
-        window.state.samples.sort((a,b) => {
-          const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
-          if(ta === tb) return window.isV(a.numune) ? 1 : -1;
-          return tb - ta;
-        });
-
-        window.state.samples.slice(0, 20).forEach(s => window.fetchPhotos(s.id));
-        window.renderAllViews();
-        
-      } catch (err) {
-        console.error("fetchData Hatası:", err);
-        window.showToast('Sistem başlatılırken hata oluştu.', 'err');
-      } finally {
-        if(document.getElementById('loadingState')) document.getElementById('loadingState').style.display = 'none';
-        if(document.getElementById('mainContent')) document.getElementById('mainContent').style.display = 'block';
-        if(document.getElementById('refreshIcon')) document.getElementById('refreshIcon').classList.remove('spin');
-      }
-    };
-
-    window.renderAllViews = function() {
-      window.renderSamples();
-      window.renderDashboard();
-      window.renderGenericList('customers', 'customersList', 'firma_adi', null, 'musteriler');
-      window.renderGenericList('prices', 'pricesList', 'urun_adi', 'fiyat', 'fiyatlar');
-      window.renderGenericList('costs', 'costsList', 'urun', 'maliyet', 'maliyetler');
-      window.renderGenericList('offers', 'offersList', 'firma', 'tutar', 'teklifler');
-      window.renderGenericList('notes', 'notesList', 'baslik', 'icerik', 'notlar');
-    };
-
-    // ==========================================
-    // 4. GENERIC LISTS & MODALS
-    // ==========================================
-    window.renderDashboard = function() {
-      const stats = document.getElementById('dashboardStats');
-      if(!stats) return;
-      stats.innerHTML = `
-        <div class="card" style="padding:24px; border-left:4px solid var(--primary); margin:0;">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Toplam Numune</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.samples.length}</div>
-        </div>
-        <div class="card" style="padding:24px; border-left:4px solid var(--green); margin:0;">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Kayıtlı Müşteri</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.customers.length}</div>
-        </div>
-        <div class="card" style="padding:24px; border-left:4px solid var(--orange); margin:0;">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Aktif Notlar</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.notes.length}</div>
-        </div>
-      `;
-    };
-
-    window.renderGenericList = function(stateKey, containerId, titleField, subField, tableName) {
-      const c = document.getElementById(containerId);
-      if(!c) return;
-      const items = window.state[stateKey] || [];
-      
-      if(!items.length) { 
-        c.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-sec); background:#fff; border-radius:16px; border:1px dashed var(--border);">Henüz kayıt bulunmuyor.</div>'; 
-        return; 
-      }
-      
-      let html = '';
-      items.forEach(x => {
-        html += `<div class="generic-card">
-          <div style="min-width:0;">
-            <div class="generic-title">${x[titleField] || 'İsimsiz Kayıt'}</div>
-            ${subField && x[subField] ? `<div class="generic-sub">${x[subField]}</div>` : ''}
-          </div>
-          <button onclick="window.deleteGenericRecord('${tableName}', '${stateKey}', '${x.id}')" class="btn-icon" style="color:var(--red); flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-        </div>`;
-      });
-      c.innerHTML = html;
-    };
-
-    window.openGenericModal = function(tableName) {
-      window.state.genericModalTable = tableName;
-      let title = "Kayıt Ekle";
-      let inputsHtml = '';
-
-      if(tableName === 'musteriler') {
-        title = "Yeni Müşteri Ekle";
-        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Firma Adı" data-field="firma_adi">`;
-      } else if(tableName === 'fiyatlar') {
-        title = "Yeni Fiyat Ekle";
-        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Ürün Adı" data-field="urun_adi">
-                      <input type="text" id="gm_in_2" class="input" placeholder="Fiyat (örn: $5.20)" data-field="fiyat">`;
-      } else if(tableName === 'maliyetler') {
-        title = "Yeni Maliyet Ekle";
-        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Ürün Adı" data-field="urun">
-                      <input type="text" id="gm_in_2" class="input" placeholder="Maliyet Detayı" data-field="maliyet">`;
-      } else if(tableName === 'teklifler') {
-        title = "Yeni Teklif Ekle";
-        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Firma Adı" data-field="firma">
-                      <input type="text" id="gm_in_2" class="input" placeholder="Tutar / İçerik" data-field="tutar">`;
-      } else if(tableName === 'notlar') {
-        title = "Yeni Not Ekle";
-        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Not Başlığı" data-field="baslik">
-                      <textarea id="gm_in_2" class="input" placeholder="Not içeriği..." rows="3" data-field="icerik"></textarea>`;
-      }
-
-      document.getElementById('genericModalTitle').innerText = title;
-      document.getElementById('genericModalInputs').innerHTML = inputsHtml;
-      
-      const saveBtn = document.getElementById('genericSaveBtn');
-      saveBtn.onclick = async function() {
-        saveBtn.innerText = "Kaydediliyor...";
-        saveBtn.disabled = true;
-        
-        let payload = {};
-        const inputs = document.getElementById('genericModalInputs').querySelectorAll('[data-field]');
-        inputs.forEach(inp => {
-          if(inp.value.trim() !== '') payload[inp.getAttribute('data-field')] = inp.value.trim();
-        });
-
-        if(Object.keys(payload).length === 0) {
-          window.showToast("Lütfen alanları doldurun", "err");
-          saveBtn.innerText = "Kaydet"; saveBtn.disabled = false;
-          return;
-        }
-
-        const {data, error} = await window.dbClient.from(tableName).insert([payload]).select();
-        
-        if(error) {
-          window.showToast("Ekleme hatası: " + error.message, "err");
+      if (error) {
+        if (error.code === '42P01') {
+          // Tablo henüz oluşturulmamışsa mock data göster
+          setNumuneler([
+            { id: 1, firma: 'LC Waikiki', numune: 'Pamuklu Süprem', durum: 'Onaylandı', fiyat: '$3.50', updated_at: '2024-05-12' },
+            { id: 2, firma: 'Defacto', numune: 'Polyester Polar', durum: 'Bekliyor', fiyat: '$2.80', updated_at: '2024-05-11' },
+          ]);
         } else {
-          window.showToast("Başarıyla eklendi", "ok");
-          window.fetchData(); // Her şeyi yenile
-          window.closeGenericModal();
+          console.error('Veri çekme hatası:', error);
         }
-        saveBtn.innerText = "Kaydet"; saveBtn.disabled = false;
-      };
-
-      document.getElementById('genericModalOverlay').classList.add('open');
-    };
-
-    window.closeGenericModal = function() {
-      document.getElementById('genericModalOverlay').classList.remove('open');
-    };
-
-    window.deleteGenericRecord = async function(table, stateKey, id) {
-      if(!confirm('Bu kaydı tamamen silmek istediğinize emin misiniz?')) return;
-      const qId = isNaN(id) ? id : Number(id);
-      const {error} = await window.dbClient.from(table).delete().eq('id', qId);
-      if(error) { window.showToast('Silinemedi', 'err'); return; }
-      window.state[stateKey] = window.state[stateKey].filter(x => String(x.id) !== String(id));
-      window.renderAllViews();
-      window.showToast('Kayıt silindi');
-    };
-
-    window.calcConv = function(type, val) {
-      const v = parseFloat(val); if(isNaN(v) || v<=0) return;
-      if(type==='ne') { document.getElementById('conv-nm').value = (v * 1.693).toFixed(2); document.getElementById('conv-den').value = (5315 / v).toFixed(2); }
-      if(type==='nm') { document.getElementById('conv-ne').value = (v / 1.693).toFixed(2); document.getElementById('conv-den').value = (9000 / v).toFixed(2); }
-      if(type==='den'){ document.getElementById('conv-ne').value = (5315 / v).toFixed(2); document.getElementById('conv-nm').value = (9000 / v).toFixed(2); }
-    };
-
-    window.fetchPhotos = async function(id) {
-      if(window.state.photoCache[id]) return window.state.photoCache[id];
-      try {
-        const { data, error } = await window.dbClient.storage.from('numune-photos').list('numune_'+id, { sortBy: { column: 'created_at', order: 'asc' }});
-        if(error || !data) return [];
-        const photos = data.filter(f => f.name && !f.name.endsWith('/')).map(f => {
-          const { data: ud } = window.dbClient.storage.from('numune-photos').getPublicUrl('numune_'+id+'/'+f.name);
-          return { name: f.name, url: ud.publicUrl, path: 'numune_'+id+'/'+f.name, sampleId: id };
-        });
-        window.state.photoCache[id] = photos;
-        window.renderList(); 
-        return photos;
-      } catch(e) { return []; }
-    };
-
-    window.handlePhotoUpload = async function(input, id) {
-      const files = Array.from(input.files);
-      if(!files.length) return;
-      input.value = '';
-      window.showToast('Fotoğraflar yükleniyor...', 'ok');
-      for(let file of files) {
-        const path = 'numune_' + id + '/' + Date.now() + '_' + file.name;
-        await window.dbClient.storage.from('numune-photos').upload(path, file);
-      }
-      delete window.state.photoCache[id];
-      await window.fetchPhotos(id);
-      window.showToast('Fotoğraflar eklendi', 'ok');
-    };
-
-    window.deletePhoto = async function(sampleId, path) {
-      await window.dbClient.storage.from('numune-photos').remove([path]);
-      delete window.state.photoCache[sampleId];
-      await window.fetchPhotos(sampleId);
-      window.showToast('Fotoğraf silindi', 'ok');
-    };
-
-    window.setFilter = function(f) { window.state.filter = f; window.renderSamples(); };
-    window.changeSort = function(s) { window.state.sortType = s; window.renderSamples(); };
-    window.setFirmaFilter = function(f) { window.state.firmaFilter = f; window.renderSamples(); };
-
-    window.renderSamples = function() {
-      let activeCount = window.state.samples.filter(i => !i.arsiv).length;
-      let chipsHtml = '';
-      ['Hepsi', 'Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi', 'Arşiv'].forEach(f => {
-        let count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? window.state.samples.filter(i => i.arsiv).length : window.state.samples.filter(i => !i.arsiv && i.durum === f).length;
-        let isActive = window.state.filter === f;
-        chipsHtml += `<button onclick="window.setFilter('${f}')" class="chip-filter ${isActive ? 'active' : ''}">${f} <span style="padding: 2px 6px; border-radius: 10px; font-size: 10px; background: ${isActive ? 'rgba(255,255,255,0.2)' : 'var(--bg)'}">${count}</span></button>`;
-      });
-      document.getElementById('filterChips').innerHTML = chipsHtml;
-
-      document.getElementById('sort_date').style.background = window.state.sortType === 'date' ? 'var(--bg)' : 'transparent';
-      document.getElementById('sort_alpha').style.background = window.state.sortType === 'alpha' ? 'var(--bg)' : 'transparent';
-      document.getElementById('sort_status').style.background = window.state.sortType === 'status' ? 'var(--bg)' : 'transparent';
-
-      let result = [...window.state.samples];
-      if (window.state.filter === 'Arşiv') result = result.filter(i => i.arsiv === true);
-      else {
-        result = result.filter(i => i.arsiv !== true);
-        if (window.state.filter !== 'Hepsi') result = result.filter(i => i.durum === window.state.filter);
-      }
-      
-      if (window.state.firmaFilter) {
-        document.getElementById('firmaBanner').style.display = 'flex';
-        document.getElementById('bannerFirmaName').innerText = window.state.firmaFilter;
-        result = result.filter(i => (i.firma || '').toUpperCase() === window.state.firmaFilter.toUpperCase());
       } else {
-        document.getElementById('firmaBanner').style.display = 'none';
+        setNumuneler(data || []);
       }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
-      if (q) result = result.filter(i => (i.firma||'').toLowerCase().includes(q) || (i.numune||'').toLowerCase().includes(q) || (i.aciklama||'').toLowerCase().includes(q));
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+        <div>
+          <h3 className="font-semibold text-lg text-[#1E2D3D]">Numune Takibi</h3>
+          <p className="text-gray-500 text-sm">Toplam {numuneler.length} kayıtlı numune bulunuyor.</p>
+        </div>
+        <button className="bg-[#0891B2] text-white px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#067a96] transition-colors shadow-sm font-medium">
+          <Plus size={18} /> Yeni Ekle
+        </button>
+      </div>
+      
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-gray-500">Yükleniyor...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm">
+                  <th className="p-4 font-semibold">Firma</th>
+                  <th className="p-4 font-semibold">Numune Adı</th>
+                  <th className="p-4 font-semibold">Durum</th>
+                  <th className="p-4 font-semibold">Fiyat</th>
+                  <th className="p-4 font-semibold">Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {numuneler.length === 0 ? (
+                  <tr><td colSpan="5" className="p-8 text-center text-gray-500">Kayıt bulunamadı.</td></tr>
+                ) : (
+                  numuneler.map(n => (
+                    <tr key={n.id} className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors">
+                      <td className="p-4 font-medium text-[#1E2D3D]">{n.firma}</td>
+                      <td className="p-4 text-gray-700">{n.numune}</td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          n.durum === 'Onaylandı' || n.durum === 'Olumlu' ? 'bg-green-100 text-green-700 border border-green-200' : 
+                          n.durum === 'Reddedildi' || n.durum === 'Olumsuz' ? 'bg-red-100 text-red-700 border border-red-200' :
+                          'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                        }`}>
+                          {n.durum || 'Bekliyor'}
+                        </span>
+                      </td>
+                      <td className="p-4 font-medium text-gray-700">{n.fiyat || '-'}</td>
+                      <td className="p-4 text-gray-500 text-sm">{n.updated_at ? new Date(n.updated_at).toLocaleDateString('tr-TR') : '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-      const G = {};
-      result.forEach(i => {
-        const f = (i.firma || 'BELİRSİZ').toUpperCase();
-        if(!G[f]) G[f] = [];
-        G[f].push(i);
-      });
+/* ========================================================
+   2. MÜŞTERİ MODÜLÜ (Supabase Entegre)
+======================================================== */
+function MusteriTab({ supabase }) {
+  const [musteriler, setMusteriler] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-      let fKeys = Object.keys(G);
-      if(window.state.sortType === 'alpha') fKeys.sort();
-      else if(window.state.sortType === 'status') fKeys.sort((a,b) => Math.min(...G[a].map(i => window.state.VALID_STATUS.indexOf(i.durum||'Beklemede'))) - Math.min(...G[b].map(i => window.state.VALID_STATUS.indexOf(i.durum||'Beklemede'))));
-      else fKeys.sort((a,b) => Math.max(...G[b].map(i => new Date(i.updated_at||i.created_at).getTime())) - Math.max(...G[a].map(i => new Date(i.updated_at||i.created_at).getTime())));
+  useEffect(() => {
+    const fetchMusteriler = async () => {
+      try {
+        const { data, error } = await supabase.from('musteriler').select('*');
+        if (error && error.code !== '42P01') console.error(error);
+        if (data) setMusteriler(data);
+      } catch (err) { } finally { setLoading(false); }
+    };
+    fetchMusteriler();
+  }, []);
 
-      const container = document.getElementById('dataListContainer');
-      if (fKeys.length === 0) {
-        container.innerHTML = `<div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 16px; border: 1px dashed var(--border);"><p style="font-weight: 700; color: var(--text); font-size: 16px;">Kayıt Bulunamadı</p></div>`;
-        return;
+  return (
+    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 min-h-[400px]">
+      <div className="flex justify-between items-center mb-8 border-b pb-4">
+         <h3 className="text-xl font-bold flex items-center gap-2 text-[#1E2D3D]"><Users className="text-[#0891B2]"/> Müşteri Listesi</h3>
+         <button className="bg-[#1E2D3D] text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 hover:bg-black transition">
+          <Plus size={18} /> Yeni Müşteri
+        </button>
+      </div>
+
+      {loading ? <p className="text-center text-gray-500">Yükleniyor...</p> : 
+       musteriler.length > 0 ? (
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+           {musteriler.map(m => (
+             <div key={m.id} className="p-4 border rounded-lg hover:shadow-md transition">
+               <h4 className="font-bold text-lg">{m.ad || m.firma_adi}</h4>
+               <p className="text-sm text-gray-500 mt-1">{m.email || 'Email yok'}</p>
+             </div>
+           ))}
+         </div>
+       ) : (
+        <div className="text-center py-12">
+          <Users size={64} className="mx-auto text-gray-200 mb-4" />
+          <p className="text-gray-500 mb-6">Henüz müşteri verisi bulunmuyor.</p>
+        </div>
+       )}
+    </div>
+  );
+}
+
+/* ========================================================
+   3. FİYATLAR MODÜLÜ
+======================================================== */
+function FiyatlarTab() {
+  return (
+    <div className="space-y-6">
+      <div className="bg-[#1E2D3D] text-white p-6 rounded-xl shadow-md">
+        <h2 className="text-2xl font-bold mb-2">Güncel Piyasa Fiyatları</h2>
+        <p className="text-gray-300">İplik, Örme ve Boyahane fiyat listelerini buradan takip edebilirsiniz.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { title: 'İplik Fiyatları', items: [{n: 'Pamuk 30/1', p: '$3.20'}, {n: 'Polyester 150D', p: '$1.80'}, {n: 'Melanj 20/1', p: '$4.10'}] },
+          { title: 'Örme Fiyatları', items: [{n: 'Süprem', p: '$0.40'}, {n: 'İki İplik', p: '$0.45'}, {n: 'Ribana', p: '$0.50'}] },
+          { title: 'Boya & Apre', items: [{n: 'Açık Renk', p: '$1.10'}, {n: 'Koyu Renk', p: '$1.30'}, {n: 'Şardon', p: '+$0.20'}] }
+        ].map((block, i) => (
+          <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <h3 className="font-bold text-lg mb-4 text-[#1E2D3D] border-b pb-2">{block.title}</h3>
+            <ul className="space-y-3">
+              {block.items.map((item, j) => (
+                <li key={j} className="flex justify-between text-sm py-1">
+                  <span className="text-gray-600 font-medium">{item.n}</span> 
+                  <span className="font-bold text-[#0891B2] bg-blue-50 px-2 py-0.5 rounded">{item.p}/kg</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================
+   4. TEKLİFLER MODÜLÜ
+======================================================== */
+function TekliflerTab() {
+  return (
+    <div className="bg-white p-12 rounded-xl shadow-sm text-center border border-gray-100">
+      <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+        <FileText size={40} className="text-[#0891B2]" />
+      </div>
+      <h3 className="text-2xl font-bold mb-3 text-[#1E2D3D]">Fiyat Teklifi Oluşturucu</h3>
+      <p className="text-gray-500 mb-8 max-w-md mx-auto">Müşterilerinize saniyeler içinde profesyonel PDF veya Excel formatında fiyat teklifleri hazırlayın.</p>
+      <button className="bg-[#0891B2] text-white px-8 py-3 rounded-lg inline-flex items-center gap-2 font-semibold hover:bg-[#067a96] transition shadow-md hover:shadow-lg">
+        <Plus size={20} /> Yeni Teklif Başlat
+      </button>
+    </div>
+  );
+}
+
+/* ========================================================
+   5. NOTLARIM MODÜLÜ (Supabase Entegre)
+======================================================== */
+function NotlarimTab({ supabase }) {
+  const [notlar, setNotlar] = useState([]);
+  const [yeniNot, setYeniNot] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchNotlar();
+  }, []);
+
+  const fetchNotlar = async () => {
+    try {
+      const { data, error } = await supabase.from('notlar').select('*').order('created_at', { ascending: false });
+      if (error && error.code !== '42P01') console.error(error);
+      if (data) {
+        setNotlar(data);
+      } else {
+        // Tablo yoksa lokal state kullansın
+        setNotlar([
+          { id: '1', icerik: "Yarın LCW toplantısı için numuneleri hazırla.", created_at: new Date().toISOString() },
+          { id: '2', icerik: "Yeni boyahane fiyat listesini sisteme gir.", created_at: new Date(Date.now() - 86400000).toISOString() }
+        ]);
       }
+    } catch (err) {}
+  };
 
-      let html = '';
-      fKeys.forEach(firma => {
-        const anaItems = G[firma].filter(i => !window.isV(i.numune));
-        const varItems = G[firma].filter(i => window.isV(i.numune));
-        const finalItems = [];
-        const usedVarIds = new Set();
-
-        anaItems.forEach(ana => {
-          finalItems.push(ana);
-          const anaKod = window.dName(ana.numune);
-          varItems.forEach(v => {
-            if(usedVarIds.has(v.id)) return;
-            const pc = (v.aciklama || '').split('|')[0];
-            if(pc === anaKod || (v.aciklama||'').startsWith(anaKod+'|')) {
-              usedVarIds.add(v.id); finalItems.push(v);
-            }
-          });
-        });
-        varItems.filter(v => !usedVarIds.has(v.id)).forEach(v => finalItems.push(v));
-
-        html += `<div class="card"><div class="card-header"><span style="font-weight: 800; font-size: 15px; cursor: pointer;" onclick="window.setFirmaFilter('${firma}')">🏢 ${firma}</span><span style="font-size: 12px; font-weight: 700; color: var(--text-sec); background: #fff; border: 1px solid var(--border); padding: 4px 10px; border-radius: 8px;">${finalItems.length} Kayıt</span></div><div>`;
-
-        finalItems.forEach(item => {
-          const isVariant = window.isV(item.numune);
-          const isSel = window.state.selectedIds.has(String(item.id));
-          const note = (item.aciklama || '').split('|').pop() || '';
-          const photos = window.state.photoCache[item.id] || [];
-
-          html += `
-            <div class="list-item ${isVariant ? 'variant' : ''}" style="background: ${isSel ? '#F0F9FF' : 'transparent'}">
-              <input type="checkbox" ${isSel ? 'checked' : ''} onclick="window.toggleSelection('${item.id}')" style="width: 16px; height: 16px; cursor: pointer; margin-top: 4px; flex-shrink: 0;" />
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
-                  <h4 style="font-size: 14px; font-weight: 700; margin: 0; word-break: break-word;">${window.dName(item.numune) || 'İsimsiz'} ${item.fiyat ? `<span style="margin-left: 8px; font-family: monospace; font-size: 12px; color: #15803D; background: #DCFCE7; padding: 2px 6px; border-radius: 4px; border: 1px solid #BBF7D0;">${item.fiyat}</span>` : ''}</h4>
-                  <span style="font-size: 11px; font-weight: 500; color: var(--text-sec); white-space: nowrap;">${window.formatDate(item.updated_at || item.created_at)}</span>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                  <input type="text" value="${note}" placeholder="Not ekle..." onblur="window.updateNote('${item.id}', this.value, ${isVariant})" class="input" style="flex: 1; min-width: 150px; padding: 8px 10px; border-radius: 8px;" />
-                  <select onchange="window.updateField('${item.id}', 'durum', this.value)" class="status-badge ${window.getStatusStyle(item.durum)}" style="padding: 8px 28px 8px 10px; font-size: 12px; appearance: none; outline: none; cursor: pointer; background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 6px center; background-repeat: no-repeat; background-size: 16px 16px;">
-                    ${window.state.VALID_STATUS.map(s => `<option value="${s}" ${item.durum === s ? 'selected' : ''}>${s}</option>`).join('')}
-                  </select>
-                  <div style="display: flex; gap: 4px;">
-                    <label class="btn-icon" style="position: relative; ${photos.length ? 'background: #ECFEFF; color: var(--primary);' : ''}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                      ${photos.length ? '<span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; border: 2px solid #fff;"></span>' : ''}
-                      <input type="file" accept="image/*" multiple onchange="window.handlePhotoUpload(this, '${item.id}')" style="display: none;" />
-                    </label>
-                    <button onclick="window.openEditDrawer('${item.id}')" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-                    <button onclick="window.updateField('${item.id}', 'arsiv', ${!item.arsiv})" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><line x1="10" x2="14" y1="12" y2="12"/></svg></button>
-                    <button onclick="window.deleteSample('${item.id}')" class="btn-icon" style="color: var(--red);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-                  </div>
-                </div>`;
-          if(photos.length > 0) {
-            html += `<div class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.05);">`;
-            photos.forEach((p, idx) => {
-              html += `<div style="position: relative; flex-shrink: 0;"><img src="${p.url}" onclick="window.openPhotoViewer('${item.id}', ${idx})" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: pointer;" /><button onclick="window.deletePhoto('${item.id}', '${p.path}')" style="position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: var(--red); color: #fff; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>`;
-            });
-            html += `</div>`;
-          }
-          html += `</div></div>`;
-        });
-        html += `</div></div>`;
-      });
-      container.innerHTML = html;
-
-      const ba = document.getElementById('bulkActions');
-      if(window.state.selectedIds.size > 0) {
-        document.getElementById('selCount').innerText = window.state.selectedIds.size;
-        ba.style.display = 'flex';
-      } else ba.style.display = 'none';
-    };
-
-    window.updateField = async function(id, field, val) {
-      const qId = isNaN(id) ? id : Number(id); 
-      const {error} = await window.dbClient.from('numuneler').update({ [field]: val }).eq('id', qId);
-      if(error) { window.showToast('Hata: ' + error.message, 'err'); return; }
-      window.state.samples = window.state.samples.map(i => String(i.id) === String(id) ? { ...i, [field]: val } : i);
-      window.renderSamples();
-      window.showToast('Güncellendi');
-    };
-
-    window.updateNote = async function(id, noteVal, isVar) {
-      const item = window.state.samples.find(i => String(i.id) === String(id));
-      if(!item) return;
-      let finalNote = noteVal;
-      if(isVar) { const pc = (item.aciklama||'').split('|')[0]; finalNote = `${pc}|${noteVal}`; }
-      await window.updateField(id, 'aciklama', finalNote);
-    };
-
-    window.toggleSelection = function(id) {
-      const idStr = String(id);
-      if(window.state.selectedIds.has(idStr)) window.state.selectedIds.delete(idStr); 
-      else window.state.selectedIds.add(idStr);
-      window.renderSamples();
-    };
-
-    window.clearSelection = function() { 
-      window.state.selectedIds.clear(); 
-      window.renderSamples(); 
-    };
-
-    window.bulkUpdateStatus = async function(st) {
-      const ids = Array.from(window.state.selectedIds);
-      await window.dbClient.from('numuneler').update({ durum: st }).in('id', ids.map(Number));
-      window.state.samples = window.state.samples.map(i => ids.includes(String(i.id)) ? { ...i, durum: st } : i);
-      window.state.selectedIds.clear();
-      window.renderSamples();
-      window.showToast('Toplu güncellendi');
-    };
-
-    window.bulkDelete = async function() {
-      if(!confirm('Seçili kayıtlar silinsin mi?')) return;
-      const ids = Array.from(window.state.selectedIds);
-      await window.dbClient.from('numuneler').delete().in('id', ids.map(Number));
-      window.state.samples = window.state.samples.filter(i => !ids.includes(String(i.id)));
-      window.state.selectedIds.clear();
-      window.renderSamples();
-      window.showToast('Kayıtlar silindi');
-    };
-
-    window.deleteSample = async function(id) {
-      if(!confirm('Kayıt silinsin mi?')) return;
-      const qId = isNaN(id) ? id : Number(id);
-      await window.dbClient.from('numuneler').delete().eq('id', qId);
-      window.state.samples = window.state.samples.filter(i => String(i.id) !== String(id));
-      window.state.selectedIds.delete(String(id));
-      window.renderSamples();
-      window.showToast('Silindi');
-    };
-
-    window.openPhotoViewer = function(sampleId, index) {
-      window.state.currentPvPhotos = window.state.photoCache[sampleId] || [];
-      window.state.currentPvIndex = index;
-      if(window.state.currentPvPhotos.length === 0) return;
-      document.getElementById('pvImage').src = window.state.currentPvPhotos[index].url;
-      document.getElementById('pvCounter').innerText = `${index + 1} / ${window.state.currentPvPhotos.length}`;
-      document.getElementById('photoViewer').classList.add('open');
-    };
-
-    window.closePhotoViewer = function() { document.getElementById('photoViewer').classList.remove('open'); };
-    window.pvNav = function(dir) { window.state.currentPvIndex += dir; if(window.state.currentPvIndex < 0) window.state.currentPvIndex = 0; if(window.state.currentPvIndex >= window.state.currentPvPhotos.length) window.state.currentPvIndex = window.state.currentPvPhotos.length - 1; document.getElementById('pvImage').src = window.state.currentPvPhotos[window.state.currentPvIndex].url; document.getElementById('pvCounter').innerText = `${window.state.currentPvIndex + 1} / ${window.state.currentPvPhotos.length}`; };
-    window.deleteCurrentPhoto = async function() { const p = window.state.currentPvPhotos[window.state.currentPvIndex]; await window.deletePhoto(p.sampleId, p.path); window.closePhotoViewer(); };
-
-    window.openDrawer = function() {
-      window.state.editId = null;
-      document.getElementById('drawerTitle').innerText = '📦 Yeni Kayıt';
-      document.getElementById('formFirma').value = window.state.firmaBanner || '';
-      window.state.formRows = [{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }];
-      document.getElementById('addRowBtn').style.display = 'block';
-      window.renderFormRows();
-      document.getElementById('drawerOverlay').classList.add('open');
-      document.getElementById('drawer').classList.add('open');
-    };
-
-    window.openEditDrawer = function(id) {
-      const item = window.state.samples.find(i => String(i.id) === String(id));
-      if(!item) return;
-      window.state.editId = id;
-      document.getElementById('drawerTitle').innerText = '✏️ Kaydı Düzenle';
-      document.getElementById('formFirma').value = item.firma || ''; 
-      
-      const v = window.isV(item.numune);
-      const acParts = (item.aciklama||'').split('|');
-      const note = acParts.length > 1 ? acParts[1] : item.aciklama;
-      window.state.formRows = [{ id: Date.now(), kod: window.dName(item.numune), fiyat: (item.fiyat||'').replace(/^\$/,''), var: '', not: note||'' }];
-      
-      document.getElementById('addRowBtn').style.display = 'none';
-      window.renderFormRows();
-      document.getElementById('drawerOverlay').classList.add('open');
-      document.getElementById('drawer').classList.add('open');
-    };
-
-    window.closeDrawer = function() { document.getElementById('drawerOverlay').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); };
-    window.addFormRow = function() { window.state.formRows.push({ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }); window.renderFormRows(); };
-    window.removeFormRow = function(id) { window.state.formRows = window.state.formRows.filter(r => r.id !== id); window.renderFormRows(); };
-    window.updateFormRow = function(id, field, val) { window.state.formRows = window.state.formRows.map(r => r.id === id ? { ...r, [field]: val } : r); };
+  const notEkle = async () => {
+    if(!yeniNot.trim()) return;
+    setLoading(true);
     
-    window.renderFormRows = function() {
-      let html = '';
-      window.state.formRows.forEach((r, i) => {
-        html += `
-          <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; position: relative;">
-            ${!window.state.editId && window.state.formRows.length > 1 ? `<button onclick="window.removeFormRow(${r.id})" style="position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-sec); cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>` : ''}
-            
-            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Kod & Fiyat</label>
-            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-              <input type="text" value="${r.kod}" oninput="window.updateFormRow(${r.id}, 'kod', this.value)" placeholder="Örn: X-100" class="input" style="flex: 2; padding: 12px 16px;" />
-              <input type="text" value="${r.fiyat}" oninput="window.updateFormRow(${r.id}, 'fiyat', this.value)" placeholder="Fiyat ($)" class="input" style="flex: 1; padding: 12px 16px; font-family: monospace;" />
+    try {
+      const { data, error } = await supabase.from('notlar').insert([{ icerik: yeniNot }]).select();
+      if (!error && data) {
+        setNotlar([data[0], ...notlar]);
+      } else {
+        // Fallback for local testing if table doesn't exist
+        const newLocalNote = { id: Date.now().toString(), icerik: yeniNot, created_at: new Date().toISOString() };
+        setNotlar([newLocalNote, ...notlar]);
+      }
+      setYeniNot("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const notSil = async (id) => {
+    try {
+      await supabase.from('notlar').delete().eq('id', id);
+      setNotlar(notlar.filter(x => x.id !== id));
+    } catch (err) {}
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="font-bold text-lg mb-4 text-[#1E2D3D]">Hızlı Not Ekle</h3>
+        <div className="flex gap-3">
+          <input 
+            type="text" 
+            value={yeniNot}
+            onChange={(e) => setYeniNot(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && notEkle()}
+            placeholder="Aklınıza gelen bir şeyi yazın..." 
+            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#0891B2] transition"
+            disabled={loading}
+          />
+          <button onClick={notEkle} disabled={loading} className="bg-[#1E2D3D] text-white px-8 py-3 rounded-lg hover:bg-black font-medium transition disabled:opacity-50">
+            {loading ? '...' : 'Kaydet'}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        {notlar.map(n => (
+          <div key={n.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative group hover:border-[#0891B2] transition-colors">
+            <p className="text-gray-800 pr-8 text-lg">{n.icerik || n.text}</p>
+            <span className="text-xs text-gray-400 mt-3 block flex items-center gap-1">
+              <Book size={12}/> {new Date(n.created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+            </span>
+            <button 
+              onClick={() => notSil(n.id)} 
+              className="absolute top-4 right-4 p-2 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+              title="Notu Sil"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================
+   6. DÖNÜŞTÜRÜCÜ MODÜLÜ
+======================================================== */
+function DonusturucuTab() {
+  const [kg, setKg] = useState('');
+  const [gr, setGr] = useState(150);
+  const [en, setEn] = useState(180);
+  
+  return (
+    <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+      <div className="flex items-center gap-3 mb-6 border-b pb-4">
+        <div className="p-3 bg-blue-50 rounded-lg text-[#0891B2]"><RefreshCw size={24}/></div>
+        <h3 className="text-xl font-bold text-[#1E2D3D]">Tekstil Birim Dönüştürücü</h3>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Miktar (Kg)</label>
+            <input type="number" placeholder="Örn: 100" value={kg} onChange={e=>setKg(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0891B2] outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Kumaş Gramajı (gr/m²)</label>
+            <input type="number" value={gr} onChange={e=>setGr(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0891B2] outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Kumaş Eni (cm) - Opsiyonel</label>
+            <input type="number" value={en} onChange={e=>setEn(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0891B2] outline-none" />
+          </div>
+        </div>
+        
+        <div className="bg-[#F8FAFC] p-6 rounded-xl border border-gray-200 flex flex-col justify-center">
+          <h4 className="text-gray-500 font-medium mb-4 text-center">Hesaplanan Sonuçlar</h4>
+          
+          {kg ? (
+            <div className="space-y-4">
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 text-center">
+                <span className="block text-xs text-gray-400 uppercase tracking-wider mb-1">Uzunluk (Metre)</span>
+                <span className="text-2xl font-bold text-[#0891B2]">{(kg * 1000 / gr).toFixed(2)} m</span>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 text-center">
+                <span className="block text-xs text-gray-400 uppercase tracking-wider mb-1">İngiliz Birimi (Lbs)</span>
+                <span className="text-2xl font-bold text-[#1E2D3D]">{(kg * 2.20462).toFixed(2)} lbs</span>
+              </div>
             </div>
+          ) : (
+            <div className="text-center text-gray-400 italic">
+              Sonuçları görmek için kg değeri giriniz.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            ${!window.state.editId ? `
-            <div style="margin-bottom: 16px;">
-              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Varyantlar (Virgülle)</label>
-              <input type="text" value="${r.var}" oninput="window.updateFormRow(${r.id}, 'var', this.value)" placeholder="Siyah, Beyaz..." class="input" style="padding: 12px 16px;" />
-            </div>` : ''}
+/* ========================================================
+   7. MALİYET MODÜLÜ
+======================================================== */
+function MaliyetTab() {
+  const [iplikFiyati, setIplikFiyati] = useState(3.50);
+  const [ormeFiyati, setOrmeFiyati] = useState(0.40);
+  const [boyaFiyati, setBoyaFiyati] = useState(1.20);
+  const [fireOrani, setFireOrani] = useState(5);
 
-            <div>
-              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Not</label>
-              <input type="text" value="${r.not}" oninput="window.updateFormRow(${r.id}, 'not', this.value)" placeholder="Açıklama girin..." class="input" style="padding: 12px 16px;" />
+  const toplamMaliyet = (parseFloat(iplikFiyati || 0) + parseFloat(ormeFiyati || 0) + parseFloat(boyaFiyati || 0)) * (1 + (parseFloat(fireOrani || 0)/100));
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-8 border-b pb-4">
+          <div className="p-3 bg-[#1E2D3D] rounded-lg text-white"><Calculator size={24}/></div>
+          <h3 className="text-xl font-bold text-[#1E2D3D]">Detaylı Kumaş Maliyet Hesaplayıcı</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-5">
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">İplik Maliyeti</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                <input type="number" step="0.1" value={iplikFiyati} onChange={e=>setIplikFiyati(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-[#0891B2] outline-none text-lg" />
+              </div>
+            </div>
+            
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Örme Maliyeti</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                <input type="number" step="0.1" value={ormeFiyati} onChange={e=>setOrmeFiyati(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-[#0891B2] outline-none text-lg" />
+              </div>
+            </div>
+            
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Boya / Apre Maliyeti</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                <input type="number" step="0.1" value={boyaFiyati} onChange={e=>setBoyaFiyati(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-[#0891B2] outline-none text-lg" />
+              </div>
+            </div>
+            
+            <div className="relative">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Fire Oranı</label>
+              <div className="relative">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                <input type="number" value={fireOrani} onChange={e=>setFireOrani(e.target.value)} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#0891B2] outline-none text-lg" />
+              </div>
             </div>
           </div>
-        `;
-      });
-      document.getElementById('formRowsContainer').innerHTML = html;
-    };
 
-    window.showFirmaDropdown = function() { document.getElementById('firmaDropdown').style.display = 'block'; };
-    window.filterFirmaDropdown = function() { const q = document.getElementById('formFirma').value.toLowerCase(); const dd = document.getElementById('firmaDropdown'); let html = ''; window.state.customers.filter(c => c.toLowerCase().includes(q)).slice(0,10).forEach(c => { html += `<div onclick="document.getElementById('formFirma').value='${c}'; document.getElementById('firmaDropdown').style.display='none';" style="padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px; font-weight: 600; cursor: pointer;">${c}</div>`; }); dd.innerHTML = html; dd.style.display = 'block'; };
-
-    window.saveData = async function() {
-      const f = document.getElementById('formFirma').value.toUpperCase().trim();
-      if(!f) { window.showToast('Lütfen firma adı girin', 'err'); return; }
-
-      const btn = document.getElementById('saveBtn');
-      btn.innerText = 'Kaydediliyor...';
-      btn.disabled = true;
-
-      try {
-        if(window.state.editId) {
-          const r = window.state.formRows[0];
-          const item = window.state.samples.find(i => String(i.id) === String(window.state.editId));
-          const v = window.isV(item.numune);
-          let ac = r.not;
-          if(v) { const pc = (item.aciklama||'').split('|')[0]; ac = `${pc}|${r.not}`; }
-
-          const payload = { firma: f, numune: v ? '↳ ' + r.kod : r.kod, fiyat: r.fiyat ? (r.fiyat.startsWith('$') ? r.fiyat : '$'+r.fiyat) : '', aciklama: ac };
-          
-          const qId = isNaN(window.state.editId) ? window.state.editId : Number(window.state.editId);
-          await window.dbClient.from('numuneler').update(payload).eq('id', qId);
-          window.state.samples = window.state.samples.map(i => String(i.id) === String(window.state.editId) ? { ...i, ...payload } : i); 
-        } else {
-          const pkg = [];
-          window.state.formRows.forEach(r => {
-            const k = r.kod.trim(), pr = r.fiyat.trim(), nt = r.not.trim(), vStr = r.var.trim();
-            if(!k) return;
-            const fs = pr ? (pr.startsWith('$') ? pr : '$'+pr) : '';
-            pkg.push({ firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
-            if(vStr) { vStr.split(',').forEach(v => { const vt = v.trim(); if(vt) pkg.push({ firma: f, numune: '↳ '+vt, fiyat: fs, aciklama: `${k}|${nt}`, durum: 'Beklemede', arsiv: false }); }); }
-          });
-          const {data} = await window.dbClient.from('numuneler').insert(pkg).select();
-          if(data) window.state.samples.unshift(...data);
-        }
-        
-        window.closeDrawer();
-        window.renderAllViews();
-        window.showToast('Başarıyla kaydedildi', 'ok');
-      } catch (err) { window.showToast('Hata oluştu', 'err'); } 
-      finally { btn.innerText = 'Kaydet'; btn.disabled = false; }
-    };
-
-    window.globalSearch = function() { const q = document.getElementById('globalSearch').value; document.getElementById('searchInput').value = q; window.renderSamples(); };
-    window.exportExcel = async function() { const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('Numuneler'); sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']); let exp = [...window.state.samples]; if (window.state.filter === 'Arşiv') exp = exp.filter(i => i.arsiv === true); else { exp = exp.filter(i => i.arsiv !== true); if (window.state.filter !== 'Hepsi') exp = exp.filter(i => i.durum === window.state.filter); } if (window.state.firmaFilter) exp = exp.filter(i => (i.firma || '').toUpperCase() === window.state.firmaFilter.toUpperCase()); exp.sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => { const v = window.isV(i.numune); const pc = (i.aciklama||'').split('|')[0]; const note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama; const excelAd = v ? (pc ? pc+'-'+window.dName(i.numune) : window.dName(i.numune)) : window.dName(i.numune); const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : ''; sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]); }); const buf = await wb.xlsx.writeBuffer(); const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`; a.click(); };
-
-    // ==========================================
-    // 6. BAŞLATICI (INIT)
-    // ==========================================
-    window.onload = function() {
-      window.fetchData();
-    };
-
-  </script>
-</body>
-</html>
+          <div className="bg-gradient-to-br from-[#1E2D3D] to-[#2A4055] text-white p-8 rounded-2xl flex flex-col justify-between shadow-lg relative overflow-hidden">
+            {/* Dekoratif Arka Plan Çizgileri */}
+            <div className="absolute -right-10 -top-10 opacity-10"><Calculator size={200} /></div>
+            
+            <div className="relative z-10">
+              <p className="text-gray-300 font-medium tracking-wide uppercase text-sm mb-2">Tahmini Toplam Maliyet</p>
+              <div className="text-6xl font-black text-white mb-2 tracking-tighter">
+                ${isNaN(toplamMaliyet) ? '0.00' : toplamMaliyet.toFixed(2)}
+              </div>
+              <p className="text-[#0891B2] font-medium text-lg">Kilogram Başına</p>
+            </div>
+            
+            <div className="mt-8 pt-6 border-t border-gray-600 relative z-10">
+              <button className="w-full bg-[#0891B2] hover:bg-[#067a96] text-white py-4 rounded-xl font-bold text-lg transition-all shadow-md flex items-center justify-center gap-2">
+                <Save size={20}/> Teklife Ekle & Kaydet
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 ```
