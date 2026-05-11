@@ -89,6 +89,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
+  
+  // TASARIM YÜKLENDİ Mİ KONTROLÜ
+  const [isCssLoaded, setIsCssLoaded] = useState(false);
 
   const [customers, setCustomers] = useState([]);
   const [samples, setSamples] = useState([]);
@@ -103,11 +106,22 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // Supabase Yükleme
+  // Supabase ve TAILWIND CSS Yükleme
   useEffect(() => {
     let isMounted = true;
     let timeoutId;
 
+    // 1. Önce Tailwind CSS'i Zorla Yükle
+    if (!window.tailwind) {
+      const twScript = document.createElement('script');
+      twScript.src = 'https://cdn.tailwindcss.com';
+      twScript.onload = () => { if (isMounted) setIsCssLoaded(true); };
+      document.head.appendChild(twScript);
+    } else {
+      setIsCssLoaded(true);
+    }
+
+    // 2. Veri Yükleme Mantığı
     const applyMockData = () => {
       if(!isMounted) return;
       setCustomers(MOCK_CUSTOMERS);
@@ -178,6 +192,17 @@ export default function App() {
     setIsSidebarOpen(false); // Mobilde menüyü kapat
   };
 
+  // TASARIM YÜKLENMEDEN EKRANI AÇMA
+  if (!isCssLoaded) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F3F5F7', fontFamily: 'sans-serif', color: '#4A6880' }}>
+        <div style={{ width: 40, height: 40, border: '4px solid #0891B2', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 16 }}></div>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+        <p style={{ fontWeight: 600 }}>Tasarım Dosyaları Yükleniyor...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <style>{`
@@ -188,8 +213,8 @@ export default function App() {
         .hide-scroll::-webkit-scrollbar { display: none; }
       `}</style>
 
-      {/* Ana Konteyner - Tam Ekran (Responsive flex) */}
-      <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden relative">
+      {/* Ana Konteyner - Tam Ekran (Responsive flex) 100dvh ile mobil adres çubuğu sorunu çözüldü */}
+      <div className="flex w-full bg-slate-50 text-slate-900 overflow-hidden relative" style={{ height: '100dvh' }}>
         
         {/* Mobil Karartma (Overlay) */}
         {isSidebarOpen && (
@@ -322,7 +347,7 @@ export default function App() {
 }
 
 // ============================================================================
-// NUMUNELER GÖRÜNÜMÜ (Tamamen Tailwind ile Responsive)
+// NUMUNELER GÖRÜNÜMÜ
 // ============================================================================
 function SamplesView({ initialData, customers, offline }) {
   const [data, setData] = useState([]);
