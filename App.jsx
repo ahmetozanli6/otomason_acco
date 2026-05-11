@@ -279,24 +279,38 @@
 
   <script>
     // Supabase Config
-    const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // State
-    let samples = [];
-    let customers = [];
-    let photoCache = {};
-    let filter = 'Hepsi';
-    let sortType = 'date';
-    let firmaFilter = '';
-    let selectedIds = new Set();
-    let editId = null;
-    let formRows = [];
-    let currentPvPhotos = [];
-    let currentPvIndex = 0;
+    var samples = [];
+    var customers = [];
+    var photoCache = {};
+    var filter = 'Hepsi';
+    var sortType = 'date';
+    var firmaFilter = '';
+    var selectedIds = new Set();
+    var editId = null;
+    var formRows = [];
+    var currentPvPhotos = [];
+    var currentPvIndex = 0;
 
-    const VALID_STATUS = ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'];
+    var VALID_STATUS = ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'];
+
+    // YARDIMCILAR
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        var d = new Date(dateStr), now = new Date();
+        var diff = Math.floor((now - d) / 86400000);
+        if (diff === 0) return 'bugün';
+        if (diff === 1) return 'dün';
+        if (diff < 7) return diff + 'g';
+        if (diff < 30) return Math.floor(diff / 7) + 'h';
+        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+      } catch (e) { return dateStr; }
+    }
 
     // UI Helpers
     function toggleSidebar() {
