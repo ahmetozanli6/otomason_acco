@@ -1,11 +1,10 @@
-```react
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR (Saf SVG - Boyut ve Renkler Garantili)
+// İKONLAR (Saf SVG)
 // ============================================================================
-const SvgIcon = ({ children, size = 20, color = 'currentColor', className = '' }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+const SvgIcon = ({ children, size = 20, color = 'currentColor', style = {} }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
     {children}
   </svg>
 );
@@ -32,8 +31,20 @@ const Archive = (p) => <SvgIcon {...p}><rect width="20" height="5" x="2" y="3" r
 const FileBarChart = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></SvgIcon>;
 
 // ============================================================================
-// SUPABASE & MOCK VERİLER
+// TEMA RENKLERİ VE SABİTLER (DOĞRUDAN INLINE KULLANILACAK)
 // ============================================================================
+const T = {
+  bg: '#F3F5F7',
+  surface: '#FFFFFF',
+  border: 'rgba(30,45,61,0.15)',
+  text: '#0A1520',
+  textSec: '#64748B',
+  primary: '#0891B2',
+  navy: '#0F172A',
+  red: '#DC2626',
+  font: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+};
+
 const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
 const PHOTO_BUCKET = 'numune-photos';
@@ -69,78 +80,12 @@ const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 // ============================================================================
-// GÖMÜLÜ SAF CSS KODLARI (JavaScript ile Zorla Enjekte Edilecek)
-// ============================================================================
-const APP_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-  
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body, html, #root { width: 100%; height: 100%; font-family: 'Inter', sans-serif; background-color: #F3F5F7; color: #0A1520; overflow: hidden; }
-  
-  .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-  .hide-scroll::-webkit-scrollbar { display: none; }
-
-  .app-container { display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative; }
-  
-  .sidebar { width: 260px; background-color: #0F172A; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); }
-  .sidebar-mobile-hidden { transform: translateX(-100%); position: absolute; inset: 0 auto 0 0; }
-  .sidebar-mobile-open { transform: translateX(0); position: absolute; inset: 0 auto 0 0; }
-  .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-  .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
-  .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
-  .nav-button.active { background: linear-gradient(135deg, #0891B2, #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
-
-  .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: #F3F5F7; }
-  .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; }
-  
-  .header { height: 64px; background: #fff; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
-  .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
-
-  @media (min-width: 1024px) {
-    .sidebar-mobile-hidden { transform: translateX(0); position: relative; }
-    .menu-toggle-btn { display: none !important; }
-    .overlay { display: none !important; }
-  }
-
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-  .btn:active { transform: scale(0.96); }
-  .btn-primary { background-color: #0891B2; color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
-  .btn-primary:hover { background-color: #0E7490; }
-  .btn-outline { background-color: #fff; color: #4A6880; border: 1px solid rgba(30,45,61,0.2); }
-  .btn-outline:hover { background-color: #F8FAFC; color: #0A1520; }
-  .btn-icon { background: #fff; border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: #4A6880; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-  .btn-icon:hover { background: #F3F5F7; color: #0A1520; }
-
-  .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: #fff; }
-  .input:focus { border-color: #0891B2; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
-  
-  .card { background: #fff; border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
-  .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
-  .list-item:hover { background: #F8FAFC; }
-  .list-item:last-child { border-bottom: none; }
-  .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
-
-  .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: #fff; color: #4A6880; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
-  .chip-filter.active { background: #0F172A; color: #fff; border-color: #0F172A; }
-  
-  .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
-  .drawer.open { transform: translateY(0); }
-  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .anim-spin { animation: spin 1s linear infinite; }
-  .anim-fade { animation: fadeUp 0.3s ease forwards; }
-`;
-
-// ============================================================================
 // ANA UYGULAMA (App.jsx Root)
 // ============================================================================
 export default function App() {
   const [activeTab, setActiveTab] = useState('samples'); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [isLoading, setIsLoading] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
@@ -158,14 +103,11 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // GÜVENLİ CSS ENJEKSİYONU (Bunu hiçbir sistem engelleyemez)
+  // Ekran Boyutu Dinleyicisi
   useEffect(() => {
-    const styleEl = document.createElement('style');
-    styleEl.textContent = APP_STYLES;
-    document.head.appendChild(styleEl);
-    return () => {
-      document.head.removeChild(styleEl);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Supabase Yükleme ve Veri Çekme
@@ -240,90 +182,143 @@ export default function App() {
 
   const handleNavClick = (id) => {
     setActiveTab(id);
-    setIsSidebarOpen(false); 
+    if(isMobile) setIsSidebarOpen(false); 
   };
 
+  // Saf Inline Style Container
   return (
-    <div className="app-container">
-      {isSidebarOpen && <div className="overlay" onClick={() => setIsSidebarOpen(false)} />}
+    <div style={{ display: 'flex', width: '100%', height: '100vh', backgroundColor: T.bg, color: T.text, fontFamily: T.font, overflow: 'hidden', boxSizing: 'border-box' }}>
+      
+      {/* Scrollbar gizlemek ve basit animasyonlar için sadece 1 tane minik stil */}
+      <style>{`
+        * { box-sizing: border-box; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+        .btn-hover:hover { filter: brightness(0.9); transform: translateY(-1px); }
+        .row-hover:hover { background-color: #F8FAFC !important; }
+      `}</style>
+
+      {/* Mobil Menü Arkaplan Karartması */}
+      {isMobile && isSidebarOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.6)', zIndex: 40 }} onClick={() => setIsSidebarOpen(false)} />
+      )}
 
       {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-hidden'}`}>
-        <div className="sidebar-header">
+      <aside style={{
+        width: '260px',
+        backgroundColor: T.navy,
+        color: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        position: isMobile ? 'fixed' : 'relative',
+        top: 0, left: 0, bottom: 0,
+        transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+        transition: 'transform 0.3s ease',
+        zIndex: 50,
+        borderRight: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        {/* Sidebar Başlık */}
+        <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0891B2, #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(8,145,178,0.4)' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: T.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={18} color="#fff" />
             </div>
-            <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+            <span style={{ fontSize: '18px', fontWeight: '800' }}>
               Yanteks<span style={{ color: '#38BDF8' }}>Pro</span>
             </span>
           </div>
-          <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
-            <X size={24} />
-          </button>
+          {isMobile && (
+            <button onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={24} /></button>
+          )}
         </div>
         
+        {/* Menü İtemleri */}
         <nav className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
           <p style={{ padding: '0 16px 8px', fontSize: '10px', fontWeight: '700', color: '#64748B', letterSpacing: '1px' }}>ANA MENÜ</p>
-          {navItems.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => handleNavClick(id)} className={`nav-button ${activeTab === id ? 'active' : ''}`}>
-              <Icon size={18} color={activeTab === id ? '#fff' : 'currentColor'} />
-              <span>{label}</span>
-            </button>
-          ))}
+          {navItems.map(({ id, label, icon: Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button 
+                key={id} 
+                onClick={() => handleNavClick(id)} 
+                className="btn-hover"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', marginBottom: '4px',
+                  borderRadius: '10px', border: 'none', cursor: 'pointer', textAlign: 'left',
+                  backgroundColor: active ? T.primary : 'transparent',
+                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
+                  fontSize: '14px', fontWeight: '600', transition: 'all 0.2s'
+                }}
+              >
+                <Icon size={18} color={active ? '#fff' : 'currentColor'} />
+                <span>{label}</span>
+              </button>
+            );
+          })}
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        <header className="header">
+      {/* Main Content Area */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, backgroundColor: T.bg }}>
+        
+        {/* Header */}
+        <header style={{ height: '64px', backgroundColor: T.surface, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', flexShrink: 0, zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button className="menu-toggle-btn btn-icon" onClick={() => setIsSidebarOpen(true)} style={{ border: 'none', padding: '4px' }}>
-              <Menu size={24} color="#0A1520" />
-            </button>
+            {isMobile && (
+              <button onClick={() => setIsSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                <Menu size={24} color={T.text} />
+              </button>
+            )}
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0', display: window.innerWidth > 600 ? 'block' : 'none' }}>Sisteme hoş geldiniz, iyi çalışmalar.</p>
+              {!isMobile && <p style={{ fontSize: '12px', color: T.textSec, margin: '2px 0 0 0' }}>Sisteme hoş geldiniz.</p>}
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-              <Search size={16} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input type="text" placeholder="Arama yap..." className="input" style={{ paddingLeft: '36px', width: '240px', borderRadius: '20px' }} />
+            {!isMobile && (
+              <div style={{ position: 'relative' }}>
+                <Search size={16} color={T.textSec} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input type="text" placeholder="Arama yap..." style={{ padding: '8px 12px 8px 36px', width: '220px', borderRadius: '20px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '13px' }} />
+              </div>
+            )}
+            <div style={{ padding: '8px', cursor: 'pointer' }}>
+              <RefreshCw size={18} className={isLoading ? 'spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
             </div>
-            <button className="btn-icon" title="Durum">
-              <RefreshCw size={18} className={isLoading ? 'anim-spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
-            </button>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #0891B2, #0284C7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: T.primary, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px' }}>
               YP
             </div>
           </div>
         </header>
 
-        <div className="scroll-area hide-scroll">
+        {/* Scrollable Content */}
+        <div className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px', position: 'relative' }}>
+          
           {dbError && (
-            <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <strong style={{ color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}><AlertCircle size={16}/> Sistem Uyarısı</strong>
               <span style={{ color: '#92400E', fontSize: '13px' }}>{dbError}</span>
             </div>
           )}
           
           {isLoading ? (
-            <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#0891B2' }}>
-              <RefreshCw size={32} className="anim-spin" />
-              <span style={{ fontWeight: '600', color: '#4A6880' }}>Sistem Hazırlanıyor...</span>
+            <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: T.primary }}>
+              <RefreshCw size={32} className="spin" />
+              <span style={{ fontWeight: '600', color: T.textSec }}>Sistem Hazırlanıyor...</span>
             </div>
           ) : (
             <>
-              {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
+              {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} isMobile={isMobile} />}
               {activeTab !== 'samples' && (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
-                  <div style={{ width: '80px', height: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
-                    <Package size={40} color="#0891B2" />
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  <div style={{ width: '80px', height: '80px', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                    <Package size={40} color={T.primary} />
                   </div>
-                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0A1520', marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
-                  <p style={{ fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
+                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: T.text, marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
+                  <p style={{ fontSize: '14px', color: T.textSec, maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
                 </div>
               )}
             </>
@@ -335,9 +330,9 @@ export default function App() {
 }
 
 // ============================================================================
-// NUMUNELER GÖRÜNÜMÜ
+// NUMUNELER GÖRÜNÜMÜ (Tamamen Inline Styles ile)
 // ============================================================================
-function SamplesView({ initialData, customers, offline }) {
+function SamplesView({ initialData, customers, offline, isMobile }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   
@@ -549,7 +544,7 @@ function SamplesView({ initialData, customers, offline }) {
 
   const toggleArchive = async (id, currentVal) => {
     await updateField(id, 'arsiv', !currentVal);
-    showToast(!currentVal ? '📂 Arşivlendi' : '↩ Çıkarıldı', 'ok');
+    showToast(!currentVal ? 'Arşivlendi' : 'Çıkarıldı', 'ok');
   };
 
   const deleteSample = async (id) => {
@@ -709,16 +704,17 @@ function SamplesView({ initialData, customers, offline }) {
     return map[st] || map['Beklemede'];
   };
 
+  const T = { bg: '#F3F5F7', surface: '#FFFFFF', border: 'rgba(30,45,61,0.15)', text: '#0A1520', textSec: '#64748B', primary: '#0891B2', navy: '#0F172A', red: '#DC2626' };
   const activeCount = data.filter(i => !i.arsiv).length;
 
   return (
-    <div className="anim-fade" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
       
       {/* 1. Üst Araç Çubuğu */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={openNewDrawer} className="btn btn-primary"><Plus size={18} /> Yeni Ekle</button>
-          <button onClick={exportData} className="btn btn-outline"><FileBarChart size={18} /> Excel</button>
+          <button onClick={openNewDrawer} className="btn-hover" style={{ flex: 1, padding: '10px 16px', backgroundColor: T.primary, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}><Plus size={18} /> Yeni Ekle</button>
+          <button onClick={exportData} className="btn-hover" style={{ flex: 1, padding: '10px 16px', backgroundColor: T.surface, color: T.textSec, border: `1px solid ${T.border}`, borderRadius: '8px', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}><FileBarChart size={18} /> Excel</button>
         </div>
 
         <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
@@ -726,7 +722,7 @@ function SamplesView({ initialData, customers, offline }) {
             const count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? data.filter(i => i.arsiv).length : data.filter(i => !i.arsiv && i.durum === f).length;
             const active = filter === f;
             return (
-              <button key={f} onClick={() => setFilter(f)} className={`chip-filter ${active ? 'active' : ''}`}>
+              <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', border: `1px solid ${active ? T.navy : T.border}`, background: active ? T.navy : T.surface, color: active ? '#fff' : T.textSec, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {f} <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', background: active ? 'rgba(255,255,255,0.2)' : '#F3F5F7' }}>{count}</span>
               </button>
             );
@@ -736,29 +732,29 @@ function SamplesView({ initialData, customers, offline }) {
 
       {/* 2. Toplu İşlemler */}
       {selectedIds.size > 0 && (
-        <div className="anim-fade" style={{ background: '#0F172A', color: '#fff', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+        <div style={{ background: T.navy, color: '#fff', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '24px' }}>
           <span style={{ fontWeight: '700', fontSize: '14px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '8px' }}>{selectedIds.size} Seçili</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı'].map(s => (
               <button key={s} onClick={() => handleBulkStatus(s)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>{s}</button>
             ))}
-            <button onClick={handleBulkDelete} style={{ background: 'rgba(220,38,38,0.2)', color: '#FCA5A5', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+            <button onClick={handleBulkDelete} style={{ background: 'rgba(220,38,38,0.2)', color: '#FCA5A5', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', marginLeft: isMobile ? 0 : '10px' }}>Sil</button>
             <button onClick={() => setSelectedIds(new Set())} style={{ background: 'transparent', border: 'none', color: '#94A3B8', padding: '6px', cursor: 'pointer' }}><X size={16} /></button>
           </div>
         </div>
       )}
 
       {/* 3. Arama ve Sıralama */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', marginBottom: '24px' }}>
+        <div style={{ position: 'relative', flex: 1 }}>
           <Search size={18} color="#94A3B8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-          <input type="text" placeholder="Kayıt arayın..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="input" style={{ paddingLeft: '40px' }} />
-          {searchQuery && <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={16} /></button>}
+          <input type="text" placeholder="Kayıt arayın..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
+          {searchQuery && <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color="#94A3B8" /></button>}
         </div>
         
-        <div style={{ display: 'flex', background: '#fff', border: '1px solid rgba(30,45,61,0.15)', borderRadius: '8px', padding: '4px' }}>
+        <div style={{ display: 'flex', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '8px', padding: '4px' }}>
           {[{id:'date', label:'Tarih'}, {id:'alpha', label:'A-Z'}, {id:'status', label:'Durum'}].map(s => (
-            <button key={s.id} onClick={() => setSort(s.id)} style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', border: 'none', background: sort === s.id ? '#F3F5F7' : 'transparent', color: sort === s.id ? '#0A1520' : '#64748B', cursor: 'pointer' }}>
+            <button key={s.id} onClick={() => setSort(s.id)} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', border: 'none', background: sort === s.id ? '#F3F5F7' : 'transparent', color: sort === s.id ? '#0A1520' : '#64748B', cursor: 'pointer' }}>
               {s.label}
             </button>
           ))}
@@ -775,16 +771,16 @@ function SamplesView({ initialData, customers, offline }) {
       {/* 4. Veri Listesi */}
       <div>
         {groupedData.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: '16px', border: '1px dashed rgba(30,45,61,0.2)' }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: '16px', border: `1px dashed ${T.border}` }}>
             <Package size={48} color="#94A3B8" style={{ opacity: 0.5, marginBottom: '16px' }} />
             <p style={{ fontWeight: '700', color: '#0A1520', fontSize: '16px' }}>Kayıt Bulunamadı</p>
             <p style={{ fontSize: '14px', color: '#64748B', marginTop: '4px' }}>Arama kriterlerini değiştirin veya yeni ekleyin.</p>
           </div>
         ) : (
           groupedData.map(({ firma, items, originalItems }) => (
-            <div key={firma} className="card">
+            <div key={firma} style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${T.border}`, overflow: 'hidden', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               
-              <div className="card-header">
+              <div style={{ background: '#F8FAFC', padding: '16px', borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: '800', fontSize: '15px', color: '#0A1520', cursor: 'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -796,7 +792,7 @@ function SamplesView({ initialData, customers, offline }) {
                     })}
                   </div>
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', padding: '4px 10px', borderRadius: '8px' }}>{items.length} Kayıt</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', background: '#fff', border: `1px solid ${T.border}`, padding: '4px 10px', borderRadius: '8px' }}>{items.length} Kayıt</span>
               </div>
 
               <div>
@@ -809,47 +805,49 @@ function SamplesView({ initialData, customers, offline }) {
                   const photos = photoCache[item.id] || [];
 
                   return (
-                    <div key={item.id} className={`list-item ${v ? 'variant' : ''}`} style={{ background: isSel ? '#F0F9FF' : '' }}>
+                    <div key={item.id} className="row-hover" style={{ padding: '16px', borderBottom: `1px solid rgba(30,45,61,0.06)`, display: 'flex', gap: '16px', background: isSel ? '#F0F9FF' : 'transparent', marginLeft: v ? '32px' : '0', borderLeft: v ? `3px solid ${T.border}` : 'none' }}>
                       <input type="checkbox" checked={isSel} onChange={(e) => {
                         const n = new Set(selectedIds); e.target.checked ? n.add(item.id) : n.delete(item.id); setSelectedIds(n);
-                      }} style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '4px' }} />
+                      }} style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '4px', flexShrink: 0 }} />
                       
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                          <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#0A1520', margin: 0 }}>
+                          <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#0A1520', margin: 0, wordBreak: 'break-word' }}>
                             {dName(item.numune) || 'İsimsiz'}
-                            {item.fiyat && <span style={{ marginLeft: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>{item.fiyat}</span>}
+                            {item.fiyat && <span style={{ marginLeft: '8px', fontFamily: 'monospace', fontSize: '12px', color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px', border: '1px solid #BBF7D0' }}>{item.fiyat}</span>}
                           </h4>
                           <span style={{ fontSize: '11px', fontWeight: '500', color: '#94A3B8', whiteSpace: 'nowrap' }}>{formatDate(item.updated_at || item.created_at)}</span>
                         </div>
                         
-                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '8px', alignItems: isMobile ? 'stretch' : 'center' }}>
                           <input type="text" defaultValue={note} placeholder="Not ekle..." onBlur={(e) => {
                             const val = e.target.value.trim(); if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
-                          }} onKeyDown={e => e.key === 'Enter' && e.target.blur()} className="input" style={{ flex: 1, minWidth: '150px', padding: '6px 10px', fontSize: '12px' }} />
+                          }} onKeyDown={e => e.key === 'Enter' && e.target.blur()} style={{ flex: 1, padding: '8px 10px', fontSize: '13px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none' }} />
                           
-                          <select value={item.durum || 'Beklemede'} onChange={(e) => updateField(item.id, 'durum', e.target.value)} style={{ appearance: 'none', background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '6px 28px 6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', outline: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 6px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px 16px' }}>
-                            {VALID_STATUS.map(st => <option key={st} value={st}>{st}</option>)}
-                          </select>
-                          
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <label className="btn-icon" style={{ background: photos.length ? '#ECFEFF' : '#fff', borderColor: photos.length ? '#A5F3FC' : '', color: photos.length ? '#0891B2' : '', position: 'relative' }}>
-                              <Camera size={14} />
-                              {photos.length > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#0891B2', borderRadius: '50%', border: '2px solid #fff' }} />}
-                              <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display: 'none' }} />
-                            </label>
-                            <button onClick={() => openEditDrawer(item.id)} className="btn-icon"><Edit2 size={14} /></button>
-                            <button onClick={() => toggleArchive(item.id, item.arsiv)} className="btn-icon"><Archive size={14} /></button>
-                            <button onClick={() => deleteSample(item.id)} className="btn-icon" style={{ color: '#DC2626' }}><Trash2 size={14} /></button>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <select value={item.durum || 'Beklemede'} onChange={(e) => updateField(item.id, 'durum', e.target.value)} style={{ appearance: 'none', background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '8px 28px 8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', outline: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 6px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px 16px', flex: isMobile ? 1 : 'none' }}>
+                              {VALID_STATUS.map(st => <option key={st} value={st}>{st}</option>)}
+                            </select>
+                            
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <label className="btn-hover" style={{ background: photos.length ? '#ECFEFF' : '#fff', border: `1px solid ${photos.length ? '#A5F3FC' : T.border}`, color: photos.length ? '#0891B2' : '#64748B', padding: '8px', borderRadius: '8px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <Camera size={16} />
+                                {photos.length > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#0891B2', borderRadius: '50%', border: '2px solid #fff' }} />}
+                                <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display: 'none' }} />
+                              </label>
+                              <button onClick={() => openEditDrawer(item.id)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}><Edit2 size={16} /></button>
+                              <button onClick={() => toggleArchive(item.id, item.arsiv)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}><Archive size={16} /></button>
+                              <button onClick={() => deleteSample(item.id)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: T.red, display: 'flex', alignItems: 'center' }}><Trash2 size={16} /></button>
+                            </div>
                           </div>
                         </div>
 
                         {photos.length > 0 && (
-                          <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                          <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '12px', paddingTop: '12px', borderTop: `1px solid ${T.border}` }}>
                             {photos.map((p, pIdx) => (
                               <div key={pIdx} style={{ position: 'relative', flexShrink: 0 }}>
-                                <img src={p.url} onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer' }} alt=""/>
-                                <button onClick={() => handleDeletePhoto(item.id, p.path)} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', background: '#DC2626', color: '#fff', border: '2px solid #fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={10} /></button>
+                                <img src={p.url} onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1px solid ${T.border}`, cursor: 'pointer' }} alt=""/>
+                                <button onClick={() => handleDeletePhoto(item.id, p.path)} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', background: T.red, color: '#fff', border: '2px solid #fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={10} /></button>
                               </div>
                             ))}
                           </div>
@@ -866,20 +864,20 @@ function SamplesView({ initialData, customers, offline }) {
       </div>
 
       {/* --- ÇEKMECE & MODALLAR --- */}
-      <div className={`drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={() => setIsDrawerOpen(false)} />
+      {isDrawerOpen && <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 90 }} onClick={() => setIsDrawerOpen(false)} />}
       
-      <div className={`drawer ${isDrawerOpen ? 'open' : ''}`}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '24px 24px 0 0', padding: isMobile ? '20px' : '32px', zIndex: 100, transform: isDrawerOpen ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)' }}>
         <div style={{ width: '40px', height: '6px', background: '#E2E8F0', borderRadius: '10px', margin: '0 auto 24px' }} />
         <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: '#0A1520' }}>{editId ? '✏️ Düzenle' : '📦 Yeni Kayıt'}</h2>
 
         {!editId && (
           <div style={{ marginBottom: '20px', position: 'relative' }}>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Firma Seçimi</label>
-            <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }} onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }} placeholder="Firma adını yazın..." className="input" style={{ padding: '12px 16px', fontSize: '14px' }} />
+            <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }} onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }} placeholder="Firma adını yazın..." style={{ width: '100%', padding: '12px 16px', fontSize: '14px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none' }} />
             {isFirmaDdOpen && (
-              <div className="hide-scroll" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', maxHeight: '200px', overflowY: 'auto', zIndex: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              <div className="hide-scroll" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '12px', maxHeight: '200px', overflowY: 'auto', zIndex: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                 {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,10).map((c, i) => (
-                  <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>{c}</div>
+                  <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}`, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>{c}</div>
                 ))}
               </div>
             )}
@@ -887,34 +885,34 @@ function SamplesView({ initialData, customers, offline }) {
         )}
 
         {formRows.map((r, i) => (
-          <div key={r.id} style={{ background: '#F8FAFC', border: '1px solid rgba(30,45,61,0.1)', borderRadius: '16px', padding: '16px', marginBottom: '16px', position: 'relative' }}>
+          <div key={r.id} style={{ background: '#F8FAFC', border: `1px solid ${T.border}`, borderRadius: '16px', padding: '16px', marginBottom: '16px', position: 'relative' }}>
             {!editId && formRows.length > 1 && <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={18}/></button>}
             
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Kod & Fiyat</label>
             <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: X-100" className="input" style={{ flex: 2 }} />
-              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" className="input" style={{ flex: 1, fontFamily: 'JetBrains Mono' }} />
+              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: X-100" style={{ flex: 2, padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
+              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px', fontFamily: 'monospace' }} />
             </div>
 
             {!editId && (
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Varyantlar (Virgülle)</label>
-                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz..." className="input" />
+                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
               </div>
             )}
 
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Not</label>
-              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama girin..." className="input" />
+              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama girin..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
             </div>
           </div>
         ))}
 
-        {!editId && <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #A5F3FC', color: '#0891B2', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', marginBottom: '24px' }}>+ SATIR EKLE</button>}
+        {!editId && <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #A5F3FC', color: T.primary, borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', marginBottom: '24px' }}>+ SATIR EKLE</button>}
 
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
           <button onClick={() => setIsDrawerOpen(false)} style={{ flex: 1, padding: '14px', background: '#F1F5F9', border: 'none', borderRadius: '12px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>İptal</button>
-          <button onClick={handleSaveDrawer} style={{ flex: 2, padding: '14px', background: '#0F172A', border: 'none', borderRadius: '12px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>{editId ? 'Kaydet' : 'Numuneleri Oluştur'}</button>
+          <button onClick={handleSaveDrawer} style={{ flex: 2, padding: '14px', background: T.navy, border: 'none', borderRadius: '12px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>{editId ? 'Kaydet' : 'Numuneleri Oluştur'}</button>
         </div>
       </div>
 
@@ -938,14 +936,14 @@ function SamplesView({ initialData, customers, offline }) {
 
       {/* Yükleme ve Toast Bildirimleri */}
       {uploading && (
-        <div className="anim-fade" style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#0F172A', color: '#fff', padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          <RefreshCw size={20} className="anim-spin" color="#38BDF8" />
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: T.navy, color: '#fff', padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+          <RefreshCw size={20} className="spin" color="#38BDF8" />
           <span style={{ fontSize: '14px', fontWeight: '700' }}>{uploadText}</span>
         </div>
       )}
 
       {toastMsg && (
-        <div className="anim-fade" style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? '#DC2626' : '#0F172A', color: '#fff', padding: '14px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: '700', zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? T.red : T.navy, color: '#fff', padding: '14px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: '700', zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
           {toastMsg.type === 'err' ? <AlertCircle size={20} color="#FECACA" /> : <CheckCircle size={20} color="#38BDF8" />}
           {toastMsg.msg}
         </div>
@@ -954,6 +952,3 @@ function SamplesView({ initialData, customers, offline }) {
     </div>
   );
 }
-
-
-```
