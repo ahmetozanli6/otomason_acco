@@ -1,954 +1,837 @@
-import React, { useState, useEffect, useMemo } from 'react';
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1E2D3D">
+  <title>Yanteks Pro | Panel</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
-// ============================================================================
-// İKONLAR (Saf SVG)
-// ============================================================================
-const SvgIcon = ({ children, size = 20, color = 'currentColor', style = {} }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
-    {children}
-  </svg>
-);
+  <style>
+    :root {
+      --bg: #F3F5F7;
+      --surface: #FFFFFF;
+      --border: rgba(30,45,61,0.15);
+      --text: #0A1520;
+      --text-sec: #64748B;
+      --primary: #0891B2;
+      --navy: #0F172A;
+      --red: #DC2626;
+      --font: 'Inter', sans-serif;
+    }
 
-const LayoutDashboard = (p) => <SvgIcon {...p}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></SvgIcon>;
-const Package = (p) => <SvgIcon {...p}><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></SvgIcon>;
-const Users = (p) => <SvgIcon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></SvgIcon>;
-const CircleDollarSign = (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></SvgIcon>;
-const Send = (p) => <SvgIcon {...p}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></SvgIcon>;
-const FileText = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></SvgIcon>;
-const Menu = (p) => <SvgIcon {...p}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></SvgIcon>;
-const X = (p) => <SvgIcon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></SvgIcon>;
-const Search = (p) => <SvgIcon {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></SvgIcon>;
-const Plus = (p) => <SvgIcon {...p}><path d="M5 12h14"/><path d="M12 5v14"/></SvgIcon>;
-const Calculator = (p) => <SvgIcon {...p}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/></SvgIcon>;
-const CheckCircle = (p) => <SvgIcon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></SvgIcon>;
-const Zap = (p) => <SvgIcon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></SvgIcon>;
-const Edit2 = (p) => <SvgIcon {...p}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></SvgIcon>;
-const Trash2 = (p) => <SvgIcon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></SvgIcon>;
-const RefreshCw = (p) => <SvgIcon {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></SvgIcon>;
-const AlertCircle = (p) => <SvgIcon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></SvgIcon>;
-const Camera = (p) => <SvgIcon {...p}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></SvgIcon>;
-const Archive = (p) => <SvgIcon {...p}><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><line x1="10" x2="14" y1="12" y2="12"/></SvgIcon>;
-const FileBarChart = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></SvgIcon>;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body, html { width: 100%; height: 100%; font-family: var(--font); background-color: var(--bg); color: var(--text); overflow: hidden; }
+    
+    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scroll::-webkit-scrollbar { display: none; }
 
-// ============================================================================
-// TEMA RENKLERİ VE SABİTLER (DOĞRUDAN INLINE KULLANILACAK)
-// ============================================================================
-const T = {
-  bg: '#F3F5F7',
-  surface: '#FFFFFF',
-  border: 'rgba(30,45,61,0.15)',
-  text: '#0A1520',
-  textSec: '#64748B',
-  primary: '#0891B2',
-  navy: '#0F172A',
-  red: '#DC2626',
-  font: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-};
+    /* Layout */
+    .app-container { display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative; }
+    
+    /* Sidebar */
+    .sidebar { width: 260px; background-color: var(--navy); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); position: relative;}
+    .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+    .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; text-decoration: none; }
+    .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .nav-button.active { background: linear-gradient(135deg, var(--primary), #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
 
-const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
-const PHOTO_BUCKET = 'numune-photos';
+    /* Main Content */
+    .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: var(--bg); }
+    .header { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
+    .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
 
-let supabase = null;
+    /* Mobile adjustments */
+    @media (max-width: 1023px) {
+      .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .menu-toggle-btn { display: block; }
+      .desktop-only { display: none !important; }
+    }
+    @media (min-width: 1024px) {
+      .menu-toggle-btn { display: none; }
+      .overlay { display: none !important; }
+    }
 
-const MOCK_CUSTOMERS = [ { firma_adi: 'ZARA' }, { firma_adi: 'H&M' }, { firma_adi: 'MANGO' }, { firma_adi: 'LC WAIKIKI' } ];
-const MOCK_SAMPLES = [
-  { id: 101, firma: 'ZARA', numune: 'ZR-24-KABAN', fiyat: '$18.50', durum: 'Onaylandı', aciklama: 'Kumaş kalınlaştırılacak', arsiv: false, created_at: new Date().toISOString() },
-  { id: 102, firma: 'ZARA', numune: '↳ Siyah Varyant', fiyat: '$18.50', durum: 'Onaylandı', aciklama: 'ZR-24-KABAN|Siyah fermuar eklendi', arsiv: false, created_at: new Date().toISOString() },
-  { id: 103, firma: 'H&M', numune: 'HM-YAZ-TSHIRT', fiyat: '$4.20', durum: 'Beklemede', aciklama: 'Baskı testi bekleniyor', arsiv: false, created_at: new Date(Date.now()-86400000).toISOString() },
-  { id: 104, firma: 'MANGO', numune: 'MG-ELBISE-01', fiyat: '$22.00', durum: 'Takip Et', aciklama: 'Kalıp dar, revize istendi', arsiv: false, created_at: new Date(Date.now()-172800000).toISOString() }
-];
+    .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; display: none; }
+    .overlay.open { display: block; }
 
-// ============================================================================
-// YARDIMCILAR
-// ============================================================================
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
-  try {
-    const d = new Date(dateStr), now = new Date();
-    const diff = Math.floor((now - d) / 86400000);
-    if (diff === 0) return 'bugün';
-    if (diff === 1) return 'dün';
-    if (diff < 7) return diff + 'g';
-    if (diff < 30) return Math.floor(diff / 7) + 'h';
-    return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
-  } catch (e) { return dateStr; }
-};
+    /* Components */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background-color: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
+    .btn-outline { background-color: var(--surface); color: var(--text-sec); border: 1px solid rgba(30,45,61,0.2); }
+    .btn-icon { background: var(--surface); border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--text-sec); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-icon:hover { background: var(--bg); color: var(--text); }
 
-const isV = (n) => typeof n === 'string' && n.startsWith('↳');
-const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '';
-const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
+    .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: var(--surface); }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
 
-// ============================================================================
-// ANA UYGULAMA (App.jsx Root)
-// ============================================================================
-export default function App() {
-  const [activeTab, setActiveTab] = useState('samples'); 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-  const [isLoading, setIsLoading] = useState(true);
-  const [dbError, setDbError] = useState(null);
-  const [isOfflineMode, setIsOfflineMode] = useState(false);
+    .card { background: var(--surface); border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
+    .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
+    .list-item:hover { background: #F8FAFC; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
 
-  const [customers, setCustomers] = useState([]);
-  const [samples, setSamples] = useState([]);
+    .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: var(--surface); color: var(--text-sec); transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+    .chip-filter.active { background: var(--navy); color: #fff; border-color: var(--navy); }
 
-  const navItems = [
-    { id: 'dashboard', label: 'Özet Panel',  icon: LayoutDashboard },
-    { id: 'samples',   label: 'Numuneler',   icon: Package },
-    { id: 'customers', label: 'Müşteriler',  icon: Users },
-    { id: 'prices',    label: 'Fiyatlar',    icon: CircleDollarSign },
-    { id: 'cost',      label: 'Maliyet',     icon: Calculator },
-    { id: 'offers',    label: 'Teklifler',   icon: Send },
-    { id: 'notes',     label: 'Notlarım',    icon: FileText },
-  ];
+    /* Drawer Modal */
+    .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
+    .drawer.open { transform: translateY(0); }
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; display: none; }
+    .drawer-overlay.open { display: block; }
 
-  // Ekran Boyutu Dinleyicisi
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    /* Photo Viewer */
+    .photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; }
+    .photo-viewer.open { display: flex; }
 
-  // Supabase Yükleme ve Veri Çekme
-  useEffect(() => {
-    let isMounted = true;
-    let timeoutId;
+    /* Notifications */
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--navy); color: #fff; padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; transition: transform 0.3s ease; opacity: 0; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { background: var(--red); }
 
-    const applyMockData = () => {
-      if(!isMounted) return;
-      setCustomers(MOCK_CUSTOMERS);
-      setSamples(MOCK_SAMPLES);
-      setIsLoading(false);
-      setIsOfflineMode(true);
-      setDbError('Veritabanı bağlantısı sağlanamadı. Örnek (çevrimdışı) verilerle çalışıyorsunuz.');
-    };
+    /* Utilities */
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .status-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; border: 1px solid; }
+    .status-beklemede { background: #FEF3C7; color: #B45309; border-color: #FDE68A; }
+    .status-takip { background: #CFFAFE; color: #0E7490; border-color: #A5F3FC; }
+    .status-gonderildi { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
+    .status-onaylandi { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
+    .status-reddedildi { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
+  </style>
+</head>
+<body>
 
-    const loadData = async () => {
-      setIsLoading(true);
-      timeoutId = setTimeout(() => {
-        if(isLoading && isMounted) applyMockData();
-      }, 3000);
+  <div class="app-container">
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="overlay" onclick="toggleSidebar()"></div>
 
-      try {
-        if (window.supabase) {
-          if (!supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          await fetchRealData();
-        } else {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-          script.onload = async () => {
-            if (!isMounted) return;
-            if (!supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            await fetchRealData();
-          };
-          script.onerror = () => {
-            clearTimeout(timeoutId);
-            applyMockData();
-          };
-          document.head.appendChild(script);
-        }
-      } catch (err) {
-        clearTimeout(timeoutId);
-        applyMockData();
-      }
-    };
-
-    const fetchRealData = async () => {
-      if (!supabase) return;
-      try {
-        const { data: cData, error: cErr } = await supabase.from('musteriler').select('firma_adi').order('firma_adi');
-        if (cErr) throw cErr;
-
-        const { data: sData, error: sErr } = await supabase.from('numuneler').select('*').order('created_at', { ascending: false });
-        if (sErr) throw sErr;
-
-        if(isMounted) {
-          setCustomers(cData || []);
-          setSamples(sData || []);
-          setIsOfflineMode(false);
-          setDbError(null);
-          clearTimeout(timeoutId);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        throw err; 
-      }
-    };
-
-    loadData();
-    return () => { isMounted = false; clearTimeout(timeoutId); };
-  }, []);
-
-  const handleNavClick = (id) => {
-    setActiveTab(id);
-    if(isMobile) setIsSidebarOpen(false); 
-  };
-
-  // Saf Inline Style Container
-  return (
-    <div style={{ display: 'flex', width: '100%', height: '100vh', backgroundColor: T.bg, color: T.text, fontFamily: T.font, overflow: 'hidden', boxSizing: 'border-box' }}>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span style="font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">Yanteks<span style="color: #38BDF8;">Pro</span></span>
+        </div>
+        <button class="menu-toggle-btn" onclick="toggleSidebar()" style="background: none; border: none; color: #94A3B8; cursor: pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
       
-      {/* Scrollbar gizlemek ve basit animasyonlar için sadece 1 tane minik stil */}
-      <style>{`
-        * { box-sizing: border-box; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .spin { animation: spin 1s linear infinite; }
-        .btn-hover:hover { filter: brightness(0.9); transform: translateY(-1px); }
-        .row-hover:hover { background-color: #F8FAFC !important; }
-      `}</style>
+      <nav class="hide-scroll" style="flex: 1; overflow-y: auto; padding: 16px 12px;">
+        <p style="padding: 0 16px 8px; font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1px;">ANA MENÜ</p>
+        <a href="index.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span>Özet Panel</span></a>
+        <a href="panel.html" class="nav-button active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Numuneler</span></a>
+        <a href="musteriler.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Müşteriler</span></a>
+        <a href="fiyatlar.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg><span>Fiyatlar</span></a>
+        <a href="maliyet.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/></svg><span>Maliyet</span></a>
+        <a href="fiyatteklifleri.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Teklifler</span></a>
+        <a href="notlarim.html" class="nav-button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg><span>Notlarım</span></a>
+      </nav>
+    </aside>
 
-      {/* Mobil Menü Arkaplan Karartması */}
-      {isMobile && isSidebarOpen && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.6)', zIndex: 40 }} onClick={() => setIsSidebarOpen(false)} />
-      )}
-
-      {/* Sidebar */}
-      <aside style={{
-        width: '260px',
-        backgroundColor: T.navy,
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-        position: isMobile ? 'fixed' : 'relative',
-        top: 0, left: 0, bottom: 0,
-        transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
-        transition: 'transform 0.3s ease',
-        zIndex: 50,
-        borderRight: '1px solid rgba(255,255,255,0.05)'
-      }}>
-        {/* Sidebar Başlık */}
-        <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: T.primary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={18} color="#fff" />
-            </div>
-            <span style={{ fontSize: '18px', fontWeight: '800' }}>
-              Yanteks<span style={{ color: '#38BDF8' }}>Pro</span>
-            </span>
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button class="menu-toggle-btn btn-icon" onclick="toggleSidebar()" style="border: none; padding: 4px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+          <div>
+            <h2 style="font-size: 18px; font-weight: 800; margin: 0;">Numuneler</h2>
+            <p class="desktop-only" style="font-size: 12px; color: var(--text-sec); margin-top: 2px;">Sisteme hoş geldiniz.</p>
           </div>
-          {isMobile && (
-            <button onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={24} /></button>
-          )}
         </div>
-        
-        {/* Menü İtemleri */}
-        <nav className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
-          <p style={{ padding: '0 16px 8px', fontSize: '10px', fontWeight: '700', color: '#64748B', letterSpacing: '1px' }}>ANA MENÜ</p>
-          {navItems.map(({ id, label, icon: Icon }) => {
-            const active = activeTab === id;
-            return (
-              <button 
-                key={id} 
-                onClick={() => handleNavClick(id)} 
-                className="btn-hover"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', marginBottom: '4px',
-                  borderRadius: '10px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                  backgroundColor: active ? T.primary : 'transparent',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                  fontSize: '14px', fontWeight: '600', transition: 'all 0.2s'
-                }}
-              >
-                <Icon size={18} color={active ? '#fff' : 'currentColor'} />
-                <span>{label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, backgroundColor: T.bg }}>
-        
-        {/* Header */}
-        <header style={{ height: '64px', backgroundColor: T.surface, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', flexShrink: 0, zIndex: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {isMobile && (
-              <button onClick={() => setIsSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                <Menu size={24} color={T.text} />
-              </button>
-            )}
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
-              {!isMobile && <p style={{ fontSize: '12px', color: T.textSec, margin: '2px 0 0 0' }}>Sisteme hoş geldiniz.</p>}
-            </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="desktop-only" style="position: relative;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="globalSearch" placeholder="Arama yap..." class="input" style="padding-left: 36px; width: 220px; border-radius: 20px;">
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {!isMobile && (
-              <div style={{ position: 'relative' }}>
-                <Search size={16} color={T.textSec} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input type="text" placeholder="Arama yap..." style={{ padding: '8px 12px 8px 36px', width: '220px', borderRadius: '20px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '13px' }} />
-              </div>
-            )}
-            <div style={{ padding: '8px', cursor: 'pointer' }}>
-              <RefreshCw size={18} className={isLoading ? 'spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
-            </div>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: T.primary, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px' }}>
-              YP
-            </div>
-          </div>
-        </header>
-
-        {/* Scrollable Content */}
-        <div className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px', position: 'relative' }}>
-          
-          {dbError && (
-            <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <strong style={{ color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}><AlertCircle size={16}/> Sistem Uyarısı</strong>
-              <span style={{ color: '#92400E', fontSize: '13px' }}>{dbError}</span>
-            </div>
-          )}
-          
-          {isLoading ? (
-            <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: T.primary }}>
-              <RefreshCw size={32} className="spin" />
-              <span style={{ fontWeight: '600', color: T.textSec }}>Sistem Hazırlanıyor...</span>
-            </div>
-          ) : (
-            <>
-              {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} isMobile={isMobile} />}
-              {activeTab !== 'samples' && (
-                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                  <div style={{ width: '80px', height: '80px', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                    <Package size={40} color={T.primary} />
-                  </div>
-                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: T.text, marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
-                  <p style={{ fontSize: '14px', color: T.textSec, maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
-                </div>
-              )}
-            </>
-          )}
+          <button class="btn-icon" onclick="fetchData()" title="Yenile">
+            <svg id="refreshIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">YP</div>
         </div>
-      </main>
+      </header>
+
+      <div class="scroll-area hide-scroll" style="max-width: 1200px; margin: 0 auto; width: 100%;">
+        
+        <!-- Loading State -->
+        <div id="loadingState" style="height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--primary);">
+          <svg class="spin" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span style="font-weight: 600; color: var(--text-sec);">Sistem Hazırlanıyor...</span>
+        </div>
+
+        <!-- Main Content (Hidden Initially) -->
+        <div id="mainContent" style="display: none; padding-bottom: 60px;">
+          
+          <!-- Toolbar -->
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div style="display: flex; gap: 12px;">
+              <button onclick="openDrawer()" class="btn btn-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Ekle</button>
+              <button onclick="exportExcel()" class="btn btn-outline"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></svg> Excel</button>
+            </div>
+
+            <div id="filterChips" class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
+              <!-- JS ile Doldurulacak -->
+            </div>
+          </div>
+
+          <!-- Bulk Actions -->
+          <div id="bulkActions" style="display: none; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 12px; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <span style="font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px;"><span id="selCount">0</span> Seçili</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button onclick="bulkUpdateStatus('Beklemede')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Beklemede</button>
+              <button onclick="bulkUpdateStatus('Takip Et')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Takip Et</button>
+              <button onclick="bulkUpdateStatus('Gönderildi')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Gönderildi</button>
+              <button onclick="bulkUpdateStatus('Onaylandı')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Onaylandı</button>
+              <button onclick="bulkDelete()" style="background: rgba(220,38,38,0.2); color: #FCA5A5; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Sil</button>
+              <button onclick="clearSelection()" style="background: transparent; border: none; color: #94A3B8; padding: 6px; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Search & Sort -->
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+            <div style="position: relative; flex: 1; min-width: 250px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="searchInput" placeholder="Kayıt arayın..." class="input" style="padding-left: 40px;" oninput="renderList()">
+            </div>
+            <div style="display: flex; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
+              <button onclick="changeSort('date')" id="sort_date" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Tarih</button>
+              <button onclick="changeSort('alpha')" id="sort_alpha" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">A-Z</button>
+              <button onclick="changeSort('status')" id="sort_status" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Durum</button>
+            </div>
+          </div>
+
+          <!-- Firma Banner -->
+          <div id="firmaBanner" style="display: none; background: #ECFEFF; border: 1px solid #A5F3FC; padding: 12px 20px; border-radius: 12px; justify-content: space-between; align-items: center; margin-bottom: 24px; color: #0E7490;">
+            <span style="font-weight: 700; font-size: 14px;">🏢 <span id="bannerFirmaName"></span> filtreli görünüm</span>
+            <button onclick="setFirmaFilter('')" style="background: #CFFAFE; border: none; color: var(--primary); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Tümünü Göster</button>
+          </div>
+
+          <!-- Data List -->
+          <div id="dataListContainer">
+            <!-- JS ile Doldurulacak -->
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Drawer / Modal -->
+  <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+  <div id="drawer" class="drawer">
+    <div style="width: 40px; height: 6px; background: #E2E8F0; border-radius: 10px; margin: 0 auto 24px;"></div>
+    <h2 id="drawerTitle" style="font-size: 20px; font-weight: 800; margin-bottom: 24px; color: var(--text);">📦 Yeni Kayıt</h2>
+
+    <div id="firmaSelectGroup" style="margin-bottom: 20px; position: relative;">
+      <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Firma Seçimi</label>
+      <input type="text" id="formFirma" placeholder="Firma adını yazın..." class="input" style="padding: 12px 16px; font-size: 14px;" oninput="filterFirmaDropdown()" onfocus="showFirmaDropdown()">
+      <div id="firmaDropdown" class="hide-scroll" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: #fff; border: 1px solid var(--border); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      </div>
     </div>
-  );
-}
 
-// ============================================================================
-// NUMUNELER GÖRÜNÜMÜ (Tamamen Inline Styles ile)
-// ============================================================================
-function SamplesView({ initialData, customers, offline, isMobile }) {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  
-  const [filter, setFilter] = useState('Hepsi');
-  const [sort, setSort] = useState('date');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [firmaBanner, setFirmaBanner] = useState('');
-  const [selectedIds, setSelectedIds] = useState(new Set());
-  const [toastMsg, setToastMsg] = useState(null);
+    <div id="formRowsContainer">
+      <!-- Satırlar buraya gelecek -->
+    </div>
 
-  const [photoCache, setPhotoCache] = useState({});
-  const [uploading, setUploading] = useState(false);
-  const [uploadText, setUploadText] = useState('');
+    <button id="addRowBtn" onclick="addFormRow()" style="width: 100%; padding: 14px; background: transparent; border: 2px dashed #A5F3FC; color: var(--primary); border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; margin-bottom: 24px;">+ SATIR EKLE</button>
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-  
-  const [formFirma, setFormFirma] = useState('');
-  const [firmaSearchQ, setFirmaSearchQ] = useState('');
-  const [isFirmaDdOpen, setIsFirmaDdOpen] = useState(false);
-  const [formRows, setFormRows] = useState([{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }]);
+    <div style="display: flex; gap: 12px;">
+      <button onclick="closeDrawer()" style="flex: 1; padding: 14px; background: #F1F5F9; border: none; border-radius: 12px; font-weight: 700; color: #475569; cursor: pointer;">İptal</button>
+      <button id="saveBtn" onclick="saveData()" style="flex: 2; padding: 14px; background: var(--navy); border: none; border-radius: 12px; font-weight: 700; color: #fff; cursor: pointer;">Kaydet</button>
+    </div>
+  </div>
 
-  const [pvOpen, setPvOpen] = useState(false);
-  const [pvPhotos, setPvPhotos] = useState([]);
-  const [pvIndex, setPvIndex] = useState(0);
+  <!-- Photo Viewer -->
+  <div id="photoViewer" class="photo-viewer">
+    <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
+      <span id="pvCounter" style="color: #fff; font-weight: 700; background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">1 / 1</span>
+      <button onclick="closePhotoViewer()" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px; border-radius: 50%; cursor: pointer;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 24px;">
+      <button id="pvPrev" onclick="pvNav(-1)" style="position: absolute; left: 24px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer;">‹</button>
+      <img id="pvImage" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt=""/>
+      <button id="pvNext" onclick="pvNav(1)" style="position: absolute; right: 24px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer;">›</button>
+    </div>
+    <div style="padding: 32px; text-align: center;">
+      <button onclick="deleteCurrentPhoto()" style="background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.3); color: #FECACA; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Bu Fotoğrafı Sil</button>
+    </div>
+  </div>
 
-  const VALID_STATUS = ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'];
-  
-  const uniqueCustomers = useMemo(() => {
-    return [...new Set((customers || []).map(m => (m.firma_adi || '').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
-  }, [customers]);
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <svg id="toastIconOk" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+    <svg id="toastIconErr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FECACA" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+    <span id="toastMsg"></span>
+  </div>
 
-  useEffect(() => {
-    const sorted = [...(initialData || [])].sort((a,b) => {
-      const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
-      if(ta === tb) return isV(a.numune) ? 1 : -1;
-      return tb - ta;
-    });
-    setData(sorted);
-    if (!offline) {
-      const ids = sorted.slice(0, 50).map(r => r.id); 
-      preloadPhotos(ids);
-    }
-  }, [initialData, offline]);
+  <script>
+    // Supabase Config
+    const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // State
+    let samples = [];
+    let customers = [];
+    let photoCache = {};
+    let filter = 'Hepsi';
+    let sortType = 'date';
+    let firmaFilter = '';
+    let selectedIds = new Set();
+    let editId = null;
+    let formRows = [];
+    let currentPvPhotos = [];
+    let currentPvIndex = 0;
 
-  useEffect(() => {
-    let result = [...data];
-    if (filter === 'Arşiv') result = result.filter(i => i.arsiv === true);
-    else {
-      result = result.filter(i => i.arsiv !== true);
-      if (filter !== 'Hepsi') result = result.filter(i => i.durum === filter);
-    }
-    if (firmaBanner) result = result.filter(i => (i.firma || '').toUpperCase() === firmaBanner);
-    if (searchQuery) {
-      const q = trl(searchQuery);
-      result = result.filter(i => trl(i.firma).includes(q) || trl(i.numune).includes(q) || trl(i.aciklama).includes(q));
-    }
-    setFilteredData(result);
-  }, [data, filter, searchQuery, firmaBanner]);
+    const VALID_STATUS = ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'];
 
-  const groupedData = useMemo(() => {
-    const G = {};
-    filteredData.forEach(i => {
-      const f = (i.firma || 'BELİRSİZ').toUpperCase();
-      if(!G[f]) G[f] = [];
-      G[f].push(i);
-    });
-
-    let fKeys = Object.keys(G);
-    if(sort === 'alpha') fKeys.sort((a,b) => a.localeCompare(b, 'tr'));
-    else if(sort === 'status') {
-      fKeys.sort((a,b) => {
-        const sA = Math.min(...G[a].map(i => VALID_STATUS.indexOf(i.durum || 'Beklemede')));
-        const sB = Math.min(...G[b].map(i => VALID_STATUS.indexOf(i.durum || 'Beklemede')));
-        return sA - sB || a.localeCompare(b, 'tr');
-      });
-    } else {
-      fKeys.sort((a,b) => {
-        const lA = Math.max(...G[a].map(i => new Date(i.updated_at || i.created_at || 0).getTime()));
-        const lB = Math.max(...G[b].map(i => new Date(i.updated_at || i.created_at || 0).getTime()));
-        return lB - lA;
-      });
+    // UI Helpers
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('mobileOverlay').classList.toggle('open');
     }
 
-    return fKeys.map(firma => {
-      let items = [...G[firma]];
-      if(sort === 'alpha') items.sort((a,b) => dName(a.numune).localeCompare(dName(b.numune), 'tr'));
-      else if(sort === 'status') items.sort((a,b) => VALID_STATUS.indexOf(a.durum || 'Beklemede') - VALID_STATUS.indexOf(b.durum || 'Beklemede'));
+    function showToast(msg, type = 'ok') {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      document.getElementById('toastIconOk').style.display = type === 'ok' ? 'block' : 'none';
+      document.getElementById('toastIconErr').style.display = type === 'err' ? 'block' : 'none';
+      if(type === 'err') t.classList.add('error'); else t.classList.remove('error');
       
-      const anaItems = items.filter(i => !isV(i.numune));
-      const varItems = items.filter(i => isV(i.numune));
-      const finalItems = [];
-      const usedVarIds = new Set();
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
 
-      anaItems.forEach(ana => {
-        finalItems.push(ana);
-        const anaKod = dName(ana.numune);
-        const altlar = varItems.filter(v => {
-          if(usedVarIds.has(v.id)) return false;
-          const pc = (v.aciklama || '').split('|')[0];
-          if(pc && trl(pc) === trl(anaKod)) return true;
-          const ac = v.aciklama || '';
-          if(ac.startsWith(anaKod+'|') || ac === anaKod) return true;
-          return false;
+    // Data Fetching
+    async function fetchData() {
+      document.getElementById('refreshIcon').classList.add('spin');
+      document.getElementById('loadingState').style.display = 'flex';
+      document.getElementById('mainContent').style.display = 'none';
+
+      try {
+        const [cRes, sRes] = await Promise.all([
+          supabase.from('musteriler').select('firma_adi'),
+          supabase.from('numuneler').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (cRes.error) throw cRes.error;
+        if (sRes.error) throw sRes.error;
+
+        customers = [...new Set((cRes.data || []).map(c => c.firma_adi).filter(Boolean))].sort();
+        
+        // Sorting logic (parent then variants)
+        samples = (sRes.data || []).sort((a,b) => {
+          const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
+          if(ta === tb) return (a.numune||'').startsWith('↳') ? 1 : -1;
+          return tb - ta;
         });
-        altlar.forEach(v => { usedVarIds.add(v.id); finalItems.push(v); });
-      });
-      varItems.filter(v => !usedVarIds.has(v.id)).forEach(v => finalItems.push(v));
 
-      return { firma, items: finalItems, originalItems: G[firma] };
-    });
-  }, [filteredData, sort]);
+        // Preload photos for first 20 items
+        samples.slice(0, 20).forEach(s => fetchPhotos(s.id));
 
-  const fetchPhotos = async (numeneId) => {
-    if(offline || !supabase) return [];
-    try {
-      const { data, error } = await supabase.storage.from(PHOTO_BUCKET).list('numune_'+numeneId, { sortBy: { column: 'created_at', order: 'asc' }});
-      if (error || !data) return [];
-      return data.filter(f => f.name && !f.name.endsWith('/')).map(f => {
-        const { data: ud } = supabase.storage.from(PHOTO_BUCKET).getPublicUrl('numune_'+numeneId+'/'+f.name);
-        return { name: f.name, url: ud.publicUrl, path: 'numune_'+numeneId+'/'+f.name };
-      });
-    } catch (e) { return []; }
-  };
-
-  const preloadPhotos = async (ids) => {
-    if(offline) return;
-    const needed = ids.filter(id => !(id in photoCache));
-    if(needed.length === 0) return;
-    const newCache = { ...photoCache };
-    await Promise.all(needed.map(async id => { newCache[id] = await fetchPhotos(id); }));
-    setPhotoCache(prev => ({ ...prev, ...newCache }));
-  };
-
-  const handlePhotoUpload = async (e, numeneId) => {
-    if(offline || !supabase) { showToast('Çevrimdışı modda fotoğraf yüklenemez.', 'err'); return; }
-    const files = Array.from(e.target.files || []);
-    if(!files.length) return;
-    e.target.value = '';
-    
-    setUploading(true); setUploadText(`Fotoğraf yükleniyor (0/${files.length})`);
-    let ok = 0;
-    for(let i=0; i<files.length; i++) {
-      const file = files[i];
-      setUploadText(`Yükleniyor (${i+1}/${files.length})`);
-      
-      const compressed = await new Promise(resolve => {
-        const img = new Image(), url = URL.createObjectURL(file);
-        img.onload = () => {
-          URL.revokeObjectURL(url);
-          let { width: w, height: h } = img;
-          const maxSize = 1200;
-          if (w > maxSize || h > maxSize) { if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; } else { w = Math.round(w * maxSize / h); h = maxSize; } }
-          const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.82);
-        };
-        img.onerror = () => resolve(file);
-        img.src = url;
-      });
-
-      const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
-      const fname = Date.now() + '_' + Math.random().toString(36).slice(2) + '.' + ext;
-      const path = 'numune_' + numeneId + '/' + fname;
-      const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, compressed, { contentType: compressed.type || 'image/jpeg' });
-      if(!error) ok++;
-    }
-    
-    const newPhotos = await fetchPhotos(numeneId);
-    setPhotoCache(prev => ({ ...prev, [numeneId]: newPhotos }));
-    setUploading(false);
-    showToast(ok ? `${ok} fotoğraf eklendi` : 'Yükleme başarısız', ok ? 'ok' : 'err');
-  };
-
-  const handleDeletePhoto = async (numeneId, photoPath) => {
-    if(offline || !supabase) return;
-    setUploading(true); setUploadText('Siliniyor...');
-    const { error } = await supabase.storage.from(PHOTO_BUCKET).remove([photoPath]);
-    if(error) { showToast('Silinemedi', 'err'); }
-    else {
-      const newPhotos = await fetchPhotos(numeneId);
-      setPhotoCache(prev => ({ ...prev, [numeneId]: newPhotos }));
-      if(pvOpen) {
-        const remaining = newPhotos.map(p => ({...p, numeneId}));
-        if(remaining.length === 0) setPvOpen(false);
-        else { setPvPhotos(remaining); setPvIndex(Math.min(pvIndex, remaining.length - 1)); }
+        renderList();
+        
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+      } catch (err) {
+        showToast('Veri çekilirken hata oluştu.', 'err');
+        console.error(err);
+      } finally {
+        document.getElementById('refreshIcon').classList.remove('spin');
       }
+    }
+
+    // Photo Handling
+    async function fetchPhotos(id) {
+      if(photoCache[id]) return photoCache[id];
+      try {
+        const { data, error } = await supabase.storage.from('numune-photos').list('numune_'+id, { sortBy: { column: 'created_at', order: 'asc' }});
+        if(error || !data) return [];
+        const photos = data.filter(f => f.name && !f.name.endsWith('/')).map(f => {
+          const { data: ud } = supabase.storage.from('numune-photos').getPublicUrl('numune_'+id+'/'+f.name);
+          return { name: f.name, url: ud.publicUrl, path: 'numune_'+id+'/'+f.name, sampleId: id };
+        });
+        photoCache[id] = photos;
+        renderList(); // Re-render to show photos
+        return photos;
+      } catch(e) { return []; }
+    }
+
+    async function handlePhotoUpload(input, id) {
+      const files = Array.from(input.files);
+      if(!files.length) return;
+      input.value = '';
+      showToast('Fotoğraflar yükleniyor...', 'ok');
+      
+      for(let file of files) {
+        // Simple compression simulation
+        const path = 'numune_' + id + '/' + Date.now() + '_' + file.name;
+        await supabase.storage.from('numune-photos').upload(path, file);
+      }
+      
+      delete photoCache[id]; // clear cache
+      await fetchPhotos(id);
+      showToast('Fotoğraflar eklendi', 'ok');
+    }
+
+    async function deletePhoto(sampleId, path) {
+      await supabase.storage.from('numune-photos').remove([path]);
+      delete photoCache[sampleId];
+      await fetchPhotos(sampleId);
       showToast('Fotoğraf silindi', 'ok');
     }
-    setUploading(false);
-  };
 
-  const showToast = (msg, type='info') => {
-    setToastMsg({ msg, type });
-    setTimeout(() => setToastMsg(null), 3000);
-  };
+    // Render Logic
+    function setFilter(f) { filter = f; renderList(); }
+    function changeSort(s) { sortType = s; renderList(); }
+    function setFirmaFilter(f) { firmaFilter = f; renderList(); }
 
-  const updateField = async (id, field, value) => {
-    if(offline) {
-      setData(prev => prev.map(item => item.id == id ? { ...item, [field]: value } : item));
-      if(field === 'durum') showToast(`Durum: ${value} (Yerel)`, 'ok');
-      return;
-    }
-    const { error } = await supabase.from('numuneler').update({ [field]: value }).eq('id', id);
-    if(error) { showToast('Güncelleme hatası', 'err'); return; }
-    setData(prev => prev.map(item => item.id == id ? { ...item, [field]: value } : item));
-    if(field === 'durum') showToast(`Durum: ${value}`, 'ok');
-  };
-
-  const toggleArchive = async (id, currentVal) => {
-    await updateField(id, 'arsiv', !currentVal);
-    showToast(!currentVal ? 'Arşivlendi' : 'Çıkarıldı', 'ok');
-  };
-
-  const deleteSample = async (id) => {
-    if(!window.confirm('Bu numune silinsin mi?')) return;
-    if(!offline) {
-      const { error } = await supabase.from('numuneler').delete().eq('id', id);
-      if(error) { showToast('Silinemedi', 'err'); return; }
-    }
-    setData(prev => prev.filter(item => item.id != id));
-    setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
-    showToast('Silindi', 'ok');
-  };
-
-  const handleBulkStatus = async (status) => {
-    if(selectedIds.size === 0) return;
-    const ids = Array.from(selectedIds);
-    if(!offline) {
-      const { error } = await supabase.from('numuneler').update({ durum: status }).in('id', ids);
-      if(error) { showToast('Toplu güncelleme hatası', 'err'); return; }
-    }
-    setData(prev => prev.map(i => ids.includes(i.id) ? { ...i, durum: status } : i));
-    setSelectedIds(new Set());
-    showToast(`${ids.length} numune: ${status}`, 'ok');
-  };
-
-  const handleBulkDelete = async () => {
-    if(selectedIds.size === 0) return;
-    if(!window.confirm(`${selectedIds.size} numune silinsin mi?`)) return;
-    const ids = Array.from(selectedIds);
-    if(!offline) {
-      const { error } = await supabase.from('numuneler').delete().in('id', ids);
-      if(error) { showToast('Silinemedi', 'err'); return; }
-    }
-    setData(prev => prev.filter(i => !ids.includes(i.id)));
-    setSelectedIds(new Set());
-    showToast(`${ids.length} silindi`, 'ok');
-  };
-
-  const exportData = () => {
-    if(filteredData.length === 0) { showToast('Dışa aktarılacak veri yok', 'err'); return; }
-    const runExport = async () => {
-      try {
-        const wb = new window.ExcelJS.Workbook();
-        const sh = wb.addWorksheet('Numuneler');
-        sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']);
-        [...filteredData].sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => {
-          const v = isV(i.numune), pc = (i.aciklama||'').split('|')[0], note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama;
-          const excelAd = v ? (pc ? pc+'-'+dName(i.numune) : dName(i.numune)) : dName(i.numune);
-          const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : '';
-          sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]);
-        });
-        const buf = await wb.xlsx.writeBuffer();
-        const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
-        a.click();
-        showToast('Excel indirildi', 'ok');
-      } catch (err) { showToast('Excel oluşturulamadı', 'err'); }
-    };
-
-    if(!window.ExcelJS) {
-      setUploading(true); setUploadText('Hazırlanıyor...');
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js';
-      script.onload = () => { setUploading(false); runExport(); };
-      script.onerror = () => { setUploading(false); showToast('Excel kütüphanesi yüklenemedi.', 'err'); };
-      document.body.appendChild(script);
-    } else runExport();
-  };
-
-  const openNewDrawer = () => {
-    setEditId(null); setFormFirma(firmaBanner || '');
-    setFormRows([{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }]);
-    setIsDrawerOpen(true);
-  };
-
-  const openEditDrawer = (id) => {
-    const item = data.find(i => i.id == id);
-    if(!item) return;
-    setEditId(id);
-    const v = isV(item.numune);
-    const acParts = (item.aciklama||'').split('|');
-    const note = acParts.length > 1 ? acParts[1] : item.aciklama;
-    setFormFirma(item.firma || '');
-    setFormRows([{ id: Date.now(), kod: dName(item.numune), fiyat: (item.fiyat||'').replace(/^\$/,''), var: '', not: note||'' }]);
-    setIsDrawerOpen(true);
-  };
-
-  const handleSaveDrawer = async () => {
-    if(editId) {
-      const row = formRows[0];
-      if(!row.kod) { showToast('Kod zorunlu', 'err'); return; }
-      const item = data.find(i => i.id == editId);
-      const v = isV(item.numune);
-      let ac = row.not;
-      if(v) { const pc = (item.aciklama||'').split('|')[0]; ac = `${pc}|${row.not}`; }
-
-      const payload = {
-        numune: v ? '↳ ' + row.kod : row.kod,
-        fiyat: row.fiyat ? (row.fiyat.startsWith('$') ? row.fiyat : '$'+row.fiyat) : '',
-        aciklama: ac
+    function getStatusStyle(st) {
+      const map = {
+        'Beklemede': 'status-beklemede',
+        'Takip Et': 'status-takip',
+        'Gönderildi': 'status-gonderildi',
+        'Onaylandı': 'status-onaylandi',
+        'Reddedildi': 'status-reddedildi'
       };
-      
-      if(!offline) {
-        setUploading(true); setUploadText('Güncelleniyor...');
-        const { error } = await supabase.from('numuneler').update(payload).eq('id', editId);
-        setUploading(false);
-        if(error) { showToast('Hata oluştu', 'err'); return; }
-      }
-      
-      setData(prev => prev.map(i => i.id == editId ? { ...i, ...payload } : i));
-      showToast('Güncellendi', 'ok');
-      setIsDrawerOpen(false);
-    } else {
-      const f = formFirma.toUpperCase().trim();
-      if(!f) { showToast('Firma seçin', 'err'); return; }
-      
-      const pkg = [];
-      formRows.forEach(r => {
-        const k = r.kod.trim(), pr = r.fiyat.trim(), nt = r.not.trim(), vStr = r.var.trim();
-        if(!k) return;
-        const fs = pr ? (pr.startsWith('$') ? pr : '$'+pr) : '';
-        const tempId = Date.now() + Math.floor(Math.random()*1000);
-        pkg.push({ id: tempId, firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
-        if(vStr) {
-          vStr.split(',').forEach(v => {
-            const vt = v.trim();
-            if(vt) pkg.push({ id: tempId + 1, firma: f, numune: '↳ '+vt, fiyat: fs, aciklama: `${k}|${nt}`, durum: 'Beklemede', arsiv: false });
-          });
-        }
-      });
-      
-      if(!pkg.length) { showToast('En az bir kod girin', 'err'); return; }
-      
-      if(!offline) {
-        setUploading(true); setUploadText('Kaydediliyor...');
-        const insertPkg = pkg.map(({id, ...rest}) => rest);
-        const { data: inserted, error } = await supabase.from('numuneler').insert(insertPkg).select();
-        setUploading(false);
-        if(error) { showToast('Hata: '+error.message, 'err'); return; }
-        setData(prev => [...inserted, ...prev]);
-      } else setData(prev => [...pkg, ...prev]);
-      
-      showToast(`${pkg.length} kayıt eklendi`, 'ok');
-      setIsDrawerOpen(false);
+      return map[st] || 'status-beklemede';
     }
-  };
 
-  const getStatusStyle = (st) => {
-    const map = {
-      'Beklemede': { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A' },
-      'Takip Et':  { bg: '#CFFAFE', color: '#0E7490', border: '#A5F3FC' },
-      'Gönderildi':{ bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE' },
-      'Onaylandı': { bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0' },
-      'Reddedildi':{ bg: '#FEE2E2', color: '#B91C1C', border: '#FECACA' },
-    };
-    return map[st] || map['Beklemede'];
-  };
+    function renderList() {
+      // 1. Update Chips
+      let activeCount = samples.filter(i => !i.arsiv).length;
+      let chipsHtml = '';
+      ['Hepsi', 'Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi', 'Arşiv'].forEach(f => {
+        let count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? samples.filter(i => i.arsiv).length : samples.filter(i => !i.arsiv && i.durum === f).length;
+        let isActive = filter === f;
+        chipsHtml += `<button onclick="setFilter('${f}')" class="chip-filter ${isActive ? 'active' : ''}">${f} <span style="padding: 2px 6px; border-radius: 10px; font-size: 10px; background: ${isActive ? 'rgba(255,255,255,0.2)' : 'var(--bg)'}">${count}</span></button>`;
+      });
+      document.getElementById('filterChips').innerHTML = chipsHtml;
 
-  const T = { bg: '#F3F5F7', surface: '#FFFFFF', border: 'rgba(30,45,61,0.15)', text: '#0A1520', textSec: '#64748B', primary: '#0891B2', navy: '#0F172A', red: '#DC2626' };
-  const activeCount = data.filter(i => !i.arsiv).length;
+      // 2. Sort Buttons
+      document.getElementById('sort_date').style.background = sortType === 'date' ? 'var(--bg)' : 'transparent';
+      document.getElementById('sort_alpha').style.background = sortType === 'alpha' ? 'var(--bg)' : 'transparent';
+      document.getElementById('sort_status').style.background = sortType === 'status' ? 'var(--bg)' : 'transparent';
 
-  return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      
-      {/* 1. Üst Araç Çubuğu */}
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={openNewDrawer} className="btn-hover" style={{ flex: 1, padding: '10px 16px', backgroundColor: T.primary, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}><Plus size={18} /> Yeni Ekle</button>
-          <button onClick={exportData} className="btn-hover" style={{ flex: 1, padding: '10px 16px', backgroundColor: T.surface, color: T.textSec, border: `1px solid ${T.border}`, borderRadius: '8px', fontWeight: '600', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}><FileBarChart size={18} /> Excel</button>
-        </div>
+      // 3. Filter Data
+      let result = [...samples];
+      if (filter === 'Arşiv') result = result.filter(i => i.arsiv === true);
+      else {
+        result = result.filter(i => i.arsiv !== true);
+        if (filter !== 'Hepsi') result = result.filter(i => i.durum === filter);
+      }
+      if (firmaFilter) {
+        document.getElementById('firmaBanner').style.display = 'flex';
+        document.getElementById('bannerFirmaName').innerText = firmaFilter;
+        result = result.filter(i => (i.firma || '').toUpperCase() === firmaFilter.toUpperCase());
+      } else {
+        document.getElementById('firmaBanner').style.display = 'none';
+      }
 
-        <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {['Hepsi', 'Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi', 'Arşiv'].map(f => {
-            const count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? data.filter(i => i.arsiv).length : data.filter(i => !i.arsiv && i.durum === f).length;
-            const active = filter === f;
-            return (
-              <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', border: `1px solid ${active ? T.navy : T.border}`, background: active ? T.navy : T.surface, color: active ? '#fff' : T.textSec, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {f} <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', background: active ? 'rgba(255,255,255,0.2)' : '#F3F5F7' }}>{count}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      if (q) {
+        result = result.filter(i => (i.firma||'').toLowerCase().includes(q) || (i.numune||'').toLowerCase().includes(q) || (i.aciklama||'').toLowerCase().includes(q));
+      }
 
-      {/* 2. Toplu İşlemler */}
-      {selectedIds.size > 0 && (
-        <div style={{ background: T.navy, color: '#fff', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '16px', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '24px' }}>
-          <span style={{ fontWeight: '700', fontSize: '14px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '8px' }}>{selectedIds.size} Seçili</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı'].map(s => (
-              <button key={s} onClick={() => handleBulkStatus(s)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>{s}</button>
-            ))}
-            <button onClick={handleBulkDelete} style={{ background: 'rgba(220,38,38,0.2)', color: '#FCA5A5', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', marginLeft: isMobile ? 0 : '10px' }}>Sil</button>
-            <button onClick={() => setSelectedIds(new Set())} style={{ background: 'transparent', border: 'none', color: '#94A3B8', padding: '6px', cursor: 'pointer' }}><X size={16} /></button>
-          </div>
-        </div>
-      )}
+      // 4. Group by Firma
+      const G = {};
+      result.forEach(i => {
+        const f = (i.firma || 'BELİRSİZ').toUpperCase();
+        if(!G[f]) G[f] = [];
+        G[f].push(i);
+      });
 
-      {/* 3. Arama ve Sıralama */}
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', marginBottom: '24px' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} color="#94A3B8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-          <input type="text" placeholder="Kayıt arayın..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
-          {searchQuery && <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color="#94A3B8" /></button>}
-        </div>
+      let fKeys = Object.keys(G);
+      if(sortType === 'alpha') fKeys.sort();
+      else if(sortType === 'status') fKeys.sort((a,b) => Math.min(...G[a].map(i => VALID_STATUS.indexOf(i.durum||'Beklemede'))) - Math.min(...G[b].map(i => VALID_STATUS.indexOf(i.durum||'Beklemede'))));
+      else fKeys.sort((a,b) => Math.max(...G[b].map(i => new Date(i.updated_at||i.created_at).getTime())) - Math.max(...G[a].map(i => new Date(i.updated_at||i.created_at).getTime())));
+
+      const container = document.getElementById('dataListContainer');
+      if (fKeys.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 16px; border: 1px dashed var(--border);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-sec)" stroke-width="2" style="opacity: 0.5; margin-bottom: 16px;"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            <p style="font-weight: 700; color: var(--text); font-size: 16px;">Kayıt Bulunamadı</p>
+            <p style="font-size: 14px; color: var(--text-sec); margin-top: 4px;">Arama kriterlerini değiştirin veya yeni ekleyin.</p>
+          </div>`;
+        return;
+      }
+
+      let html = '';
+      fKeys.forEach(firma => {
+        let items = G[firma];
         
-        <div style={{ display: 'flex', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '8px', padding: '4px' }}>
-          {[{id:'date', label:'Tarih'}, {id:'alpha', label:'A-Z'}, {id:'status', label:'Durum'}].map(s => (
-            <button key={s.id} onClick={() => setSort(s.id)} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', border: 'none', background: sort === s.id ? '#F3F5F7' : 'transparent', color: sort === s.id ? '#0A1520' : '#64748B', cursor: 'pointer' }}>
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
+        // Group variants
+        const anaItems = items.filter(i => !(i.numune||'').startsWith('↳'));
+        const varItems = items.filter(i => (i.numune||'').startsWith('↳'));
+        const finalItems = [];
+        const usedVarIds = new Set();
 
-      {firmaBanner && (
-        <div style={{ background: '#ECFEFF', border: '1px solid #A5F3FC', padding: '12px 20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', color: '#0E7490' }}>
-          <span style={{ fontWeight: '700', fontSize: '14px' }}>🏢 {firmaBanner} filtreli görünüm</span>
-          <button onClick={() => setFirmaBanner('')} style={{ background: '#CFFAFE', border: 'none', color: '#0891B2', fontWeight: '700', fontSize: '12px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>Tümünü Göster</button>
-        </div>
-      )}
+        anaItems.forEach(ana => {
+          finalItems.push(ana);
+          const anaKod = (ana.numune||'').replace(/^↳\s*/, '').trim();
+          varItems.forEach(v => {
+            if(usedVarIds.has(v.id)) return;
+            const pc = (v.aciklama || '').split('|')[0];
+            if(pc === anaKod || (v.aciklama||'').startsWith(anaKod+'|')) {
+              usedVarIds.add(v.id); finalItems.push(v);
+            }
+          });
+        });
+        varItems.filter(v => !usedVarIds.has(v.id)).forEach(v => finalItems.push(v));
 
-      {/* 4. Veri Listesi */}
-      <div>
-        {groupedData.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: '16px', border: `1px dashed ${T.border}` }}>
-            <Package size={48} color="#94A3B8" style={{ opacity: 0.5, marginBottom: '16px' }} />
-            <p style={{ fontWeight: '700', color: '#0A1520', fontSize: '16px' }}>Kayıt Bulunamadı</p>
-            <p style={{ fontSize: '14px', color: '#64748B', marginTop: '4px' }}>Arama kriterlerini değiştirin veya yeni ekleyin.</p>
+        html += `<div class="card">
+          <div class="card-header">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <span style="font-weight: 800; font-size: 15px; cursor: pointer;" onclick="setFirmaFilter('${firma}')">🏢 ${firma}</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">`;
+                
+        VALID_STATUS.forEach(st => {
+          const c = G[firma].filter(i => i.durum === st).length;
+          if(c > 0) html += `<span class="status-badge ${getStatusStyle(st)}">${c} ${st}</span>`;
+        });
+
+        html += `</div></div>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-sec); background: #fff; border: 1px solid var(--border); padding: 4px 10px; border-radius: 8px;">${finalItems.length} Kayıt</span>
           </div>
-        ) : (
-          groupedData.map(({ firma, items, originalItems }) => (
-            <div key={firma} style={{ background: '#fff', borderRadius: '16px', border: `1px solid ${T.border}`, overflow: 'hidden', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-              
-              <div style={{ background: '#F8FAFC', padding: '16px', borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: '800', fontSize: '15px', color: '#0A1520', cursor: 'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    {['Onaylandı', 'Takip Et', 'Gönderildi', 'Reddedildi', 'Beklemede'].map(st => {
-                      const c = originalItems.filter(i => i.durum === st).length;
-                      if(c === 0) return null;
-                      const s = getStatusStyle(st);
-                      return <span key={st} style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>{c} {st}</span>;
-                    })}
-                  </div>
+          <div>`;
+
+        finalItems.forEach(item => {
+          const isVar = (item.numune||'').startsWith('↳');
+          const isSel = selectedIds.has(item.id);
+          const note = (item.aciklama || '').split('|').pop() || '';
+          const photos = photoCache[item.id] || [];
+
+          html += `
+            <div class="list-item ${isVar ? 'variant' : ''}" style="background: ${isSel ? '#F0F9FF' : 'transparent'}">
+              <input type="checkbox" ${isSel ? 'checked' : ''} onclick="toggleSelection(${item.id})" style="width: 16px; height: 16px; cursor: pointer; margin-top: 4px; flex-shrink: 0;" />
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+                  <h4 style="font-size: 14px; font-weight: 700; margin: 0; word-break: break-word;">
+                    ${(item.numune||'').replace(/^↳\s*/, '').trim() || 'İsimsiz'}
+                    ${item.fiyat ? `<span style="margin-left: 8px; font-family: monospace; font-size: 12px; color: #15803D; background: #DCFCE7; padding: 2px 6px; border-radius: 4px; border: 1px solid #BBF7D0;">${item.fiyat}</span>` : ''}
+                  </h4>
+                  <span style="font-size: 11px; font-weight: 500; color: var(--text-sec); white-space: nowrap;">${formatDate(item.updated_at || item.created_at)}</span>
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', background: '#fff', border: `1px solid ${T.border}`, padding: '4px 10px', borderRadius: '8px' }}>{items.length} Kayıt</span>
-              </div>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                  <input type="text" value="${note}" placeholder="Not ekle..." onblur="updateNote(${item.id}, this.value, ${isVar})" class="input" style="flex: 1; min-width: 150px; padding: 8px 10px; border-radius: 8px;" />
+                  
+                  <select onchange="updateField(${item.id}, 'durum', this.value)" class="status-badge ${getStatusStyle(item.durum)}" style="padding: 8px 28px 8px 10px; font-size: 12px; appearance: none; outline: none; cursor: pointer; background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 6px center; background-repeat: no-repeat; background-size: 16px 16px;">
+                    ${VALID_STATUS.map(s => `<option value="${s}" ${item.durum === s ? 'selected' : ''}>${s}</option>`).join('')}
+                  </select>
+                  
+                  <div style="display: flex; gap: 4px;">
+                    <label class="btn-icon" style="position: relative; ${photos.length ? 'background: #ECFEFF; border-color: #A5F3FC; color: var(--primary);' : ''}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                      ${photos.length ? '<span style="position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; border: 2px solid #fff;"></span>' : ''}
+                      <input type="file" accept="image/*" multiple onchange="handlePhotoUpload(this, ${item.id})" style="display: none;" />
+                    </label>
+                    <button onclick="openEditDrawer(${item.id})" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                    <button onclick="updateField(${item.id}, 'arsiv', ${!item.arsiv})" class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><line x1="10" x2="14" y1="12" y2="12"/></svg></button>
+                    <button onclick="deleteSample(${item.id})" class="btn-icon" style="color: var(--red);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+                  </div>
+                </div>`;
 
-              <div>
-                {items.map(item => {
-                  const v = isV(item.numune);
-                  const isSel = selectedIds.has(item.id);
-                  const acParts = (item.aciklama || '').split('|');
-                  const note = acParts.length > 1 ? acParts[1] : item.aciklama;
-                  const s = getStatusStyle(item.durum);
-                  const photos = photoCache[item.id] || [];
+          if(photos.length > 0) {
+            html += `<div class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.05);">`;
+            photos.forEach((p, idx) => {
+              html += `<div style="position: relative; flex-shrink: 0;">
+                <img src="${p.url}" onclick="openPhotoViewer(${item.id}, ${idx})" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); cursor: pointer;" />
+                <button onclick="deletePhoto(${item.id}, '${p.path}')" style="position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: var(--red); color: #fff; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+              </div>`;
+            });
+            html += `</div>`;
+          }
 
-                  return (
-                    <div key={item.id} className="row-hover" style={{ padding: '16px', borderBottom: `1px solid rgba(30,45,61,0.06)`, display: 'flex', gap: '16px', background: isSel ? '#F0F9FF' : 'transparent', marginLeft: v ? '32px' : '0', borderLeft: v ? `3px solid ${T.border}` : 'none' }}>
-                      <input type="checkbox" checked={isSel} onChange={(e) => {
-                        const n = new Set(selectedIds); e.target.checked ? n.add(item.id) : n.delete(item.id); setSelectedIds(n);
-                      }} style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '4px', flexShrink: 0 }} />
-                      
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
-                          <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#0A1520', margin: 0, wordBreak: 'break-word' }}>
-                            {dName(item.numune) || 'İsimsiz'}
-                            {item.fiyat && <span style={{ marginLeft: '8px', fontFamily: 'monospace', fontSize: '12px', color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px', border: '1px solid #BBF7D0' }}>{item.fiyat}</span>}
-                          </h4>
-                          <span style={{ fontSize: '11px', fontWeight: '500', color: '#94A3B8', whiteSpace: 'nowrap' }}>{formatDate(item.updated_at || item.created_at)}</span>
-                        </div>
-                        
-                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '8px', alignItems: isMobile ? 'stretch' : 'center' }}>
-                          <input type="text" defaultValue={note} placeholder="Not ekle..." onBlur={(e) => {
-                            const val = e.target.value.trim(); if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
-                          }} onKeyDown={e => e.key === 'Enter' && e.target.blur()} style={{ flex: 1, padding: '8px 10px', fontSize: '13px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none' }} />
-                          
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <select value={item.durum || 'Beklemede'} onChange={(e) => updateField(item.id, 'durum', e.target.value)} style={{ appearance: 'none', background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '8px 28px 8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', outline: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 6px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px 16px', flex: isMobile ? 1 : 'none' }}>
-                              {VALID_STATUS.map(st => <option key={st} value={st}>{st}</option>)}
-                            </select>
-                            
-                            <div style={{ display: 'flex', gap: '4px' }}>
-                              <label className="btn-hover" style={{ background: photos.length ? '#ECFEFF' : '#fff', border: `1px solid ${photos.length ? '#A5F3FC' : T.border}`, color: photos.length ? '#0891B2' : '#64748B', padding: '8px', borderRadius: '8px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                <Camera size={16} />
-                                {photos.length > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#0891B2', borderRadius: '50%', border: '2px solid #fff' }} />}
-                                <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display: 'none' }} />
-                              </label>
-                              <button onClick={() => openEditDrawer(item.id)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}><Edit2 size={16} /></button>
-                              <button onClick={() => toggleArchive(item.id, item.arsiv)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center' }}><Archive size={16} /></button>
-                              <button onClick={() => deleteSample(item.id)} className="btn-hover" style={{ background: '#fff', border: `1px solid ${T.border}`, padding: '8px', borderRadius: '8px', cursor: 'pointer', color: T.red, display: 'flex', alignItems: 'center' }}><Trash2 size={16} /></button>
-                            </div>
-                          </div>
-                        </div>
+          html += `</div></div>`;
+        });
+        html += `</div></div>`;
+      });
+      container.innerHTML = html;
 
-                        {photos.length > 0 && (
-                          <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '12px', paddingTop: '12px', borderTop: `1px solid ${T.border}` }}>
-                            {photos.map((p, pIdx) => (
-                              <div key={pIdx} style={{ position: 'relative', flexShrink: 0 }}>
-                                <img src={p.url} onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1px solid ${T.border}`, cursor: 'pointer' }} alt=""/>
-                                <button onClick={() => handleDeletePhoto(item.id, p.path)} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', background: T.red, color: '#fff', border: '2px solid #fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={10} /></button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+      // Update Bulk Actions Bar
+      const ba = document.getElementById('bulkActions');
+      if(selectedIds.size > 0) {
+        document.getElementById('selCount').innerText = selectedIds.size;
+        ba.style.display = 'flex';
+      } else {
+        ba.style.display = 'none';
+      }
+    }
 
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+    // Interactions
+    async function updateField(id, field, val) {
+      await supabase.from('numuneler').update({ [field]: val }).eq('id', id);
+      samples = samples.map(i => i.id === id ? { ...i, [field]: val } : i);
+      renderList();
+      showToast('Güncellendi');
+    }
 
-      {/* --- ÇEKMECE & MODALLAR --- */}
-      {isDrawerOpen && <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 90 }} onClick={() => setIsDrawerOpen(false)} />}
+    async function updateNote(id, noteVal, isVar) {
+      const item = samples.find(i => i.id === id);
+      if(!item) return;
+      let finalNote = noteVal;
+      if(isVar) {
+        const pc = (item.aciklama||'').split('|')[0];
+        finalNote = `${pc}|${noteVal}`;
+      }
+      await updateField(id, 'aciklama', finalNote);
+    }
+
+    function toggleSelection(id) {
+      if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+      renderList();
+    }
+    function clearSelection() { selectedIds.clear(); renderList(); }
+
+    async function bulkUpdateStatus(st) {
+      const ids = Array.from(selectedIds);
+      await supabase.from('numuneler').update({ durum: st }).in('id', ids);
+      samples = samples.map(i => ids.includes(i.id) ? { ...i, durum: st } : i);
+      selectedIds.clear();
+      renderList();
+      showToast('Toplu güncellendi');
+    }
+
+    async function bulkDelete() {
+      if(!confirm('Seçili kayıtlar silinsin mi?')) return;
+      const ids = Array.from(selectedIds);
+      await supabase.from('numuneler').delete().in('id', ids);
+      samples = samples.filter(i => !ids.includes(i.id));
+      selectedIds.clear();
+      renderList();
+      showToast('Kayıtlar silindi');
+    }
+
+    async function deleteSample(id) {
+      if(!confirm('Kayıt silinsin mi?')) return;
+      await supabase.from('numuneler').delete().eq('id', id);
+      samples = samples.filter(i => i.id !== id);
+      selectedIds.delete(id);
+      renderList();
+      showToast('Silindi');
+    }
+
+    // Photo Viewer Nav
+    function openPhotoViewer(sampleId, index) {
+      currentPvPhotos = photoCache[sampleId] || [];
+      currentPvIndex = index;
+      if(currentPvPhotos.length === 0) return;
+      document.getElementById('pvImage').src = currentPvPhotos[index].url;
+      document.getElementById('pvCounter').innerText = `${index + 1} / ${currentPvPhotos.length}`;
+      document.getElementById('photoViewer').classList.add('open');
+    }
+    function closePhotoViewer() { document.getElementById('photoViewer').classList.remove('open'); }
+    function pvNav(dir) {
+      currentPvIndex += dir;
+      if(currentPvIndex < 0) currentPvIndex = 0;
+      if(currentPvIndex >= currentPvPhotos.length) currentPvIndex = currentPvPhotos.length - 1;
+      document.getElementById('pvImage').src = currentPvPhotos[currentPvIndex].url;
+      document.getElementById('pvCounter').innerText = `${currentPvIndex + 1} / ${currentPvPhotos.length}`;
+    }
+    async function deleteCurrentPhoto() {
+      const p = currentPvPhotos[currentPvIndex];
+      await deletePhoto(p.sampleId, p.path);
+      closePhotoViewer();
+    }
+
+    // Drawer Logic
+    function openDrawer() {
+      editId = null;
+      document.getElementById('drawerTitle').innerText = '📦 Yeni Kayıt';
+      document.getElementById('firmaSelectGroup').style.display = 'block';
+      document.getElementById('formFirma').value = firmaBanner || '';
+      formRows = [{ id: Date.now(), kod: '', fiyat: '', var: '', not: '' }];
+      document.getElementById('addRowBtn').style.display = 'block';
+      renderFormRows();
+      document.getElementById('drawerOverlay').classList.add('open');
+      document.getElementById('drawer').classList.add('open');
+    }
+
+    function openEditDrawer(id) {
+      const item = samples.find(i => i.id === id);
+      if(!item) return;
+      editId = id;
+      document.getElementById('drawerTitle').innerText = '✏️ Düzenle';
+      document.getElementById('firmaSelectGroup').style.display = 'block'; // Or hide if you don't want to edit firma
+      document.getElementById('formFirma').value = item.firma || '';
       
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '24px 24px 0 0', padding: isMobile ? '20px' : '32px', zIndex: 100, transform: isDrawerOpen ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)' }}>
-        <div style={{ width: '40px', height: '6px', background: '#E2E8F0', borderRadius: '10px', margin: '0 auto 24px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: '#0A1520' }}>{editId ? '✏️ Düzenle' : '📦 Yeni Kayıt'}</h2>
+      const v = (item.numune||'').startsWith('↳');
+      const acParts = (item.aciklama||'').split('|');
+      const note = acParts.length > 1 ? acParts[1] : item.aciklama;
+      
+      formRows = [{ id: Date.now(), kod: (item.numune||'').replace(/^↳\s*/, '').trim(), fiyat: (item.fiyat||'').replace(/^\$/,''), var: '', not: note||'' }];
+      document.getElementById('addRowBtn').style.display = 'none';
+      renderFormRows();
+      
+      document.getElementById('drawerOverlay').classList.add('open');
+      document.getElementById('drawer').classList.add('open');
+    }
 
-        {!editId && (
-          <div style={{ marginBottom: '20px', position: 'relative' }}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Firma Seçimi</label>
-            <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }} onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }} placeholder="Firma adını yazın..." style={{ width: '100%', padding: '12px 16px', fontSize: '14px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none' }} />
-            {isFirmaDdOpen && (
-              <div className="hide-scroll" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: '#fff', border: `1px solid ${T.border}`, borderRadius: '12px', maxHeight: '200px', overflowY: 'auto', zIndex: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-                {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,10).map((c, i) => (
-                  <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}`, fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>{c}</div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+    function closeDrawer() {
+      document.getElementById('drawerOverlay').classList.remove('open');
+      document.getElementById('drawer').classList.remove('open');
+    }
 
-        {formRows.map((r, i) => (
-          <div key={r.id} style={{ background: '#F8FAFC', border: `1px solid ${T.border}`, borderRadius: '16px', padding: '16px', marginBottom: '16px', position: 'relative' }}>
-            {!editId && formRows.length > 1 && <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={18}/></button>}
+    function addFormRow() {
+      formRows.push({ id: Date.now(), kod: '', fiyat: '', var: '', not: '' });
+      renderFormRows();
+    }
+
+    function removeFormRow(id) {
+      formRows = formRows.filter(r => r.id !== id);
+      renderFormRows();
+    }
+
+    function updateFormRow(id, field, val) {
+      formRows = formRows.map(r => r.id === id ? { ...r, [field]: val } : r);
+    }
+
+    function renderFormRows() {
+      let html = '';
+      formRows.forEach((r, i) => {
+        html += `
+          <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; position: relative;">
+            ${!editId && formRows.length > 1 ? `<button onclick="removeFormRow(${r.id})" style="position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-sec); cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>` : ''}
             
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Kod & Fiyat</label>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: X-100" style={{ flex: 2, padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
-              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px', fontFamily: 'monospace' }} />
+            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Kod & Fiyat</label>
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+              <input type="text" value="${r.kod}" oninput="updateFormRow(${r.id}, 'kod', this.value)" placeholder="Örn: X-100" class="input" style="flex: 2; padding: 12px 16px;" />
+              <input type="text" value="${r.fiyat}" oninput="updateFormRow(${r.id}, 'fiyat', this.value)" placeholder="Fiyat ($)" class="input" style="flex: 1; padding: 12px 16px; font-family: monospace;" />
             </div>
 
-            {!editId && (
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Varyantlar (Virgülle)</label>
-                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
-              </div>
-            )}
+            ${!editId ? `
+            <div style="margin-bottom: 16px;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Varyantlar (Virgülle)</label>
+              <input type="text" value="${r.var}" oninput="updateFormRow(${r.id}, 'var', this.value)" placeholder="Siyah, Beyaz..." class="input" style="padding: 12px 16px;" />
+            </div>` : ''}
 
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Not</label>
-              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama girin..." style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: `1px solid ${T.border}`, outline: 'none', fontSize: '14px' }} />
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">Not</label>
+              <input type="text" value="${r.not}" oninput="updateFormRow(${r.id}, 'not', this.value)" placeholder="Açıklama girin..." class="input" style="padding: 12px 16px;" />
             </div>
           </div>
-        ))}
+        `;
+      });
+      document.getElementById('formRowsContainer').innerHTML = html;
+    }
 
-        {!editId && <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #A5F3FC', color: T.primary, borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', marginBottom: '24px' }}>+ SATIR EKLE</button>}
+    function showFirmaDropdown() { document.getElementById('firmaDropdown').style.display = 'block'; }
+    function filterFirmaDropdown() {
+      const q = document.getElementById('formFirma').value.toLowerCase();
+      const dd = document.getElementById('firmaDropdown');
+      let html = '';
+      customers.filter(c => c.toLowerCase().includes(q)).slice(0,10).forEach(c => {
+        html += `<div onclick="document.getElementById('formFirma').value='${c}'; document.getElementById('firmaDropdown').style.display='none';" style="padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px; font-weight: 600; cursor: pointer;">${c}</div>`;
+      });
+      dd.innerHTML = html;
+      dd.style.display = 'block';
+    }
 
-        <div style={{ display: 'flex', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
-          <button onClick={() => setIsDrawerOpen(false)} style={{ flex: 1, padding: '14px', background: '#F1F5F9', border: 'none', borderRadius: '12px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>İptal</button>
-          <button onClick={handleSaveDrawer} style={{ flex: 2, padding: '14px', background: T.navy, border: 'none', borderRadius: '12px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>{editId ? 'Kaydet' : 'Numuneleri Oluştur'}</button>
-        </div>
-      </div>
+    async function saveData() {
+      const f = document.getElementById('formFirma').value.toUpperCase().trim();
+      if(!f) { showToast('Firma seçin', 'err'); return; }
 
-      {/* Fotoğraf Büyük Görüntüleme */}
-      {pvOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#fff', fontWeight: '700', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>{pvIndex + 1} / {pvPhotos.length}</span>
-            <button onClick={() => setPvOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}><X size={24}/></button>
-          </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '24px' }}>
-            {pvIndex > 0 && <button onClick={() => setPvIndex(p=>p-1)} style={{ position: 'absolute', left: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>‹</button>}
-            <img src={pvPhotos[pvIndex]?.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt=""/>
-            {pvIndex < pvPhotos.length - 1 && <button onClick={() => setPvIndex(p=>p+1)} style={{ position: 'absolute', right: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>›</button>}
-          </div>
-          <div style={{ padding: '32px', textAlign: 'center' }}>
-            <button onClick={() => handleDeletePhoto(pvPhotos[pvIndex].numeneId, pvPhotos[pvIndex].path)} style={{ background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.3)', color: '#FECACA', padding: '12px 24px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><Trash2 size={18}/> Bu Fotoğrafı Sil</button>
-          </div>
-        </div>
-      )}
+      const btn = document.getElementById('saveBtn');
+      btn.innerText = 'Kaydediliyor...';
+      btn.disabled = true;
 
-      {/* Yükleme ve Toast Bildirimleri */}
-      {uploading && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: T.navy, color: '#fff', padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          <RefreshCw size={20} className="spin" color="#38BDF8" />
-          <span style={{ fontSize: '14px', fontWeight: '700' }}>{uploadText}</span>
-        </div>
-      )}
+      try {
+        if(editId) {
+          const r = formRows[0];
+          if(!r.kod) throw new Error('Kod zorunlu');
+          
+          const item = samples.find(i => i.id === editId);
+          const v = (item.numune||'').startsWith('↳');
+          let ac = r.not;
+          if(v) { const pc = (item.aciklama||'').split('|')[0]; ac = `${pc}|${r.not}`; }
 
-      {toastMsg && (
-        <div style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? T.red : T.navy, color: '#fff', padding: '14px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: '700', zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {toastMsg.type === 'err' ? <AlertCircle size={20} color="#FECACA" /> : <CheckCircle size={20} color="#38BDF8" />}
-          {toastMsg.msg}
-        </div>
-      )}
+          const payload = {
+            firma: f,
+            numune: v ? '↳ ' + r.kod : r.kod,
+            fiyat: r.fiyat ? (r.fiyat.startsWith('$') ? r.fiyat : '$'+r.fiyat) : '',
+            aciklama: ac
+          };
+          
+          await supabase.from('numuneler').update(payload).eq('id', editId);
+        } else {
+          const pkg = [];
+          formRows.forEach(r => {
+            const k = r.kod.trim(), pr = r.fiyat.trim(), nt = r.not.trim(), vStr = r.var.trim();
+            if(!k) return;
+            const fs = pr ? (pr.startsWith('$') ? pr : '$'+pr) : '';
+            pkg.push({ firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
+            if(vStr) {
+              vStr.split(',').forEach(v => {
+                const vt = v.trim();
+                if(vt) pkg.push({ firma: f, numune: '↳ '+vt, fiyat: fs, aciklama: `${k}|${nt}`, durum: 'Beklemede', arsiv: false });
+              });
+            }
+          });
+          if(!pkg.length) throw new Error('En az bir kod girin');
+          await supabase.from('numuneler').insert(pkg);
+        }
+        
+        closeDrawer();
+        await fetchData(); // Reload to get IDs
+        showToast('Kayıt Başarılı', 'ok');
+      } catch (err) {
+        showToast(err.message, 'err');
+      } finally {
+        btn.innerText = 'Kaydet';
+        btn.disabled = false;
+      }
+    }
 
-    </div>
-  );
-}
+    // Excel Export
+    async function exportExcel() {
+      const wb = new ExcelJS.Workbook();
+      const sh = wb.addWorksheet('Numuneler');
+      sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']);
+      
+      let toExport = [...samples];
+      if (filter === 'Arşiv') toExport = toExport.filter(i => i.arsiv === true);
+      else {
+        toExport = toExport.filter(i => i.arsiv !== true);
+        if (filter !== 'Hepsi') toExport = toExport.filter(i => i.durum === filter);
+      }
+      if (firmaBanner) toExport = toExport.filter(i => (i.firma || '').toUpperCase() === firmaBanner.toUpperCase());
+      
+      toExport.sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => {
+        const v = (i.numune||'').startsWith('↳');
+        const pc = (i.aciklama||'').split('|')[0];
+        const note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama;
+        const excelAd = v ? (pc ? pc+'-'+(i.numune||'').replace(/^↳\s*/, '') : (i.numune||'').replace(/^↳\s*/, '')) : (i.numune||'').replace(/^↳\s*/, '');
+        const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : '';
+        sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]);
+      });
+      
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
+      a.click();
+    }
+
+    // Init
+    window.onload = () => {
+      fetchData();
+    };
+
+  </script>
+</body>
+</html>
