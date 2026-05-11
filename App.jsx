@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR (Saf SVG - Boyut ve Renkler Garantili)
+// İKONLAR (Saf SVG)
 // ============================================================================
 const SvgIcon = ({ children, size = 20, color = 'currentColor', className = '' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -66,6 +66,80 @@ const formatDate = (dateStr) => {
 const isV = (n) => typeof n === 'string' && n.startsWith('↳');
 const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '';
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
+
+// ============================================================================
+// GÖMÜLÜ SAF CSS KODLARI (Ekrana yazı olarak basılmasını engeller)
+// ============================================================================
+const APP_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body, html, #root { width: 100%; height: 100%; font-family: 'Inter', sans-serif; background-color: #F3F5F7; color: #0A1520; overflow: hidden; }
+  
+  .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+  .hide-scroll::-webkit-scrollbar { display: none; }
+
+  /* Ana İskelet */
+  .app-container { display: flex; width: 100%; height: 100dvh; overflow: hidden; position: relative; }
+  
+  /* Menü (Sidebar) */
+  .sidebar { width: 260px; background-color: #0F172A; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); }
+  .sidebar-mobile-hidden { transform: translateX(-100%); position: absolute; inset: 0 auto 0 0; }
+  .sidebar-mobile-open { transform: translateX(0); position: absolute; inset: 0 auto 0 0; }
+  .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+  .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
+  .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .nav-button.active { background: linear-gradient(135deg, #0891B2, #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
+
+  /* İçerik */
+  .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: #F3F5F7; }
+  .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; }
+  
+  .header { height: 64px; background: #fff; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
+  .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
+
+  @media (min-width: 1024px) {
+    .sidebar-mobile-hidden { transform: translateX(0); position: relative; }
+    .menu-toggle-btn { display: none !important; }
+    .overlay { display: none !important; }
+  }
+
+  /* Ortak Bileşenler */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background-color: #0891B2; color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
+  .btn-primary:hover { background-color: #0E7490; }
+  .btn-outline { background-color: #fff; color: #4A6880; border: 1px solid rgba(30,45,61,0.2); }
+  .btn-outline:hover { background-color: #F8FAFC; color: #0A1520; }
+  .btn-danger { background-color: #FEE2E2; color: #DC2626; border: 1px solid rgba(220,38,38,0.2); }
+  .btn-danger:hover { background-color: #FECACA; }
+  .btn-icon { background: #fff; border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: #4A6880; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .btn-icon:hover { background: #F3F5F7; color: #0A1520; }
+
+  .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: #fff; }
+  .input:focus { border-color: #0891B2; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
+  
+  .card { background: #fff; border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
+  .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
+  .list-item:hover { background: #F8FAFC; }
+  .list-item:last-child { border-bottom: none; }
+  .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
+
+  .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: #fff; color: #4A6880; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+  .chip-filter.active { background: #0F172A; color: #fff; border-color: #0F172A; }
+  
+  .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
+  .drawer.open { transform: translateY(0); }
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+  /* Animasyonlar */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .anim-spin { animation: spin 1s linear infinite; }
+  .anim-fade { animation: fadeUp 0.3s ease forwards; }
+`;
 
 // ============================================================================
 // ANA UYGULAMA (App.jsx Root)
@@ -167,77 +241,8 @@ export default function App() {
 
   return (
     <>
-      <style>{`
-        /* SAF CSS ALTYAPISI - Dış Kütüphaneye İhtiyaç Duymaz */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body, html, #root { width: 100%; height: 100%; font-family: 'Inter', sans-serif; background-color: #F3F5F7; color: #0A1520; overflow: hidden; }
-        
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-
-        /* Ana İskelet */
-        .app-container { display: flex; width: 100%; height: 100dvh; overflow: hidden; position: relative; }
-        
-        /* Menü (Sidebar) */
-        .sidebar { width: 260px; background-color: #0F172A; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-mobile-hidden { transform: translateX(-100%); position: absolute; inset: 0 auto 0 0; }
-        .sidebar-mobile-open { transform: translateX(0); position: absolute; inset: 0 auto 0 0; }
-        .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-        .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
-        .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .nav-button.active { background: linear-gradient(135deg, #0891B2, #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
-
-        /* İçerik */
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: #F3F5F7; }
-        .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; }
-        
-        .header { height: 64px; background: #fff; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
-        .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
-
-        @media (min-width: 1024px) {
-          .sidebar-mobile-hidden { transform: translateX(0); position: relative; }
-          .menu-toggle-btn { display: none !important; }
-          .overlay { display: none !important; }
-        }
-
-        /* Ortak Bileşenler */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background-color: #0891B2; color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
-        .btn-primary:hover { background-color: #0E7490; }
-        .btn-outline { background-color: #fff; color: #4A6880; border: 1px solid rgba(30,45,61,0.2); }
-        .btn-outline:hover { background-color: #F8FAFC; color: #0A1520; }
-        .btn-danger { background-color: #FEE2E2; color: #DC2626; border: 1px solid rgba(220,38,38,0.2); }
-        .btn-danger:hover { background-color: #FECACA; }
-        .btn-icon { background: #fff; border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: #4A6880; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-icon:hover { background: #F3F5F7; color: #0A1520; }
-
-        .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: #fff; }
-        .input:focus { border-color: #0891B2; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
-        
-        .card { background: #fff; border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
-        .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
-        .list-item:hover { background: #F8FAFC; }
-        .list-item:last-child { border-bottom: none; }
-        .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
-
-        .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: #fff; color: #4A6880; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
-        .chip-filter.active { background: #0F172A; color: #fff; border-color: #0F172A; }
-        
-        .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
-        .drawer.open { transform: translateY(0); }
-        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-
-        /* Animasyonlar */
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .anim-spin { animation: spin 1s linear infinite; }
-        .anim-fade { animation: fadeUp 0.3s ease forwards; }
-      `}</style>
+      {/* BURASI ÇOK ÖNEMLİ: CSS kodlarını React metni olarak değil, direkt HTML olarak gömüyoruz */}
+      <style dangerouslySetInnerHTML={{ __html: APP_STYLES }} />
 
       <div className="app-container">
         
@@ -332,7 +337,7 @@ export default function App() {
 }
 
 // ============================================================================
-// NUMUNELER GÖRÜNÜMÜ (SAF CSS & INLINE STYLE HARMANI)
+// NUMUNELER GÖRÜNÜMÜ
 // ============================================================================
 function SamplesView({ initialData, customers, offline }) {
   const [data, setData] = useState([]);
