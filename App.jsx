@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR (Saf SVG)
+// İKONLAR (Saf SVG - Boyut ve Renkler Garantili)
 // ============================================================================
 const SvgIcon = ({ children, size = 20, color = 'currentColor', className = '' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -68,21 +68,19 @@ const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 // ============================================================================
-// GÖMÜLÜ SAF CSS KODLARI (Ekrana yazı olarak basılmasını engeller)
+// GÖMÜLÜ SAF CSS KODLARI (JavaScript ile Zorla Enjekte Edilecek)
 // ============================================================================
 const APP_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
   
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body, html, #root { width: 100%; height: 100%; font-family: 'Inter', sans-serif; background-color: #F3F5F7; color: #0A1520; overflow: hidden; }
   
   .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
   .hide-scroll::-webkit-scrollbar { display: none; }
 
-  /* Ana İskelet */
-  .app-container { display: flex; width: 100%; height: 100dvh; overflow: hidden; position: relative; }
+  .app-container { display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative; }
   
-  /* Menü (Sidebar) */
   .sidebar { width: 260px; background-color: #0F172A; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); }
   .sidebar-mobile-hidden { transform: translateX(-100%); position: absolute; inset: 0 auto 0 0; }
   .sidebar-mobile-open { transform: translateX(0); position: absolute; inset: 0 auto 0 0; }
@@ -91,7 +89,6 @@ const APP_STYLES = `
   .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
   .nav-button.active { background: linear-gradient(135deg, #0891B2, #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
 
-  /* İçerik */
   .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: #F3F5F7; }
   .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; }
   
@@ -104,15 +101,12 @@ const APP_STYLES = `
     .overlay { display: none !important; }
   }
 
-  /* Ortak Bileşenler */
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
   .btn:active { transform: scale(0.96); }
   .btn-primary { background-color: #0891B2; color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
   .btn-primary:hover { background-color: #0E7490; }
   .btn-outline { background-color: #fff; color: #4A6880; border: 1px solid rgba(30,45,61,0.2); }
   .btn-outline:hover { background-color: #F8FAFC; color: #0A1520; }
-  .btn-danger { background-color: #FEE2E2; color: #DC2626; border: 1px solid rgba(220,38,38,0.2); }
-  .btn-danger:hover { background-color: #FECACA; }
   .btn-icon { background: #fff; border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: #4A6880; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
   .btn-icon:hover { background: #F3F5F7; color: #0A1520; }
 
@@ -134,7 +128,6 @@ const APP_STYLES = `
   .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
   .drawer-overlay.open { opacity: 1; pointer-events: auto; }
 
-  /* Animasyonlar */
   @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
   .anim-spin { animation: spin 1s linear infinite; }
@@ -164,7 +157,17 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // Supabase Yükleme
+  // GÜVENLİ CSS ENJEKSİYONU (Bunu hiçbir sistem engelleyemez)
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.textContent = APP_STYLES;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+
+  // Supabase Yükleme ve Veri Çekme
   useEffect(() => {
     let isMounted = true;
     let timeoutId;
@@ -175,7 +178,7 @@ export default function App() {
       setSamples(MOCK_SAMPLES);
       setIsLoading(false);
       setIsOfflineMode(true);
-      setDbError('Bağlantı kurulamadı. Örnek (çevrimdışı) verilerle çalışıyorsunuz.');
+      setDbError('Veritabanı bağlantısı sağlanamadı. Örnek (çevrimdışı) verilerle çalışıyorsunuz.');
     };
 
     const loadData = async () => {
@@ -240,99 +243,93 @@ export default function App() {
   };
 
   return (
-    <>
-      {/* BURASI ÇOK ÖNEMLİ: CSS kodlarını React metni olarak değil, direkt HTML olarak gömüyoruz */}
-      <style dangerouslySetInnerHTML={{ __html: APP_STYLES }} />
+    <div className="app-container">
+      {isSidebarOpen && <div className="overlay" onClick={() => setIsSidebarOpen(false)} />}
 
-      <div className="app-container">
+      {/* Sidebar */}
+      <aside className={`sidebar ${isSidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-hidden'}`}>
+        <div className="sidebar-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0891B2, #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(8,145,178,0.4)' }}>
+              <Zap size={18} color="#fff" />
+            </div>
+            <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+              Yanteks<span style={{ color: '#38BDF8' }}>Pro</span>
+            </span>
+          </div>
+          <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+            <X size={24} />
+          </button>
+        </div>
         
-        {isSidebarOpen && <div className="overlay" onClick={() => setIsSidebarOpen(false)} />}
-
-        {/* Sidebar */}
-        <aside className={`sidebar ${isSidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-hidden'}`}>
-          <div className="sidebar-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0891B2, #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(8,145,178,0.4)' }}>
-                <Zap size={18} color="#fff" />
-              </div>
-              <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>
-                Yanteks<span style={{ color: '#38BDF8' }}>Pro</span>
-              </span>
-            </div>
-            <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
-              <X size={24} />
+        <nav className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+          <p style={{ padding: '0 16px 8px', fontSize: '10px', fontWeight: '700', color: '#64748B', letterSpacing: '1px' }}>ANA MENÜ</p>
+          {navItems.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => handleNavClick(id)} className={`nav-button ${activeTab === id ? 'active' : ''}`}>
+              <Icon size={18} color={activeTab === id ? '#fff' : 'currentColor'} />
+              <span>{label}</span>
             </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="main-content">
+        <header className="header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="menu-toggle-btn btn-icon" onClick={() => setIsSidebarOpen(true)} style={{ border: 'none', padding: '4px' }}>
+              <Menu size={24} color="#0A1520" />
+            </button>
+            <div>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0', display: window.innerWidth > 600 ? 'block' : 'none' }}>Sisteme hoş geldiniz, iyi çalışmalar.</p>
+            </div>
           </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ position: 'relative', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+              <Search size={16} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input type="text" placeholder="Arama yap..." className="input" style={{ paddingLeft: '36px', width: '240px', borderRadius: '20px' }} />
+            </div>
+            <button className="btn-icon" title="Durum">
+              <RefreshCw size={18} className={isLoading ? 'anim-spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
+            </button>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #0891B2, #0284C7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+              YP
+            </div>
+          </div>
+        </header>
+
+        <div className="scroll-area hide-scroll">
+          {dbError && (
+            <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <strong style={{ color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}><AlertCircle size={16}/> Sistem Uyarısı</strong>
+              <span style={{ color: '#92400E', fontSize: '13px' }}>{dbError}</span>
+            </div>
+          )}
           
-          <nav className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
-            <p style={{ padding: '0 16px 8px', fontSize: '10px', fontWeight: '700', color: '#64748B', letterSpacing: '1px' }}>ANA MENÜ</p>
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => handleNavClick(id)} className={`nav-button ${activeTab === id ? 'active' : ''}`}>
-                <Icon size={18} color={activeTab === id ? '#fff' : 'currentColor'} />
-                <span>{label}</span>
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Main */}
-        <main className="main-content">
-          <header className="header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button className="menu-toggle-btn btn-icon" onClick={() => setIsSidebarOpen(true)} style={{ border: 'none', padding: '4px' }}>
-                <Menu size={24} color="#0A1520" />
-              </button>
-              <div>
-                <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
-                <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0', display: window.innerWidth > 600 ? 'block' : 'none' }}>Sisteme hoş geldiniz, iyi çalışmalar.</p>
-              </div>
+          {isLoading ? (
+            <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#0891B2' }}>
+              <RefreshCw size={32} className="anim-spin" />
+              <span style={{ fontWeight: '600', color: '#4A6880' }}>Sistem Hazırlanıyor...</span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ position: 'relative', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-                <Search size={16} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input type="text" placeholder="Arama yap..." className="input" style={{ paddingLeft: '36px', width: '240px', borderRadius: '20px' }} />
-              </div>
-              <button className="btn-icon" title="Yenile">
-                <RefreshCw size={18} className={isLoading ? 'anim-spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
-              </button>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #0891B2, #0284C7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-                YP
-              </div>
-            </div>
-          </header>
-
-          <div className="scroll-area hide-scroll">
-            {dbError && (
-              <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <strong style={{ color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}><AlertCircle size={16}/> Sistem Uyarısı</strong>
-                <span style={{ color: '#92400E', fontSize: '13px' }}>{dbError}</span>
-              </div>
-            )}
-            
-            {isLoading ? (
-              <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#0891B2' }}>
-                <RefreshCw size={32} className="anim-spin" />
-                <span style={{ fontWeight: '600', color: '#4A6880' }}>Sistem Hazırlanıyor...</span>
-              </div>
-            ) : (
-              <>
-                {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
-                {activeTab !== 'samples' && (
-                  <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
-                    <div style={{ width: '80px', height: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
-                      <Package size={40} color="#0891B2" />
-                    </div>
-                    <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0A1520', marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
-                    <p style={{ fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
+          ) : (
+            <>
+              {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
+              {activeTab !== 'samples' && (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
+                  <div style={{ width: '80px', height: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+                    <Package size={40} color="#0891B2" />
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        </main>
-      </div>
-    </>
+                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0A1520', marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
+                  <p style={{ fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
 
