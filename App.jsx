@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR
+// İKONLAR (Değiştirilmedi, SVG olarak korundu)
 // ============================================================================
 const SvgIcon = ({ children, size = 24, className = '', fill = 'none', ...props }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
@@ -35,44 +35,26 @@ const Archive = (p) => <SvgIcon {...p}><rect width="20" height="5" x="2" y="3" r
 const FileBarChart = (p) => <SvgIcon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></SvgIcon>;
 
 // ============================================================================
-// SUPABASE (Dinamik Yükleme için sadece sabitler bırakıldı)
+// SUPABASE (Sabitler) & MOCK VERİLER (Yükleme hatasına karşı can yeleği)
 // ============================================================================
 const SUPABASE_URL = 'https://zmlbdpjcergcvcurihuy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
 const PHOTO_BUCKET = 'numune-photos';
 
-let supabase = null; // Script yüklendikten sonra tanımlanacak
+let supabase = null; 
+
+// Arayüzün boş görünmesini engelleyecek Örnek (Mock) Veriler
+const MOCK_CUSTOMERS = [ { firma_adi: 'ZARA' }, { firma_adi: 'H&M' }, { firma_adi: 'MANGO' }, { firma_adi: 'LC WAIKIKI' } ];
+const MOCK_SAMPLES = [
+  { id: 101, firma: 'ZARA', numune: 'ZR-24-KABAN', fiyat: '$18.50', durum: 'Onaylandı', aciklama: 'Kumaş kalınlaştırılacak', arsiv: false, created_at: new Date().toISOString() },
+  { id: 102, firma: 'ZARA', numune: '↳ Siyah Varyant', fiyat: '$18.50', durum: 'Onaylandı', aciklama: 'ZR-24-KABAN|Siyah fermuar eklendi', arsiv: false, created_at: new Date().toISOString() },
+  { id: 103, firma: 'H&M', numune: 'HM-YAZ-TSHIRT', fiyat: '$4.20', durum: 'Beklemede', aciklama: 'Baskı testi bekleniyor', arsiv: false, created_at: new Date(Date.now()-86400000).toISOString() },
+  { id: 104, firma: 'MANGO', numune: 'MG-ELBISE-01', fiyat: '$22.00', durum: 'Takip Et', aciklama: 'Kalıp dar, revize istendi', arsiv: false, created_at: new Date(Date.now()-172800000).toISOString() }
+];
 
 // ============================================================================
 // YARDIMCILAR
 // ============================================================================
-const getVal = (item, possibleKeys, fallback = null) => {
-  if (!item) return fallback;
-  const originalKeys = Object.keys(item);
-  for (let pKey of possibleKeys) {
-    const cleanSearchKey = pKey.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9ğüşöçı]/g, '');
-    for (let oKey of originalKeys) {
-      const cleanOriginalKey = oKey.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9ğüşöçı]/g, '');
-      if (cleanOriginalKey === cleanSearchKey && item[oKey] !== null && item[oKey] !== '') return item[oKey];
-    }
-  }
-  for (let pKey of possibleKeys) {
-    const cleanSearchKey = pKey.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9ğüşöçı]/g, '');
-    if (cleanSearchKey.length < 3) continue;
-    for (let oKey of originalKeys) {
-      const cleanOriginalKey = oKey.toLocaleLowerCase('tr-TR').replace(/[^a-z0-9ğüşöçı]/g, '');
-      if (cleanOriginalKey.includes(cleanSearchKey) && item[oKey] !== null && item[oKey] !== '') return item[oKey];
-    }
-  }
-  return fallback;
-};
-
-const getDebugVal = (item, possibleKeys) => {
-  const val = getVal(item, possibleKeys, null);
-  if (val !== null) return val;
-  return '-';
-};
-
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
   try {
@@ -86,8 +68,8 @@ const formatDate = (dateStr) => {
   } catch (e) { return dateStr; }
 };
 
-const isV = (n) => (n || '').toString().startsWith('↳');
-const dName = (n) => (n || '').replace(/^↳\s*/, '').trim();
+const isV = (n) => typeof n === 'string' && n.startsWith('↳');
+const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '';
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 // ============================================================================
@@ -113,24 +95,34 @@ const T = {
   tealGlow:       'rgba(8,145,178,0.2)',
   green:          '#15803D',
   red:            '#991B1B',
-  orange:         '#EA580C',
   navy:           '#1E2D3D',
 };
+
+// ============================================================================
+// YER TUTUCU MODÜL (Boş sayfa görünümünü engeller)
+// ============================================================================
+const PlaceholderModule = ({ title, icon: Icon }) => (
+  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', padding:40, color: T.textSecondary, textAlign:'center' }}>
+    <div style={{ width: 80, height: 80, borderRadius: 24, background: T.surface, border: `1px solid ${T.border2}`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom: 20, boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+       <Icon size={40} color={T.teal} />
+    </div>
+    <h3 style={{ fontSize: 20, fontWeight: 800, color: T.textPrimary, marginBottom: 8 }}>{title}</h3>
+    <p style={{ maxWidth: 300, fontSize: 14, lineHeight: 1.6 }}>Bu modül entegrasyon aşamasındadır. Lütfen "Numuneler" sekmesini kullanın.</p>
+  </div>
+);
 
 // ============================================================================
 // ANA UYGULAMA (App.jsx Root)
 // ============================================================================
 export default function App() {
-  const [activeTab, setActiveTab]     = useState('samples'); // Varsayılan olarak Numuneler sekmesi açık
+  const [activeTab, setActiveTab]     = useState('samples'); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading]     = useState(true);
   const [dbError, setDbError]         = useState(null);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   const [customers, setCustomers] = useState([]);
   const [samples,   setSamples]   = useState([]);
-  const [prices,    setPrices]    = useState([]);
-  const [costs,     setCosts]     = useState([]);
-  const [notes,     setNotes]     = useState([]);
 
   const navItems = [
     { id: 'dashboard', label: 'Özet Panel',  icon: LayoutDashboard },
@@ -142,63 +134,78 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // Supabase yükleme ve veri çekme
+  // Supabase Yükleme ve Güvenli Veri Çekme Mantığı
   useEffect(() => {
-    const initSupabase = () => {
+    let isMounted = true;
+    let timeoutId;
+
+    const applyMockData = () => {
+      if(!isMounted) return;
+      setCustomers(MOCK_CUSTOMERS);
+      setSamples(MOCK_SAMPLES);
+      setIsLoading(false);
+      setIsOfflineMode(true);
+      setDbError('Bağlantı kurulamadı. Örnek (çevrimdışı) verilerle çalışıyorsunuz.');
+    };
+
+    const loadData = async () => {
       setIsLoading(true);
-      if (window.supabase) {
-        if (!supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        fetchAllData();
-      } else {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-        script.onload = () => {
+
+      // Emniyet Kemeri: Eğer veritabanı veya script yüklenmesi 3 saniyeyi geçerse MOCK veri göster.
+      timeoutId = setTimeout(() => {
+        if(isLoading && isMounted) applyMockData();
+      }, 3000);
+
+      try {
+        if (window.supabase) {
           if (!supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          fetchAllData();
-        };
-        script.onerror = () => {
-          setDbError('Supabase kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip sayfayı yenileyin.');
-          setIsLoading(false);
-        };
-        document.head.appendChild(script);
+          await fetchRealData();
+        } else {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+          script.onload = async () => {
+            if (!isMounted) return;
+            if (!supabase) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            await fetchRealData();
+          };
+          script.onerror = () => {
+            clearTimeout(timeoutId);
+            applyMockData();
+          };
+          document.head.appendChild(script);
+        }
+      } catch (err) {
+        clearTimeout(timeoutId);
+        applyMockData();
       }
     };
 
-    initSupabase();
+    const fetchRealData = async () => {
+      if (!supabase) return;
+      try {
+        const { data: cData, error: cErr } = await supabase.from('musteriler').select('firma_adi').order('firma_adi');
+        if (cErr) throw cErr;
+
+        const { data: sData, error: sErr } = await supabase.from('numuneler').select('*').order('created_at', { ascending: false });
+        if (sErr) throw sErr;
+
+        if(isMounted) {
+          setCustomers(cData || []);
+          setSamples(sData || []);
+          setIsOfflineMode(false);
+          setDbError(null);
+          clearTimeout(timeoutId);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        throw err; // catch bloğuna düşürüp mock veriyi tetikler
+      }
+    };
+
+    loadData();
+
+    return () => { isMounted = false; clearTimeout(timeoutId); };
   }, []);
-
-  const fetchAllData = async () => {
-    if (!supabase) return;
-    
-    setIsLoading(true);
-    setDbError(null);
-    try {
-      let errorMessages = [];
-
-      const { data: customersData, error: customersError } = await supabase.from('musteriler').select('firma_adi').order('firma_adi');
-      if (customersError) errorMessages.push(`Müşteriler: ${customersError.message}`);
-      else setCustomers(customersData || []);
-
-      let { data: samplesData, error: samplesError } = await supabase.from('numuneler').select('*').order('created_at', { ascending: false });
-      if (samplesError) errorMessages.push(`Numuneler: ${samplesError.message}`);
-      if (samplesData) setSamples(samplesData || []);
-
-      const { data: pricesData, error: pricesError } = await supabase.from('fiyatlar').select('*');
-      if (!pricesError) setPrices(pricesData || []);
-
-      const { data: costsData, error: costsError } = await supabase.from('maliyetler').select('*');
-      if (!costsError) setCosts(costsData || []);
-
-      const { data: notesData, error: notesError } = await supabase.from('notlar').select('*');
-      if (!notesError) setNotes(notesData || []);
-
-      if (errorMessages.length > 0) setDbError(errorMessages.join(' | '));
-    } catch (error) {
-      setDbError(`Sistemsel Hata: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleNavClick = (id) => {
     setActiveTab(id);
@@ -210,7 +217,8 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: ${T.pageBg}; }
+        body { font-family: 'Inter', sans-serif; background: ${T.pageBg}; margin: 0; overflow: hidden; }
+        
         .yp-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
         .yp-scrollbar::-webkit-scrollbar { width: 4px; }
         .yp-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
@@ -228,20 +236,25 @@ export default function App() {
         }
         .yp-sidebar.open { transform: translateX(0); }
 
-        @media (min-width: 1024px) {
+        /* DİKKAT: 1024px'ten 768px'e düşürüldü. Canvas ekranında menü artık kaybolmayacak! */
+        @media (min-width: 768px) {
           .yp-sidebar { position: relative !important; transform: translateX(0) !important; transition: none !important; flex-shrink: 0; }
           .yp-menu-btn { display: none !important; }
           .yp-sidebar-close { display: none !important; }
           .yp-search { display: flex !important; }
         }
-        @media (max-width: 1023px) { .yp-search { display: none !important; } }
+        @media (max-width: 767px) { .yp-search { display: none !important; } }
       `}</style>
 
-      <div style={{ display:'flex', height:'100vh', background: T.pageBg, color: T.textPrimary, fontFamily:'Inter,sans-serif' }}>
+      {/* height: 100vh yerine position: absolute, inset: 0 kullanarak boşluk/kayma sorunları çözüldü */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', background: T.pageBg, color: T.textPrimary, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+        
+        {/* Mobil Arkaplan Karartması */}
         {isSidebarOpen && (
           <div onClick={() => setIsSidebarOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(10,21,32,0.65)', zIndex:40, backdropFilter:'blur(3px)' }} />
         )}
 
+        {/* Sidebar */}
         <aside style={{ width: 252, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, boxShadow: '4px 0 24px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column' }} className={`yp-sidebar${isSidebarOpen ? ' open' : ''}`}>
           <div style={{ height: 72, padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: T.sidebarHeadBg, borderBottom: `1px solid ${T.sidebarBorder}`, flexShrink: 0 }}>
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -254,6 +267,7 @@ export default function App() {
               <X size={18} />
             </button>
           </div>
+          
           <nav className="yp-scrollbar" style={{ flex:1, overflowY:'auto', padding:'12px 0' }}>
             <p style={{ padding:'8px 20px 6px', fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.25)', letterSpacing:'.13em', textTransform:'uppercase' }}>ANA MENÜ</p>
             {navItems.map(({ id, label, icon: Icon }) => {
@@ -272,7 +286,9 @@ export default function App() {
           <div style={{ padding: '14px 20px', borderTop: `1px solid ${T.sidebarBorder}`, fontSize: 10, fontWeight:600, color:'rgba(255,255,255,0.2)', letterSpacing:'.06em' }}>YANTEKS PRO v2.0</div>
         </aside>
 
-        <main style={{ flex:1, display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden', minWidth:0, position:'relative' }}>
+        {/* Ana İçerik Alanı */}
+        <main style={{ flex:1, display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', minWidth:0, position:'relative' }}>
+          
           <header style={{ height: 72, background: T.surface, borderBottom: `1.5px solid ${T.border2}`, boxShadow: '0 1px 0 rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', flexShrink: 0, zIndex: 10 }}>
             <div style={{ display:'flex', alignItems:'center', gap:14 }}>
               <button onClick={() => setIsSidebarOpen(true)} className="yp-menu-btn" style={{ background:'none', border: `1px solid ${T.border}`, borderRadius:10, padding:8, cursor:'pointer', color: T.textSecondary, display:'flex', alignItems:'center' }}>
@@ -286,11 +302,11 @@ export default function App() {
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
               <div className="yp-search" style={{ position:'relative' }}>
                 <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color: T.textSecondary, display:'flex' }}><Search size={15} /></span>
-                <input type="text" placeholder="Müşteri veya ürün ara..." style={{ paddingLeft: 36, paddingRight: 16, paddingTop: 9, paddingBottom: 9, width: 260, background: T.pageBg, border: `1px solid ${T.border2}`, borderRadius: 22, fontSize: 12, fontWeight:500, color: T.textPrimary, fontFamily:'Inter,sans-serif', outline:'none' }}
+                <input type="text" placeholder="Arama yap..." style={{ paddingLeft: 36, paddingRight: 16, paddingTop: 9, paddingBottom: 9, width: 220, background: T.pageBg, border: `1px solid ${T.border2}`, borderRadius: 22, fontSize: 12, fontWeight:500, color: T.textPrimary, fontFamily:'Inter,sans-serif', outline:'none' }}
                   onFocus={e => { e.target.style.borderColor = T.teal; e.target.style.boxShadow = `0 0 0 3px ${T.tealGlow}`; }}
                   onBlur={e =>  { e.target.style.borderColor = T.border2; e.target.style.boxShadow = 'none'; }} />
               </div>
-              <button onClick={fetchAllData} title="Verileri Yenile" style={{ background:'none', border:`1px solid ${T.border}`, borderRadius:10, padding:8, cursor:'pointer', color: T.textSecondary, display:'flex' }}>
+              <button title="Durum" style={{ background:'none', border:`1px solid ${T.border}`, borderRadius:10, padding:8, color: isOfflineMode ? '#D97706' : '#16A34A', display:'flex' }}>
                 <span className={isLoading ? 'yp-spin' : ''} style={{ display:'flex' }}><RefreshCw size={18} /></span>
               </button>
               <div style={{ width: 38, height: 38, borderRadius:'50%', background: 'linear-gradient(135deg, #0672A0, #0891B2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:13, cursor:'pointer', boxShadow:'0 2px 8px rgba(8,145,178,0.35)', border:'3px solid #fff' }}>YP</div>
@@ -299,25 +315,29 @@ export default function App() {
 
           <div style={{ flex:1, overflowY:'auto', position:'relative' }} className="yp-scrollbar">
             {dbError && (
-              <div style={{ background:'#FEF2F2', borderLeft:`4px solid #DC2626`, padding:'16px 20px', margin:28, borderRadius:'0 12px 12px 0' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, color:'#991B1B', fontWeight:700, marginBottom:6 }}><AlertCircle size={18} /> Veritabanı Uyarısı</div>
-                <p style={{ fontSize:13, color:'#B91C1C', fontWeight:500 }}>{dbError}</p>
+              <div style={{ background:'#FFFBEB', borderLeft:`4px solid #D97706`, padding:'16px 20px', margin:'20px 20px 0', borderRadius:'0 12px 12px 0' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, color:'#B45309', fontWeight:700, marginBottom:4 }}><AlertCircle size={18} /> Sistem Uyarısı</div>
+                <p style={{ fontSize:13, color:'#92400E', fontWeight:500 }}>{dbError}</p>
               </div>
             )}
+            
             {isLoading ? (
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:280, gap:14 }}>
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:14 }}>
                 <span className="yp-spin" style={{ color: T.teal, display:'flex' }}><RefreshCw size={38} /></span>
-                <p style={{ color: T.textSecondary, fontWeight:500 }}>Veriler yükleniyor…</p>
+                <p style={{ color: T.textSecondary, fontWeight:500 }}>Sistem Hazırlanıyor…</p>
               </div>
             ) : (
               <>
-                {activeTab === 'dashboard'  && <div style={{padding:28}}>Özet Panel modülü</div>}
-                {activeTab === 'customers'  && <div style={{padding:28}}>Müşteriler modülü</div>}
-                {activeTab === 'samples'    && <SamplesView initialData={samples} customers={customers} onRefresh={fetchAllData} />}
-                {activeTab === 'prices'     && <div style={{padding:28}}>Fiyatlar modülü</div>}
-                {activeTab === 'cost'       && <div style={{padding:28}}>Maliyet modülü</div>}
-                {activeTab === 'notes'      && <div style={{padding:28}}>Notlarım modülü</div>}
-                {activeTab === 'offers'     && <div style={{padding:28}}>Teklifler modülü</div>}
+                {/* Numuneler Sekmesi Aktif Modül */}
+                {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
+                
+                {/* Diğer Modüller İçin Boş / Yer Tutucu Arayüz */}
+                {activeTab === 'dashboard' && <PlaceholderModule title="Özet Panel" icon={LayoutDashboard} />}
+                {activeTab === 'customers' && <PlaceholderModule title="Müşteriler" icon={Users} />}
+                {activeTab === 'prices'    && <PlaceholderModule title="Fiyatlar" icon={CircleDollarSign} />}
+                {activeTab === 'cost'      && <PlaceholderModule title="Maliyet" icon={Calculator} />}
+                {activeTab === 'offers'    && <PlaceholderModule title="Teklifler" icon={Send} />}
+                {activeTab === 'notes'     && <PlaceholderModule title="Notlarım" icon={FileText} />}
               </>
             )}
           </div>
@@ -330,7 +350,7 @@ export default function App() {
 // ============================================================================
 // NUMUNELER GÖRÜNÜMÜ 
 // ============================================================================
-function SamplesView({ initialData, customers, onRefresh }) {
+function SamplesView({ initialData, customers, offline }) {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   
@@ -377,9 +397,12 @@ function SamplesView({ initialData, customers, onRefresh }) {
     });
     setData(sorted);
     
-    const ids = sorted.slice(0, 50).map(r => r.id); 
-    preloadPhotos(ids);
-  }, [initialData]);
+    // Yalnızca veritabanı aktifse fotoğrafları çekmeyi dene
+    if (!offline) {
+      const ids = sorted.slice(0, 50).map(r => r.id); 
+      preloadPhotos(ids);
+    }
+  }, [initialData, offline]);
 
   // Filter Data
   useEffect(() => {
@@ -463,7 +486,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
 
   // --- Photo Functions ---
   const fetchPhotos = async (numeneId) => {
-    if(!supabase) return [];
+    if(offline || !supabase) return [];
     try {
       const { data, error } = await supabase.storage.from(PHOTO_BUCKET).list('numune_'+numeneId, { sortBy: { column: 'created_at', order: 'asc' }});
       if (error || !data) return [];
@@ -475,6 +498,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const preloadPhotos = async (ids) => {
+    if(offline) return;
     const needed = ids.filter(id => !(id in photoCache));
     if(needed.length === 0) return;
     
@@ -486,7 +510,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const handlePhotoUpload = async (e, numeneId) => {
-    if(!supabase) { showToast('Veritabanı bağlantısı henüz hazır değil.', 'err'); return; }
+    if(offline || !supabase) { showToast('Çevrimdışı modda fotoğraf yüklenemez.', 'err'); return; }
     const files = Array.from(e.target.files || []);
     if(!files.length) return;
     e.target.value = '';
@@ -530,7 +554,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const handleDeletePhoto = async (numeneId, photoPath) => {
-    if(!supabase) return;
+    if(offline || !supabase) return;
     setUploading(true); setUploadText('Siliniyor...');
     const { error } = await supabase.storage.from(PHOTO_BUCKET).remove([photoPath]);
     if(error) { showToast('Silinemedi', 'err'); }
@@ -558,7 +582,12 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const updateField = async (id, field, value) => {
-    if(!supabase) return;
+    if(offline) {
+      setData(prev => prev.map(item => item.id == id ? { ...item, [field]: value } : item));
+      if(field === 'durum') showToast(`Durum: ${value} (Yerel Değişiklik)`, 'ok');
+      return;
+    }
+    
     const { error } = await supabase.from('numuneler').update({ [field]: value }).eq('id', id);
     if(error) { showToast('Güncelleme hatası', 'err'); return; }
     
@@ -572,31 +601,42 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const deleteSample = async (id) => {
-    if(!supabase) return;
     if(!window.confirm('Bu numune silinsin mi?')) return;
-    const { error } = await supabase.from('numuneler').delete().eq('id', id);
-    if(error) { showToast('Silinemedi', 'err'); return; }
+    
+    if(!offline) {
+      const { error } = await supabase.from('numuneler').delete().eq('id', id);
+      if(error) { showToast('Silinemedi', 'err'); return; }
+    }
+    
     setData(prev => prev.filter(item => item.id != id));
     setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
     showToast('Silindi', 'ok');
   };
 
   const handleBulkStatus = async (status) => {
-    if(!supabase || selectedIds.size === 0) return;
+    if(selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
-    const { error } = await supabase.from('numuneler').update({ durum: status }).in('id', ids);
-    if(error) { showToast('Toplu güncelleme hatası', 'err'); return; }
+    
+    if(!offline) {
+      const { error } = await supabase.from('numuneler').update({ durum: status }).in('id', ids);
+      if(error) { showToast('Toplu güncelleme hatası', 'err'); return; }
+    }
+    
     setData(prev => prev.map(i => ids.includes(i.id) ? { ...i, durum: status } : i));
     setSelectedIds(new Set());
     showToast(`${ids.length} numune: ${status}`, 'ok');
   };
 
   const handleBulkDelete = async () => {
-    if(!supabase || selectedIds.size === 0) return;
+    if(selectedIds.size === 0) return;
     if(!window.confirm(`${selectedIds.size} numune silinsin mi?`)) return;
     const ids = Array.from(selectedIds);
-    const { error } = await supabase.from('numuneler').delete().in('id', ids);
-    if(error) { showToast('Silinemedi', 'err'); return; }
+    
+    if(!offline) {
+      const { error } = await supabase.from('numuneler').delete().in('id', ids);
+      if(error) { showToast('Silinemedi', 'err'); return; }
+    }
+    
     setData(prev => prev.filter(i => !ids.includes(i.id)));
     setSelectedIds(new Set());
     showToast(`${ids.length} silindi`, 'ok');
@@ -636,6 +676,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js';
       script.onload = () => { setUploading(false); runExport(); };
+      script.onerror = () => { setUploading(false); showToast('Excel kütüphanesi yüklenemedi.', 'err'); };
       document.body.appendChild(script);
     } else {
       runExport();
@@ -663,8 +704,6 @@ function SamplesView({ initialData, customers, onRefresh }) {
   };
 
   const handleSaveDrawer = async () => {
-    if(!supabase) return;
-    
     if(editId) {
       // Update single
       const row = formRows[0];
@@ -684,11 +723,13 @@ function SamplesView({ initialData, customers, onRefresh }) {
         aciklama: ac
       };
       
-      setUploading(true); setUploadText('Güncelleniyor...');
-      const { error } = await supabase.from('numuneler').update(payload).eq('id', editId);
-      setUploading(false);
+      if(!offline) {
+        setUploading(true); setUploadText('Güncelleniyor...');
+        const { error } = await supabase.from('numuneler').update(payload).eq('id', editId);
+        setUploading(false);
+        if(error) { showToast('Hata oluştu', 'err'); return; }
+      }
       
-      if(error) { showToast('Hata oluştu', 'err'); return; }
       setData(prev => prev.map(i => i.id == editId ? { ...i, ...payload } : i));
       showToast('Güncellendi', 'ok');
       setIsDrawerOpen(false);
@@ -702,23 +743,31 @@ function SamplesView({ initialData, customers, onRefresh }) {
         const k = r.kod.trim(), pr = r.fiyat.trim(), nt = r.not.trim(), vStr = r.var.trim();
         if(!k) return;
         const fs = pr ? (pr.startsWith('$') ? pr : '$'+pr) : '';
-        pkg.push({ firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
+        // Mock veri id'si üret
+        const tempId = Date.now() + Math.floor(Math.random()*1000);
+        pkg.push({ id: tempId, firma: f, numune: k, fiyat: fs, aciklama: nt, durum: 'Beklemede', arsiv: false });
         if(vStr) {
           vStr.split(',').forEach(v => {
             const vt = v.trim();
-            if(vt) pkg.push({ firma: f, numune: '↳ '+vt, fiyat: fs, aciklama: `${k}|${nt}`, durum: 'Beklemede', arsiv: false });
+            if(vt) pkg.push({ id: tempId + 1, firma: f, numune: '↳ '+vt, fiyat: fs, aciklama: `${k}|${nt}`, durum: 'Beklemede', arsiv: false });
           });
         }
       });
       
       if(!pkg.length) { showToast('En az bir kod girin', 'err'); return; }
       
-      setUploading(true); setUploadText('Kaydediliyor...');
-      const { data: inserted, error } = await supabase.from('numuneler').insert(pkg).select();
-      setUploading(false);
+      if(!offline) {
+        setUploading(true); setUploadText('Kaydediliyor...');
+        // Remove temp ids for real insert
+        const insertPkg = pkg.map(({id, ...rest}) => rest);
+        const { data: inserted, error } = await supabase.from('numuneler').insert(insertPkg).select();
+        setUploading(false);
+        if(error) { showToast('Hata: '+error.message, 'err'); return; }
+        setData(prev => [...inserted, ...prev]);
+      } else {
+        setData(prev => [...pkg, ...prev]);
+      }
       
-      if(error) { showToast('Hata: '+error.message, 'err'); return; }
-      setData(prev => [...inserted, ...prev]);
       showToast(`${pkg.length} kayıt eklendi`, 'ok');
       setIsDrawerOpen(false);
     }
@@ -748,8 +797,8 @@ function SamplesView({ initialData, customers, onRefresh }) {
         .st-select { appearance: none; background: transparent; border: none; font-size: 11px; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 6px; outline: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
-        .photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-top: 8px; margin-top: 8px; border-top: 1px dashed ${T.border}; }
-        .photo-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1px solid ${T.border}; }
+        .photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-top: 8px; margin-top: 8px; border-top: 1px dashed rgba(30,45,61,0.1); }
+        .photo-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 1px solid rgba(30,45,61,0.1); }
         .photo-wrap { position: relative; }
         .photo-del { position: absolute; top: -4px; right: -4px; background: #DC2626; color: white; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
       `}</style>
@@ -757,10 +806,10 @@ function SamplesView({ initialData, customers, onRefresh }) {
       {/* Toolbar & Filters */}
       <div style={{ display:'flex', flexWrap:'wrap', gap: 16, marginBottom: 20, alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ display:'flex', gap: 10 }}>
-          <button onClick={openNewDrawer} style={{ background: T.teal, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
+          <button onClick={openNewDrawer} style={{ background: '#0891B2', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
             <Plus size={16} /> Yeni Numune
           </button>
-          <button onClick={exportData} style={{ background: T.surface, color: T.textPrimary, border: `1px solid ${T.border2}`, padding: '8px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
+          <button onClick={exportData} style={{ background: '#FFFFFF', color: '#0A1520', border: `1px solid rgba(30,45,61,0.16)`, padding: '8px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display:'flex', alignItems:'center', gap:6 }}>
             <FileBarChart size={16} /> Excel
           </button>
         </div>
@@ -771,11 +820,11 @@ function SamplesView({ initialData, customers, onRefresh }) {
             const active = filter === f;
             return (
               <button key={f} onClick={() => setFilter(f)} style={{
-                background: active ? T.navy : T.surface, color: active ? '#fff' : T.textSecondary,
-                border: `1px solid ${active ? T.navy : T.border}`, padding: '6px 12px', borderRadius: 20,
+                background: active ? '#1E2D3D' : '#FFFFFF', color: active ? '#fff' : '#4A6880',
+                border: `1px solid ${active ? '#1E2D3D' : 'rgba(30,45,61,0.1)'}`, padding: '6px 12px', borderRadius: 20,
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', display:'flex', alignItems:'center', gap:6
               }}>
-                {f} <span style={{ background: active ? 'rgba(255,255,255,0.2)' : T.pageBg, padding: '2px 6px', borderRadius: 10, fontSize: 10 }}>{count}</span>
+                {f} <span style={{ background: active ? 'rgba(255,255,255,0.2)' : '#F3F5F7', padding: '2px 6px', borderRadius: 10, fontSize: 10 }}>{count}</span>
               </button>
             );
           })}
@@ -784,7 +833,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
 
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && (
-        <div style={{ background: T.navy, color: '#fff', padding: '10px 20px', borderRadius: 12, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, animation: 'fadeUp .2s' }}>
+        <div style={{ background: '#1E2D3D', color: '#fff', padding: '10px 20px', borderRadius: 12, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, animation: 'fadeUp .2s' }}>
           <span style={{ fontWeight: 700 }}>{selectedIds.size} seçili</span>
           <div style={{ display:'flex', gap: 8 }}>
             {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'].map(s => (
@@ -799,41 +848,41 @@ function SamplesView({ initialData, customers, onRefresh }) {
       {/* Search & Sort */}
       <div style={{ display:'flex', gap: 10, marginBottom: 20 }}>
         <div style={{ position:'relative', flex: 1, maxWidth: 400 }}>
-          <Search size={16} style={{ position:'absolute', left: 12, top: 10, color: T.textSecondary }} />
+          <Search size={16} style={{ position:'absolute', left: 12, top: 10, color: '#4A6880' }} />
           <input type="text" placeholder="Firma, kod veya not ara..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} 
-            style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none' }} />
-          {searchQuery && <X size={14} onClick={() => setSearchQuery('')} style={{ position:'absolute', right:12, top:11, color:T.textSecondary, cursor:'pointer' }} />}
+            style={{ width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
+          {searchQuery && <X size={14} onClick={() => setSearchQuery('')} style={{ position:'absolute', right:12, top:11, color:'#4A6880', cursor:'pointer' }} />}
         </div>
-        <div style={{ display:'flex', gap:4, background: T.surface, border: `1px solid ${T.border}`, borderRadius:8, padding:4 }}>
+        <div style={{ display:'flex', gap:4, background: '#FFFFFF', border: `1px solid rgba(30,45,61,0.1)`, borderRadius:8, padding:4 }}>
           {[{id:'date', label:'Tarih'}, {id:'alpha', label:'A-Z'}, {id:'status', label:'Durum'}].map(s => (
-            <button key={s.id} onClick={() => setSort(s.id)} style={{ background: sort === s.id ? T.pageBg : 'transparent', border:'none', padding:'6px 12px', borderRadius:6, fontSize:12, fontWeight:600, color: sort === s.id ? T.textPrimary : T.textSecondary, cursor:'pointer' }}>{s.label}</button>
+            <button key={s.id} onClick={() => setSort(s.id)} style={{ background: sort === s.id ? '#F3F5F7' : 'transparent', border:'none', padding:'6px 12px', borderRadius:6, fontSize:12, fontWeight:600, color: sort === s.id ? '#0A1520' : '#4A6880', cursor:'pointer' }}>{s.label}</button>
           ))}
         </div>
       </div>
 
       {/* Firma Banner */}
       {firmaBanner && (
-        <div style={{ background: T.tealSoft, border: `1px solid ${T.teal}`, padding: '10px 16px', borderRadius: 8, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, color: T.teal }}>
+        <div style={{ background: 'rgba(8,145,178,0.1)', border: `1px solid #0891B2`, padding: '10px 16px', borderRadius: 8, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 16, color: '#0891B2' }}>
           <span style={{ fontWeight: 700 }}>🏢 {firmaBanner} firmasının numuneleri</span>
-          <button onClick={() => setFirmaBanner('')} style={{ background:'transparent', border:'none', color:T.teal, cursor:'pointer', fontWeight:700 }}>✕ Tüm firmalar</button>
+          <button onClick={() => setFirmaBanner('')} style={{ background:'transparent', border:'none', color:'#0891B2', cursor:'pointer', fontWeight:700 }}>✕ Tüm firmalar</button>
         </div>
       )}
 
       {/* List */}
       <div style={{ display:'flex', flexDirection:'column', gap: 20 }}>
         {groupedData.length === 0 ? (
-          <div style={{ textAlign:'center', padding: '60px 20px', color: T.textSecondary, background: T.surface, borderRadius: 16, border: `1px dashed ${T.border2}` }}>
+          <div style={{ textAlign:'center', padding: '60px 20px', color: '#4A6880', background: '#FFFFFF', borderRadius: 16, border: `1px dashed rgba(30,45,61,0.16)` }}>
             <Package size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
-            <p style={{ fontWeight: 600 }}>Sonuç bulunamadı.</p>
+            <p style={{ fontWeight: 600 }}>Sonuç bulunamadı. Lütfen "Yeni Numune" butonuyla veri ekleyin.</p>
           </div>
         ) : (
           groupedData.map(({ firma, items, originalItems }) => (
-            <div key={firma} style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.border}`, overflow:'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div key={firma} style={{ background: '#FFFFFF', borderRadius: 12, border: `1px solid rgba(30,45,61,0.1)`, overflow:'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               
               {/* Firma Header */}
-              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderBottom: `1px solid ${T.border}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderBottom: `1px solid rgba(30,45,61,0.1)`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div style={{ display:'flex', alignItems:'center', gap: 12 }}>
-                  <span style={{ fontWeight: 800, color: T.textPrimary, cursor:'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
+                  <span style={{ fontWeight: 800, color: '#0A1520', cursor:'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
                   <div style={{ display:'flex', gap: 4 }}>
                     {['Onaylandı', 'Takip Et', 'Gönderildi', 'Reddedildi', 'Beklemede'].map(st => {
                       const c = originalItems.filter(i => i.durum === st).length;
@@ -843,7 +892,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
                     })}
                   </div>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.textSecondary, background: T.pageBg, padding: '4px 8px', borderRadius: 12 }}>{items.length} numune</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#4A6880', background: '#F3F5F7', padding: '4px 8px', borderRadius: 12 }}>{items.length} numune</span>
               </div>
 
               {/* Items */}
@@ -857,7 +906,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
                   const photos = photoCache[item.id] || [];
 
                   return (
-                    <div key={item.id} className={`sample-row ${v ? 'variant' : ''}`} style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}`, background: isSel ? '#F0F9FF' : undefined }}>
+                    <div key={item.id} className={`sample-row ${v ? 'variant' : ''}`} style={{ padding: '12px 16px', borderBottom: `1px solid rgba(30,45,61,0.1)`, background: isSel ? '#F0F9FF' : undefined }}>
                       <div style={{ display:'flex', alignItems:'flex-start', gap: 12 }}>
                         
                         <input type="checkbox" checked={isSel} onChange={(e) => {
@@ -868,11 +917,11 @@ function SamplesView({ initialData, customers, onRefresh }) {
                         
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                            <div style={{ fontWeight: 700, color: T.textPrimary, fontSize: 13 }}>
+                            <div style={{ fontWeight: 700, color: '#0A1520', fontSize: 13 }}>
                               {dName(item.numune) || 'İsimsiz'}
-                              {item.fiyat && <span className="mono" style={{ color: T.green, fontSize: 11, marginLeft: 8 }}>{item.fiyat}</span>}
+                              {item.fiyat && <span className="mono" style={{ color: '#15803D', fontSize: 11, marginLeft: 8 }}>{item.fiyat}</span>}
                             </div>
-                            <span style={{ fontSize: 11, color: T.textSecondary }}>{formatDate(item.updated_at || item.created_at)}</span>
+                            <span style={{ fontSize: 11, color: '#4A6880' }}>{formatDate(item.updated_at || item.created_at)}</span>
                           </div>
                           
                           <div style={{ display:'flex', alignItems:'center', gap: 8, marginTop: 8, flexWrap:'wrap' }}>
@@ -883,7 +932,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
                                 if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
                               }}
                               onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                              style={{ flex: 1, minWidth: 150, padding: '6px 10px', fontSize: 12, borderRadius: 6, border: `1px solid ${T.border2}`, background: '#fff', outline:'none' }} 
+                              style={{ flex: 1, minWidth: 150, padding: '6px 10px', fontSize: 12, borderRadius: 6, border: `1px solid rgba(30,45,61,0.16)`, background: '#fff', outline:'none' }} 
                             />
                             
                             {/* Status Select */}
@@ -894,14 +943,14 @@ function SamplesView({ initialData, customers, onRefresh }) {
                             
                             {/* Actions */}
                             <div style={{ display:'flex', gap: 4 }}>
-                              <label style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: photos.length ? T.tealSoft : T.surface, color: photos.length ? T.teal : T.textSecondary, border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                              <label style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: photos.length ? 'rgba(8,145,178,0.1)' : '#FFFFFF', color: photos.length ? '#0891B2' : '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                                 <Camera size={14} />
-                                {photos.length > 0 && <span style={{ width:6, height:6, borderRadius:'50%', background:T.teal, position:'absolute', top:2, right:2 }}/>}
+                                {photos.length > 0 && <span style={{ width:6, height:6, borderRadius:'50%', background:'#0891B2', position:'absolute', top:2, right:2 }}/>}
                                 <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display:'none' }} />
                               </label>
-                              <button onClick={() => openEditDrawer(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: T.surface, color: T.textSecondary, border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}><Edit2 size={14} /></button>
-                              <button onClick={() => toggleArchive(item.id, item.arsiv)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: T.surface, color: T.textSecondary, border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}><Archive size={14} /></button>
-                              <button onClick={() => deleteSample(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: T.surface, color: '#DC2626', border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
+                              <button onClick={() => openEditDrawer(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Edit2 size={14} /></button>
+                              <button onClick={() => toggleArchive(item.id, item.arsiv)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#4A6880', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Archive size={14} /></button>
+                              <button onClick={() => deleteSample(item.id)} style={{ cursor:'pointer', padding: 6, borderRadius: 6, background: '#FFFFFF', color: '#DC2626', border:`1px solid rgba(30,45,61,0.1)`, display:'flex', alignItems:'center', justifyContent:'center' }}><Trash2 size={14} /></button>
                             </div>
                           </div>
 
@@ -933,24 +982,24 @@ function SamplesView({ initialData, customers, onRefresh }) {
       
       {/* Drawer Container */}
       <div style={{ position:'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, zIndex: 101, transform: `translateY(${isDrawerOpen ? '0' : '100%'})`, transition: 'transform 0.3s cubic-bezier(0.32,0.72,0,1)', maxHeight: '90vh', overflowY:'auto', boxShadow:'0 -10px 40px rgba(0,0,0,0.2)' }}>
-        <div style={{ width: 40, height: 4, background: T.border2, borderRadius: 2, margin: '0 auto 20px' }} />
+        <div style={{ width: 40, height: 4, background: 'rgba(30,45,61,0.16)', borderRadius: 2, margin: '0 auto 20px' }} />
         <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>{editId ? '✏️ Düzenle' : '📦 Yeni Numune'}</h2>
 
         {/* Firma Alanı (Sadece yeni eklerken veya ana öğe düzenlerken) */}
         {!editId && (
           <div style={{ marginBottom: 16, position:'relative' }}>
-            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: T.textSecondary, marginBottom: 6 }}>Firma</label>
+            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Firma</label>
             <div style={{ position:'relative' }}>
               <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} 
                 onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }}
                 onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }}
                 placeholder="Firma ara veya yaz..." 
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none', fontSize: 14 }} 
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none', fontSize: 14 }} 
               />
               {isFirmaDdOpen && (
-                <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'#fff', border:`1px solid ${T.navy}`, borderRadius:8, marginTop:4, maxHeight:200, overflowY:'auto', zIndex:10, boxShadow:'0 10px 25px rgba(0,0,0,0.1)' }}>
+                <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'#fff', border:`1px solid #1E2D3D`, borderRadius:8, marginTop:4, maxHeight:200, overflowY:'auto', zIndex:10, boxShadow:'0 10px 25px rgba(0,0,0,0.1)' }}>
                   {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,20).map((c, i) => (
-                    <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding:'10px 14px', cursor:'pointer', borderBottom:`1px solid ${T.border}`, fontSize:13, fontWeight:600 }}>{c}</div>
+                    <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding:'10px 14px', cursor:'pointer', borderBottom:`1px solid rgba(30,45,61,0.1)`, fontSize:13, fontWeight:600 }}>{c}</div>
                   ))}
                 </div>
               )}
@@ -960,40 +1009,40 @@ function SamplesView({ initialData, customers, onRefresh }) {
 
         {/* Satırlar */}
         {formRows.map((r, i) => (
-          <div key={r.id} style={{ background: T.pageBg, padding: 16, borderRadius: 12, marginBottom: 12, position:'relative', border:`1px solid ${T.border}` }}>
+          <div key={r.id} style={{ background: '#F3F5F7', padding: 16, borderRadius: 12, marginBottom: 12, position:'relative', border:`1px solid rgba(30,45,61,0.1)` }}>
             {!editId && formRows.length > 1 && (
-              <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position:'absolute', top:8, right:8, background:'transparent', border:'none', color:T.textSecondary, cursor:'pointer' }}><X size={16}/></button>
+              <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position:'absolute', top:8, right:8, background:'transparent', border:'none', color:'#4A6880', cursor:'pointer' }}><X size={16}/></button>
             )}
             
-            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: T.textSecondary, marginBottom: 6 }}>Kod / Fiyat</label>
+            <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Kod / Fiyat</label>
             <div style={{ display:'flex', gap: 10, marginBottom: 12 }}>
-              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: FDY 100" style={{ flex: 2, padding: '10px 12px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none' }} />
-              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none' }} />
+              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: FDY 100" style={{ flex: 2, padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
+              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
             </div>
 
             {!editId && (
               <div style={{ marginBottom: 12 }}>
-                <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: T.textSecondary, marginBottom: 6 }}>Varyantlar (virgülle ayırın)</label>
-                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz, Kırmızı..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none' }} />
+                <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Varyantlar (virgülle ayırın)</label>
+                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz, Kırmızı..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
               </div>
             )}
 
             <div>
-              <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: T.textSecondary, marginBottom: 6 }}>Not</label>
-              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${T.border2}`, outline:'none' }} />
+              <label style={{ display:'block', fontSize: 11, fontWeight: 700, color: '#4A6880', marginBottom: 6 }}>Not</label>
+              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama..." style={{ width:'100%', padding: '10px 12px', borderRadius: 8, border: `1px solid rgba(30,45,61,0.16)`, outline:'none' }} />
             </div>
           </div>
         ))}
 
         {!editId && (
-          <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width:'100%', background: 'transparent', color: T.teal, border: `2px dashed ${T.tealSoft}`, padding: '12px', borderRadius: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 20 }}>
+          <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width:'100%', background: 'transparent', color: '#0891B2', border: `2px dashed rgba(8,145,178,0.3)`, padding: '12px', borderRadius: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 20 }}>
             + BİR SATIR DAHA EKLE
           </button>
         )}
 
         <div style={{ display:'flex', gap: 10 }}>
-          <button onClick={() => setIsDrawerOpen(false)} style={{ flex:1, padding:'12px', borderRadius:8, border:`1px solid ${T.border2}`, background:T.surface, fontWeight:600, cursor:'pointer' }}>İptal</button>
-          <button onClick={handleSaveDrawer} style={{ flex:2, padding:'12px', borderRadius:8, border:'none', background:T.navy, color:'#fff', fontWeight:700, cursor:'pointer' }}>{editId ? 'Güncelle' : 'Kaydet'}</button>
+          <button onClick={() => setIsDrawerOpen(false)} style={{ flex:1, padding:'12px', borderRadius:8, border:`1px solid rgba(30,45,61,0.16)`, background:'#FFFFFF', fontWeight:600, cursor:'pointer' }}>İptal</button>
+          <button onClick={handleSaveDrawer} style={{ flex:2, padding:'12px', borderRadius:8, border:'none', background:'#1E2D3D', color:'#fff', fontWeight:700, cursor:'pointer' }}>{editId ? 'Güncelle' : 'Kaydet'}</button>
         </div>
       </div>
 
@@ -1017,7 +1066,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
 
       {/* Uploading Overlay */}
       {uploading && (
-        <div style={{ position:'fixed', bottom: 20, right: 20, background: T.navy, color: '#fff', padding: '12px 20px', borderRadius: 12, display:'flex', alignItems:'center', gap: 12, zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+        <div style={{ position:'fixed', bottom: 20, right: 20, background: '#1E2D3D', color: '#fff', padding: '12px 20px', borderRadius: 12, display:'flex', alignItems:'center', gap: 12, zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
           <span className="yp-spin"><RefreshCw size={18} /></span>
           <span style={{ fontSize: 13, fontWeight: 600 }}>{uploadText}</span>
         </div>
@@ -1025,7 +1074,7 @@ function SamplesView({ initialData, customers, onRefresh }) {
 
       {/* Toast Notification */}
       {toastMsg && (
-        <div style={{ position:'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? '#DC2626' : T.navy, color: '#fff', padding: '12px 24px', borderRadius: 30, fontSize: 13, fontWeight: 700, zIndex: 999, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display:'flex', alignItems:'center', gap:8, animation: 'fadeUp 0.2s' }}>
+        <div style={{ position:'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? '#DC2626' : '#1E2D3D', color: '#fff', padding: '12px 24px', borderRadius: 30, fontSize: 13, fontWeight: 700, zIndex: 999, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display:'flex', alignItems:'center', gap:8, animation: 'fadeUp 0.2s' }}>
           {toastMsg.type === 'err' ? <AlertCircle size={16}/> : <CheckCircle size={16}/>}
           {toastMsg.msg}
         </div>
