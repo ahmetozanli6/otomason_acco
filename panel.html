@@ -5,21 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#1E2D3D">
   
+  <!-- SIKI ÖNBELLEK KONTROLÜ -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   
   <title>Yanteks Pro | Mega Panel</title>
-  
+
+  <!-- URL Cache Buster (Service worker hatasını tetiklemeden zorla yenileme) -->
   <script>
-    // PWA Cache Zorla Temizleme (Eski bozuk sayfayı görmemeniz için)
-    try {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) registration.unregister();
-        }).catch(e => console.warn(e));
-      }
-    } catch (e) {}
+    if (!window.location.search.includes('v=')) {
+      window.location.replace(window.location.href.split('?')[0] + '?v=' + new Date().getTime());
+    }
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -36,6 +33,8 @@
       --primary: #0891B2;
       --navy: #0F172A;
       --red: #DC2626;
+      --green: #16A34A;
+      --orange: #D97706;
       --font: 'Inter', sans-serif;
     }
 
@@ -49,7 +48,9 @@
     .app-container { display: flex; width: 100%; height: 100vh; overflow: hidden; position: relative; }
     .sidebar { width: 260px; background-color: var(--navy); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); position: relative;}
     .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-    .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; text-decoration: none; }
+    
+    /* Nav Buttons (Artık a etiketi değil, button) */
+    .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
     .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
     .nav-button.active { background: linear-gradient(135deg, var(--primary), #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
 
@@ -58,10 +59,11 @@
     .header { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
     .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
     
+    /* View Sections (SPA Geçişleri) */
     .view-section { display: none; animation: fadeUp 0.3s ease forwards; }
     .view-section.active-view { display: block; }
 
-    /* Mobile adjustments */
+    /* Mobil Uyumluluk */
     @media (max-width: 1023px) {
       .sidebar { position: fixed; top: 0; left: 0; bottom: 0; transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
@@ -76,7 +78,7 @@
     .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; display: none; }
     .overlay.open { display: block; }
 
-    /* UI Components */
+    /* UI Bileşenleri */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
     .btn:active { transform: scale(0.96); }
     .btn-primary { background-color: var(--primary); color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
@@ -91,24 +93,34 @@
     .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
     .list-item:hover { background: #F8FAFC; }
+    .list-item:last-child { border-bottom: none; }
     .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
 
     .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: var(--surface); color: var(--text-sec); transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
     .chip-filter.active { background: var(--navy); color: #fff; border-color: var(--navy); }
 
-    /* Modals & Toasts */
+    /* Modallar (Drawers) */
     .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
     .drawer.open { transform: translateY(0); }
+    
+    /* Ortak Genel Modal (Ortada açılan) */
+    .center-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 150; display: none; align-items: center; justify-content: center; }
+    .center-modal-overlay.open { display: flex; }
+    .center-modal { background: #fff; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: fadeUp 0.3s ease; }
+
     .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; display: none; }
     .drawer-overlay.open { display: block; }
-    
+
+    /* Photo Viewer */
     .photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; }
     .photo-viewer.open { display: flex; }
 
+    /* Toast Bildirim */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--navy); color: #fff; padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 700; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; transition: transform 0.3s ease; opacity: 0; pointer-events: none; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .toast.error { background: var(--red); }
 
+    /* Ekstra Stiller */
     .spin { animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -119,6 +131,13 @@
     .status-gonderildi { background: #DBEAFE; color: #1D4ED8; border-color: #BFDBFE; }
     .status-onaylandi { background: #DCFCE7; color: #15803D; border-color: #BBF7D0; }
     .status-reddedildi { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
+    
+    /* Genel Listeleme Gridleri */
+    .generic-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .generic-card { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: box-shadow 0.2s; }
+    .generic-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .generic-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .generic-sub { font-size: 13px; color: var(--text-sec); font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -126,7 +145,7 @@
   <div class="app-container">
     <div id="mobileOverlay" class="overlay" onclick="window.toggleSidebar()"></div>
 
-    <!-- YAN MENÜ (Bütün linkler sayfa yenilenmeden geçiş yapar) -->
+    <!-- ==================== SIDEBAR ==================== -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -141,47 +160,39 @@
       </div>
       
       <nav class="hide-scroll" style="flex: 1; overflow-y: auto; padding: 16px 12px;">
-        <p style="padding: 0 16px 8px; font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1px;">MODÜLLER (SPA)</p>
+        <p style="padding: 0 16px 8px; font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1px;">MODÜLLER</p>
         
         <button onclick="window.switchTab('dashboard')" id="nav-dashboard" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span>Özet Panel</span>
         </button>
-        
         <button onclick="window.switchTab('samples')" id="nav-samples" class="nav-button active">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Numuneler</span>
         </button>
-        
         <button onclick="window.switchTab('customers')" id="nav-customers" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Müşteriler</span>
         </button>
-        
         <button onclick="window.switchTab('prices')" id="nav-prices" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg><span>Fiyatlar</span>
         </button>
-        
         <button onclick="window.switchTab('costs')" id="nav-costs" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/></svg><span>Maliyet</span>
         </button>
-        
         <button onclick="window.switchTab('offers')" id="nav-offers" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span>Teklifler</span>
         </button>
-        
         <button onclick="window.switchTab('notes')" id="nav-notes" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg><span>Notlarım</span>
         </button>
-        
         <button onclick="window.switchTab('converter')" id="nav-converter" class="nav-button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="14" x2="21" y2="3"/><polyline points="8 21 3 21 3 16"/><line x1="20" y1="10" x2="3" y2="21"/></svg><span>Dönüştürücü</span>
         </button>
       </nav>
-      
       <div style="padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: 1px;">
-        YANTEKS PRO v2.0
+        YANTEKS PRO v3.0
       </div>
     </aside>
 
-    <!-- ANA İÇERİK ALANI -->
+    <!-- ==================== ANA İÇERİK ==================== -->
     <main class="main-content">
       <header class="header">
         <div style="display: flex; align-items: center; gap: 16px;">
@@ -195,11 +206,7 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="desktop-only" style="position: relative;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="globalSearch" placeholder="Hızlı Arama..." class="input" style="padding-left: 36px; width: 220px; border-radius: 20px;" oninput="window.globalSearch()">
-          </div>
-          <button class="btn-icon" onclick="window.fetchData()" title="Yenile">
+          <button class="btn-icon" onclick="window.fetchData()" title="Sistemi Yenile">
             <svg id="refreshIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
           <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">YP</div>
@@ -214,154 +221,164 @@
           <span style="font-weight: 600; color: var(--text-sec);">Sistem Yükleniyor...</span>
         </div>
 
-        <div id="mainContent" style="display: none; padding-bottom: 60px;">
-          
-          <!-- ==============================================
-               1. ÖZET PANEL
-               ============================================== -->
-          <div id="view-dashboard" class="view-section">
-            <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;">Sistem Özeti</h3>
-            <div id="dashboardStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-              <!-- JS ile dolar -->
-            </div>
+        <!-- ==============================
+             1. ÖZET PANEL
+             ============================== -->
+        <div id="view-dashboard" class="view-section">
+          <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 24px; color: var(--text);">Sistem Özeti</h3>
+          <div id="dashboardStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <!-- JS Dolduracak -->
           </div>
-
-          <!-- ==============================================
-               2. NUMUNELER
-               ============================================== -->
-          <div id="view-samples" class="view-section active-view">
-            <!-- Araç Çubuğu -->
-            <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <div style="display: flex; gap: 12px;">
-                <button onclick="window.openDrawer()" class="btn btn-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Numune</button>
-                <button onclick="window.exportExcel()" class="btn btn-outline"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></svg> Excel'e Aktar</button>
-              </div>
-              <div id="filterChips" class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;"></div>
-            </div>
-
-            <!-- Toplu İşlem Menüsü -->
-            <div id="bulkActions" style="display: none; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 12px; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-              <span style="font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px;"><span id="selCount">0</span> Seçili</span>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button onclick="window.bulkUpdateStatus('Beklemede')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Beklemede</button>
-                <button onclick="window.bulkUpdateStatus('Takip Et')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Takip Et</button>
-                <button onclick="window.bulkUpdateStatus('Gönderildi')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Gönderildi</button>
-                <button onclick="window.bulkUpdateStatus('Onaylandı')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Onaylandı</button>
-                <button onclick="window.bulkDelete()" style="background: rgba(220,38,38,0.2); color: #FCA5A5; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Sil</button>
-                <button onclick="window.clearSelection()" style="background: transparent; border: none; color: #94A3B8; padding: 6px; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-              </div>
-            </div>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
-              <div style="position: relative; flex: 1; min-width: 250px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="searchInput" placeholder="Firma, kod veya not arayın..." class="input" style="padding-left: 40px;" oninput="window.renderSamples()">
-              </div>
-              <div style="display: flex; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
-                <button onclick="window.changeSort('date')" id="sort_date" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Tarih</button>
-                <button onclick="window.changeSort('alpha')" id="sort_alpha" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">A-Z</button>
-                <button onclick="window.changeSort('status')" id="sort_status" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Durum</button>
-              </div>
-            </div>
-
-            <div id="firmaBanner" style="display: none; background: #ECFEFF; border: 1px solid #A5F3FC; padding: 12px 20px; border-radius: 12px; justify-content: space-between; align-items: center; margin-bottom: 24px; color: #0E7490;">
-              <span style="font-weight: 700; font-size: 14px;">🏢 <span id="bannerFirmaName"></span> firmasının kayıtları</span>
-              <button onclick="window.setFirmaFilter('')" style="background: #CFFAFE; border: none; color: var(--primary); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Tümünü Göster</button>
-            </div>
-
-            <div id="dataListContainer"></div>
-          </div>
-
-          <!-- ==============================================
-               3. MÜŞTERİLER
-               ============================================== -->
-          <div id="view-customers" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Kayıtlı Müşteriler</h3>
-              <button class="btn btn-primary" onclick="window.addGenericRecord('musteriler')">Yeni Müşteri Ekle</button>
-            </div>
-            <div id="customersList"></div>
-          </div>
-
-          <!-- ==============================================
-               4. FİYATLAR
-               ============================================== -->
-          <div id="view-prices" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Listeleri</h3>
-              <button class="btn btn-primary" onclick="window.addGenericRecord('fiyatlar')">Fiyat Ekle</button>
-            </div>
-            <div id="pricesList"></div>
-          </div>
-
-          <!-- ==============================================
-               5. MALİYET
-               ============================================== -->
-          <div id="view-costs" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Maliyet Hesaplamaları</h3>
-              <button class="btn btn-primary" onclick="window.addGenericRecord('maliyetler')">Yeni Maliyet Ekle</button>
-            </div>
-            <div id="costsList"></div>
-          </div>
-
-          <!-- ==============================================
-               6. TEKLİFLER
-               ============================================== -->
-          <div id="view-offers" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Teklifleri</h3>
-              <button class="btn btn-primary" onclick="window.addGenericRecord('teklifler')">Teklif Oluştur</button>
-            </div>
-            <div id="offersList"></div>
-          </div>
-
-          <!-- ==============================================
-               7. NOTLAR
-               ============================================== -->
-          <div id="view-notes" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-              <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Notlarım</h3>
-              <button class="btn btn-primary" onclick="window.addGenericRecord('notlar')">Yeni Not</button>
-            </div>
-            <div id="notesList"></div>
-          </div>
-
-          <!-- ==============================================
-               8. DÖNÜŞTÜRÜCÜ
-               ============================================== -->
-          <div id="view-converter" class="view-section">
-            <h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 24px;">İplik Dönüştürücü</h3>
-            <div class="card" style="padding: 24px; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
-              <div>
-                <label style="font-size: 12px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 6px;">Ne (İngiliz Pamuk)</label>
-                <input type="number" id="conv-ne" class="input" placeholder="Ne değeri girin..." oninput="window.calcConv('ne', this.value)">
-              </div>
-              <div>
-                <label style="font-size: 12px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 6px;">Nm (Metrik)</label>
-                <input type="number" id="conv-nm" class="input" placeholder="Nm değeri girin..." oninput="window.calcConv('nm', this.value)">
-              </div>
-              <div>
-                <label style="font-size: 12px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 6px;">Denye (Denier)</label>
-                <input type="number" id="conv-den" class="input" placeholder="Denye değeri girin..." oninput="window.calcConv('den', this.value)">
-              </div>
-            </div>
-          </div>
-
         </div>
+
+        <!-- ==============================
+             2. NUMUNELER
+             ============================== -->
+        <div id="view-samples" class="view-section active-view">
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div style="display: flex; gap: 12px;">
+              <button onclick="window.openDrawer()" class="btn btn-primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Numune</button>
+              <button onclick="window.exportExcel()" class="btn btn-outline"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="8" x2="8" y1="18" y2="15"/><line x1="16" x2="16" y1="18" y2="14"/></svg> Excel'e Aktar</button>
+            </div>
+            <div id="filterChips" class="hide-scroll" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;"></div>
+          </div>
+
+          <div id="bulkActions" style="display: none; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 12px; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <span style="font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px;"><span id="selCount">0</span> Seçili</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button onclick="window.bulkUpdateStatus('Beklemede')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Beklemede</button>
+              <button onclick="window.bulkUpdateStatus('Takip Et')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Takip Et</button>
+              <button onclick="window.bulkUpdateStatus('Gönderildi')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Gönderildi</button>
+              <button onclick="window.bulkUpdateStatus('Onaylandı')" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">Onaylandı</button>
+              <button onclick="window.bulkDelete()" style="background: rgba(220,38,38,0.2); color: #FCA5A5; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Sil</button>
+              <button onclick="window.clearSelection()" style="background: transparent; border: none; color: #94A3B8; padding: 6px; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+            <div style="position: relative; flex: 1; min-width: 250px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="searchInput" placeholder="Numune listesinde arayın..." class="input" style="padding-left: 40px;" oninput="window.renderSamples()">
+            </div>
+            <div style="display: flex; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
+              <button onclick="window.changeSort('date')" id="sort_date" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Tarih</button>
+              <button onclick="window.changeSort('alpha')" id="sort_alpha" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">A-Z</button>
+              <button onclick="window.changeSort('status')" id="sort_status" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;">Durum</button>
+            </div>
+          </div>
+
+          <div id="firmaBanner" style="display: none; background: #ECFEFF; border: 1px solid #A5F3FC; padding: 12px 20px; border-radius: 12px; justify-content: space-between; align-items: center; margin-bottom: 24px; color: #0E7490;">
+            <span style="font-weight: 700; font-size: 14px;">🏢 <span id="bannerFirmaName"></span> firmasının kayıtları</span>
+            <button onclick="window.setFirmaFilter('')" style="background: #CFFAFE; border: none; color: var(--primary); font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Tümünü Göster</button>
+          </div>
+
+          <div id="dataListContainer"></div>
+        </div>
+
+        <!-- ==============================
+             3. MÜŞTERİLER
+             ============================== -->
+        <div id="view-customers" class="view-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Müşteri Listesi</h3>
+            <button class="btn btn-primary" onclick="window.openGenericModal('musteriler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Müşteri</button>
+          </div>
+          <div id="customersList" class="generic-grid"></div>
+        </div>
+
+        <!-- ==============================
+             4. FİYATLAR
+             ============================== -->
+        <div id="view-prices" class="view-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Listeleri</h3>
+            <button class="btn btn-primary" onclick="window.openGenericModal('fiyatlar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Fiyat</button>
+          </div>
+          <div id="pricesList" class="generic-grid"></div>
+        </div>
+
+        <!-- ==============================
+             5. MALİYET
+             ============================== -->
+        <div id="view-costs" class="view-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Maliyet Hesapları</h3>
+            <button class="btn btn-primary" onclick="window.openGenericModal('maliyetler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Maliyet</button>
+          </div>
+          <div id="costsList" class="generic-grid"></div>
+        </div>
+
+        <!-- ==============================
+             6. TEKLİFLER
+             ============================== -->
+        <div id="view-offers" class="view-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Fiyat Teklifleri</h3>
+            <button class="btn btn-primary" onclick="window.openGenericModal('teklifler')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Teklif</button>
+          </div>
+          <div id="offersList" class="generic-grid"></div>
+        </div>
+
+        <!-- ==============================
+             7. NOTLARIM
+             ============================== -->
+        <div id="view-notes" class="view-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text);">Kişisel Notlar</h3>
+            <button class="btn btn-primary" onclick="window.openGenericModal('notlar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Yeni Not</button>
+          </div>
+          <div id="notesList" class="generic-grid"></div>
+        </div>
+
+        <!-- ==============================
+             8. DÖNÜŞTÜRÜCÜ
+             ============================== -->
+        <div id="view-converter" class="view-section">
+          <h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 24px;">İplik Birim Dönüştürücü</h3>
+          <div class="card" style="padding: 32px; max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+            <div>
+              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Ne (İngiliz Pamuk)</label>
+              <input type="number" id="conv-ne" class="input" placeholder="Ne değeri girin..." oninput="window.calcConv('ne', this.value)" style="font-size: 16px; padding: 12px 16px;">
+            </div>
+            <div>
+              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Nm (Metrik)</label>
+              <input type="number" id="conv-nm" class="input" placeholder="Nm değeri girin..." oninput="window.calcConv('nm', this.value)" style="font-size: 16px; padding: 12px 16px;">
+            </div>
+            <div>
+              <label style="font-size: 13px; font-weight: 700; color: var(--text-sec); display: block; margin-bottom: 8px;">Denye (Denier)</label>
+              <input type="number" id="conv-den" class="input" placeholder="Denye değeri girin..." oninput="window.calcConv('den', this.value)" style="font-size: 16px; padding: 12px 16px;">
+            </div>
+            <button onclick="document.getElementById('conv-ne').value=''; document.getElementById('conv-nm').value=''; document.getElementById('conv-den').value='';" class="btn btn-outline" style="margin-top: 10px;">Sıfırla</button>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
 
   <!-- ==========================================
-       NUMUNE EKLE / DÜZENLE ÇEKMECESİ
+       MODALLAR & ÇEKMECELER
        ========================================== -->
+       
+  <!-- Ortak Form Modalı (Müşteri, Fiyat vb. eklemek için) -->
+  <div id="genericModalOverlay" class="center-modal-overlay" onclick="window.closeGenericModal()">
+    <div class="center-modal" onclick="event.stopPropagation()">
+      <h3 id="genericModalTitle" style="font-size: 18px; font-weight: 800; margin-bottom: 20px;">Kayıt Ekle</h3>
+      <div id="genericModalInputs" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;"></div>
+      <div style="display: flex; gap: 12px;">
+        <button onclick="window.closeGenericModal()" class="btn btn-outline" style="flex: 1;">İptal</button>
+        <button id="genericSaveBtn" class="btn btn-primary" style="flex: 2;">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Numune Ekle/Düzenle Çekmecesi -->
   <div id="drawerOverlay" class="drawer-overlay" onclick="window.closeDrawer()"></div>
   <div id="drawer" class="drawer">
     <div style="width: 40px; height: 6px; background: #E2E8F0; border-radius: 10px; margin: 0 auto 24px;"></div>
     <h2 id="drawerTitle" style="font-size: 20px; font-weight: 800; margin-bottom: 24px; color: var(--text);">📦 Yeni Kayıt</h2>
 
-    <div id="firmaSelectGroup" style="margin-bottom: 20px; position: relative;">
+    <div style="margin-bottom: 20px; position: relative;">
       <label style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase;">
         <span>Firma Seçimi / Adı</span>
         <span style="color: var(--primary); font-weight: 600; text-transform: none;">(Değiştirilebilir)</span>
@@ -380,7 +397,7 @@
     </div>
   </div>
 
-  <!-- FOTOĞRAF GÖRÜNTÜLEYİCİ -->
+  <!-- Fotoğraf Görüntüleyici -->
   <div id="photoViewer" class="photo-viewer">
     <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center;">
       <span id="pvCounter" style="color: #fff; font-weight: 700; background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px;">1 / 1</span>
@@ -396,7 +413,7 @@
     </div>
   </div>
 
-  <!-- TOAST BİLDİRİMİ -->
+  <!-- Toast (Bildirim) -->
   <div id="toast" class="toast">
     <svg id="toastIconOk" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
     <svg id="toastIconErr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FECACA" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
@@ -442,7 +459,8 @@
       photoCache: {}, filter: 'Hepsi', sortType: 'date', firmaFilter: '',
       selectedIds: new Set(), editId: null, formRows: [],
       currentPvPhotos: [], currentPvIndex: 0,
-      VALID_STATUS: ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi']
+      VALID_STATUS: ['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi'],
+      genericModalTable: null
     };
 
     // ==========================================
@@ -489,7 +507,7 @@
     // ==========================================
     async function safeFetch(table) {
       const {data, error} = await window.dbClient.from(table).select('*').order('created_at', {ascending: false});
-      if(error) { console.warn(table + ' verisi çekilemedi: ', error); return []; }
+      if(error) { console.warn(table + ' verisi çekilemedi. (Tablo yok olabilir)'); return []; }
       return data || [];
     }
 
@@ -506,7 +524,6 @@
         window.state.costs = await safeFetch('maliyetler');
         window.state.offers = await safeFetch('teklifler');
 
-        // Sort Numuneler logically (Ana varyant önce)
         window.state.samples.sort((a,b) => {
           const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
           if(ta === tb) return window.isV(a.numune) ? 1 : -1;
@@ -528,15 +545,140 @@
     window.renderAllViews = function() {
       window.renderSamples();
       window.renderDashboard();
-      window.renderGenericList('customers', 'customersList', 'firma_adi', 'adres', 'musteriler');
-      window.renderGenericList('notes', 'notesList', 'baslik', 'icerik', 'notlar');
-      window.renderGenericList('prices', 'pricesList', 'urun', 'fiyat', 'fiyatlar');
+      window.renderGenericList('customers', 'customersList', 'firma_adi', null, 'musteriler');
+      window.renderGenericList('prices', 'pricesList', 'urun_adi', 'fiyat', 'fiyatlar');
       window.renderGenericList('costs', 'costsList', 'urun', 'maliyet', 'maliyetler');
       window.renderGenericList('offers', 'offersList', 'firma', 'tutar', 'teklifler');
+      window.renderGenericList('notes', 'notesList', 'baslik', 'icerik', 'notlar');
     };
 
     // ==========================================
-    // 4. NUMUNELER & SİLME / GÜNCELLEME İŞLEMLERİ (SORUNSUZ ID)
+    // 4. DİĞER MODÜLLER (ORTAK LİSTELEME VE EKLEME)
+    // ==========================================
+    window.renderDashboard = function() {
+      document.getElementById('dashboardStats').innerHTML = `
+        <div class="card" style="padding:24px; border-left:4px solid var(--primary); margin:0;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Toplam Numune</div>
+          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.samples.length}</div>
+        </div>
+        <div class="card" style="padding:24px; border-left:4px solid var(--green); margin:0;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Kayıtlı Müşteri</div>
+          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.customers.length}</div>
+        </div>
+        <div class="card" style="padding:24px; border-left:4px solid var(--orange); margin:0;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Aktif Notlar</div>
+          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.notes.length}</div>
+        </div>
+      `;
+    };
+
+    window.renderGenericList = function(stateKey, containerId, titleField, subField, tableName) {
+      const c = document.getElementById(containerId);
+      if(!c) return;
+      const items = window.state[stateKey] || [];
+      
+      if(!items.length) { 
+        c.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-sec); background:#fff; border-radius:16px; border:1px dashed var(--border);">Henüz kayıt bulunmuyor.</div>'; 
+        return; 
+      }
+      
+      let html = '';
+      items.forEach(x => {
+        html += `<div class="generic-card">
+          <div style="min-width:0;">
+            <div class="generic-title">${x[titleField] || 'İsimsiz Kayıt'}</div>
+            ${subField && x[subField] ? `<div class="generic-sub">${x[subField]}</div>` : ''}
+          </div>
+          <button onclick="window.deleteGenericRecord('${tableName}', '${stateKey}', '${x.id}')" class="btn-icon" style="color:var(--red); flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+        </div>`;
+      });
+      c.innerHTML = html;
+    };
+
+    window.openGenericModal = function(tableName) {
+      window.state.genericModalTable = tableName;
+      let title = "Kayıt Ekle";
+      let inputsHtml = '';
+
+      if(tableName === 'musteriler') {
+        title = "Yeni Müşteri Ekle";
+        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Firma Adı" data-field="firma_adi">`;
+      } else if(tableName === 'fiyatlar') {
+        title = "Yeni Fiyat Ekle";
+        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Ürün Adı" data-field="urun_adi">
+                      <input type="text" id="gm_in_2" class="input" placeholder="Fiyat (örn: $5.20)" data-field="fiyat">`;
+      } else if(tableName === 'maliyetler') {
+        title = "Yeni Maliyet Ekle";
+        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Ürün Adı" data-field="urun">
+                      <input type="text" id="gm_in_2" class="input" placeholder="Maliyet Detayı" data-field="maliyet">`;
+      } else if(tableName === 'teklifler') {
+        title = "Yeni Teklif Ekle";
+        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Firma Adı" data-field="firma">
+                      <input type="text" id="gm_in_2" class="input" placeholder="Tutar / İçerik" data-field="tutar">`;
+      } else if(tableName === 'notlar') {
+        title = "Yeni Not Ekle";
+        inputsHtml = `<input type="text" id="gm_in_1" class="input" placeholder="Not Başlığı" data-field="baslik">
+                      <textarea id="gm_in_2" class="input" placeholder="Not içeriği..." rows="3" data-field="icerik"></textarea>`;
+      }
+
+      document.getElementById('genericModalTitle').innerText = title;
+      document.getElementById('genericModalInputs').innerHTML = inputsHtml;
+      
+      const saveBtn = document.getElementById('genericSaveBtn');
+      saveBtn.onclick = async function() {
+        saveBtn.innerText = "Kaydediliyor...";
+        saveBtn.disabled = true;
+        
+        let payload = {};
+        const inputs = document.getElementById('genericModalInputs').querySelectorAll('[data-field]');
+        inputs.forEach(inp => {
+          if(inp.value.trim() !== '') payload[inp.getAttribute('data-field')] = inp.value.trim();
+        });
+
+        if(Object.keys(payload).length === 0) {
+          window.showToast("Lütfen alanları doldurun", "err");
+          saveBtn.innerText = "Kaydet"; saveBtn.disabled = false;
+          return;
+        }
+
+        const {data, error} = await window.dbClient.from(tableName).insert([payload]).select();
+        
+        if(error) {
+          window.showToast("Ekleme hatası: " + error.message, "err");
+        } else {
+          window.showToast("Başarıyla eklendi", "ok");
+          window.fetchData(); // Her şeyi yenile
+          window.closeGenericModal();
+        }
+        saveBtn.innerText = "Kaydet"; saveBtn.disabled = false;
+      };
+
+      document.getElementById('genericModalOverlay').classList.add('open');
+    };
+
+    window.closeGenericModal = function() {
+      document.getElementById('genericModalOverlay').classList.remove('open');
+    };
+
+    window.deleteGenericRecord = async function(table, stateKey, id) {
+      if(!confirm('Bu kaydı tamamen silmek istediğinize emin misiniz?')) return;
+      const qId = isNaN(id) ? id : Number(id);
+      const {error} = await window.dbClient.from(table).delete().eq('id', qId);
+      if(error) { window.showToast('Silinemedi', 'err'); return; }
+      window.state[stateKey] = window.state[stateKey].filter(x => String(x.id) !== String(id));
+      window.renderAllViews();
+      window.showToast('Kayıt silindi');
+    };
+
+    window.calcConv = function(type, val) {
+      const v = parseFloat(val); if(isNaN(v) || v<=0) return;
+      if(type==='ne') { document.getElementById('conv-nm').value = (v * 1.693).toFixed(2); document.getElementById('conv-den').value = (5315 / v).toFixed(2); }
+      if(type==='nm') { document.getElementById('conv-ne').value = (v / 1.693).toFixed(2); document.getElementById('conv-den').value = (9000 / v).toFixed(2); }
+      if(type==='den'){ document.getElementById('conv-ne').value = (5315 / v).toFixed(2); document.getElementById('conv-nm').value = (9000 / v).toFixed(2); }
+    };
+
+    // ==========================================
+    // 5. NUMUNELER & SİLME / GÜNCELLEME İŞLEMLERİ
     // ==========================================
     window.renderSamples = function() {
       let activeCount = window.state.samples.filter(i => !i.arsiv).length;
@@ -616,7 +758,6 @@
           const note = (item.aciklama || '').split('|').pop() || '';
           const photos = window.state.photoCache[item.id] || [];
 
-          // ID'LER STRING OLARAK FORMATLANDI, SQL İÇİN NUMBERA ÇEVRİLECEK.
           html += `
             <div class="list-item ${isVariant ? 'variant' : ''}" style="background: ${isSel ? '#F0F9FF' : 'transparent'}">
               <input type="checkbox" ${isSel ? 'checked' : ''} onclick="window.toggleSelection('${item.id}')" style="width: 16px; height: 16px; cursor: pointer; margin-top: 4px; flex-shrink: 0;" />
@@ -627,7 +768,7 @@
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                   <input type="text" value="${note}" placeholder="Not ekle..." onblur="window.updateNote('${item.id}', this.value, ${isVariant})" class="input" style="flex: 1; min-width: 150px; padding: 8px 10px; border-radius: 8px;" />
-                  <select onchange="window.updateField('${item.id}', 'durum', this.value)" class="status-badge ${window.getStatusStyle(item.durum)}" style="padding: 8px 28px 8px 10px; font-size: 12px; appearance: none; outline: none; cursor: pointer;">
+                  <select onchange="window.updateField('${item.id}', 'durum', this.value)" class="status-badge ${window.getStatusStyle(item.durum)}" style="padding: 8px 28px 8px 10px; font-size: 12px; appearance: none; outline: none; cursor: pointer; background-image: url('data:image/svg+xml,%3csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'none\\' viewBox=\\'0 0 20 20\\'%3e%3cpath stroke=\\'%236b7280\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1.5\\' d=\\'M6 8l4 4 4-4\\'/%3e%3c/svg%3e'); background-position: right 6px center; background-repeat: no-repeat; background-size: 16px 16px;">
                     ${window.state.VALID_STATUS.map(s => `<option value="${s}" ${item.durum === s ? 'selected' : ''}>${s}</option>`).join('')}
                   </select>
                   <div style="display: flex; gap: 4px;">
@@ -660,9 +801,8 @@
       } else ba.style.display = 'none';
     };
 
-    // ID'leri Sayıya Çeviren Güvenli Güncelleme Fonksiyonu
     window.updateField = async function(id, field, val) {
-      const qId = isNaN(id) ? id : Number(id); // Supabase Strict Type Koruması
+      const qId = isNaN(id) ? id : Number(id); // Supabase koruması
       const {error} = await window.dbClient.from('numuneler').update({ [field]: val }).eq('id', qId);
       if(error) { window.showToast('Hata: ' + error.message, 'err'); return; }
       window.state.samples = window.state.samples.map(i => String(i.id) === String(id) ? { ...i, [field]: val } : i);
@@ -689,13 +829,12 @@
       window.showToast('Kalıcı olarak silindi');
     };
 
-    // Drawer Düzenleme Fonksiyonları (Firma ismini de içerir)
     window.openEditDrawer = function(id) {
       const item = window.state.samples.find(i => String(i.id) === String(id));
       if(!item) return;
       window.state.editId = id;
       document.getElementById('drawerTitle').innerText = '✏️ Kaydı Düzenle';
-      document.getElementById('formFirma').value = item.firma || ''; // FİRMA ADI BURAYA YÜKLENİYOR
+      document.getElementById('formFirma').value = item.firma || ''; // Firma ismi çekilir
       
       const v = window.isV(item.numune);
       const acParts = (item.aciklama||'').split('|');
@@ -728,7 +867,7 @@
           
           const qId = isNaN(window.state.editId) ? window.state.editId : Number(window.state.editId);
           await window.dbClient.from('numuneler').update(payload).eq('id', qId);
-          window.state.samples = window.state.samples.map(i => String(i.id) === String(window.state.editId) ? { ...i, ...payload } : i); // YEREL OLARAK DA GÜNCELLİYORUZ
+          window.state.samples = window.state.samples.map(i => String(i.id) === String(window.state.editId) ? { ...i, ...payload } : i); 
         } else {
           const pkg = [];
           window.state.formRows.forEach(r => {
@@ -749,87 +888,6 @@
       finally { btn.innerText = 'Kaydet'; btn.disabled = false; }
     };
 
-    // ==========================================
-    // 5. DİĞER SAYFALAR İÇİN FONKSİYONLAR (Dashboard, Müşteriler, vs.)
-    // ==========================================
-    window.renderDashboard = function() {
-      document.getElementById('dashboardStats').innerHTML = `
-        <div class="card" style="padding:24px; border-left:4px solid var(--primary);">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Toplam Numune</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.samples.length}</div>
-        </div>
-        <div class="card" style="padding:24px; border-left:4px solid #16A34A;">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Kayıtlı Müşteri</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.customers.length}</div>
-        </div>
-        <div class="card" style="padding:24px; border-left:4px solid #D97706;">
-          <div style="font-size:12px; font-weight:700; color:var(--text-sec); text-transform:uppercase;">Aktif Notlar</div>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-top:8px;">${window.state.notes.length}</div>
-        </div>
-      `;
-    };
-
-    // Ortak Listeleme ve Silme Motoru (Müşteri, Fiyat, Notlar vs için)
-    window.renderGenericList = function(stateKey, containerId, titleField, subField, tableName) {
-      const c = document.getElementById(containerId);
-      if(!c) return;
-      const items = window.state[stateKey] || [];
-      if(!items.length) { c.innerHTML = '<div style="padding:24px; text-align:center; color:var(--text-sec); background:#fff; border-radius:12px; border:1px dashed var(--border);">Kayıt bulunamadı.</div>'; return; }
-      
-      let html = '<div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">';
-      items.forEach(x => {
-        html += `<div class="card" style="padding:16px; margin:0; display:flex; justify-content:space-between; align-items:center;">
-          <div style="min-width:0;">
-            <h4 style="font-size:14px; font-weight:700; margin:0; color:var(--text); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${x[titleField] || 'İsimsiz'}</h4>
-            ${subField && x[subField] ? `<p style="font-size:12px; color:var(--text-sec); margin-top:4px;">${x[subField]}</p>` : ''}
-          </div>
-          <button onclick="window.deleteGenericRecord('${tableName}', '${stateKey}', '${x.id}')" class="btn-icon" style="color:var(--red); flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-        </div>`;
-      });
-      c.innerHTML = html + '</div>';
-    };
-
-    window.addGenericRecord = async function(table) {
-      const title = prompt('Lütfen eklenecek bilginin başlığını/adını girin:');
-      if(!title) return;
-      let p = {};
-      if(table === 'musteriler') p = { firma_adi: title };
-      if(table === 'notlar') p = { baslik: title, icerik: prompt('İçerik/Detay girin (İsteğe bağlı):') || '' };
-      if(table === 'fiyatlar') p = { urun_adi: title, fiyat: prompt('Fiyat bilgisi:') || '' };
-      if(table === 'maliyetler') p = { urun: title, maliyet: prompt('Maliyet bilgisi:') || '' };
-      if(table === 'teklifler') p = { firma: title, tutar: prompt('Tutar bilgisi:') || '' };
-
-      const {data, error} = await window.dbClient.from(table).insert([p]).select();
-      if(error) { window.showToast('Eklenirken hata: ' + error.message, 'err'); return; }
-      if(data && data.length) {
-        if(table === 'musteriler') window.state.customers.unshift(data[0]);
-        if(table === 'notlar') window.state.notes.unshift(data[0]);
-        if(table === 'fiyatlar') window.state.prices.unshift(data[0]);
-        if(table === 'maliyetler') window.state.costs.unshift(data[0]);
-        if(table === 'teklifler') window.state.offers.unshift(data[0]);
-      }
-      window.renderAllViews();
-      window.showToast('Başarıyla eklendi');
-    };
-
-    window.deleteGenericRecord = async function(table, stateKey, id) {
-      if(!confirm('Bu kaydı tamamen silmek istediğinize emin misiniz?')) return;
-      const qId = isNaN(id) ? id : Number(id);
-      const {error} = await window.dbClient.from(table).delete().eq('id', qId);
-      if(error) { window.showToast('Silinemedi', 'err'); return; }
-      window.state[stateKey] = window.state[stateKey].filter(x => String(x.id) !== String(id));
-      window.renderAllViews();
-      window.showToast('Silindi');
-    };
-
-    window.calcConv = function(type, val) {
-      const v = parseFloat(val); if(isNaN(v) || v<=0) return;
-      if(type==='ne') { document.getElementById('conv-nm').value = (v * 1.693).toFixed(2); document.getElementById('conv-den').value = (5315 / v).toFixed(2); }
-      if(type==='nm') { document.getElementById('conv-ne').value = (v / 1.693).toFixed(2); document.getElementById('conv-den').value = (9000 / v).toFixed(2); }
-      if(type==='den'){ document.getElementById('conv-ne').value = (5315 / v).toFixed(2); document.getElementById('conv-nm').value = (9000 / v).toFixed(2); }
-    };
-
-    // Helper functions (SetFilter vb.) ve UI Drawer Fonksiyonları
     window.setFilter = function(f) { window.state.filter = f; window.renderSamples(); };
     window.changeSort = function(s) { window.state.sortType = s; window.renderSamples(); };
     window.setFirmaFilter = function(f) { window.state.firmaFilter = f; window.renderSamples(); };
@@ -843,34 +901,18 @@
     window.filterFirmaDropdown = function() { const q = document.getElementById('formFirma').value.toLowerCase(); const dd = document.getElementById('firmaDropdown'); let html = ''; window.state.customers.filter(c => c.toLowerCase().includes(q)).slice(0,10).forEach(c => { html += `<div onclick="document.getElementById('formFirma').value='${c}'; document.getElementById('firmaDropdown').style.display='none';" style="padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 14px; font-weight: 600; cursor: pointer;">${c}</div>`; }); dd.innerHTML = html; dd.style.display = 'block'; };
     window.bulkUpdateStatus = async function(st) { const ids = Array.from(window.state.selectedIds); await window.dbClient.from('numuneler').update({ durum: st }).in('id', ids.map(Number)); window.state.samples = window.state.samples.map(i => ids.includes(String(i.id)) ? { ...i, durum: st } : i); window.state.selectedIds.clear(); window.renderSamples(); window.showToast('Toplu güncellendi'); };
     window.bulkDelete = async function() { if(!confirm('Seçili kayıtlar silinsin mi?')) return; const ids = Array.from(window.state.selectedIds); await window.dbClient.from('numuneler').delete().in('id', ids.map(Number)); window.state.samples = window.state.samples.filter(i => !ids.includes(String(i.id))); window.state.selectedIds.clear(); window.renderSamples(); window.showToast('Kayıtlar silindi'); };
-
-    window.globalSearch = function() {
-      const q = document.getElementById('globalSearch').value;
-      document.getElementById('searchInput').value = q;
-      window.renderSamples();
-    };
-
-    window.exportExcel = async function() {
-      const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('Numuneler');
-      sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']);
-      let exp = [...window.state.samples];
-      if (window.state.filter === 'Arşiv') exp = exp.filter(i => i.arsiv === true); else { exp = exp.filter(i => i.arsiv !== true); if (window.state.filter !== 'Hepsi') exp = exp.filter(i => i.durum === window.state.filter); }
-      if (window.state.firmaFilter) exp = exp.filter(i => (i.firma || '').toUpperCase() === window.state.firmaFilter.toUpperCase());
-      exp.sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => { const v = window.isV(i.numune); const pc = (i.aciklama||'').split('|')[0]; const note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama; const excelAd = v ? (pc ? pc+'-'+window.dName(i.numune) : window.dName(i.numune)) : window.dName(i.numune); const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : ''; sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]); });
-      const buf = await wb.xlsx.writeBuffer(); const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`; a.click();
-    };
-
+    window.globalSearch = function() { const q = document.getElementById('globalSearch').value; document.getElementById('searchInput').value = q; window.renderSamples(); };
+    window.exportExcel = async function() { const wb = new ExcelJS.Workbook(); const sh = wb.addWorksheet('Numuneler'); sh.addRow(['İSTEKÇİ FİRMA', 'NUMUNE', 'FİYAT', 'DURUM', 'NOTLAR', 'TARİH']); let exp = [...window.state.samples]; if (window.state.filter === 'Arşiv') exp = exp.filter(i => i.arsiv === true); else { exp = exp.filter(i => i.arsiv !== true); if (window.state.filter !== 'Hepsi') exp = exp.filter(i => i.durum === window.state.filter); } if (window.state.firmaFilter) exp = exp.filter(i => (i.firma || '').toUpperCase() === window.state.firmaFilter.toUpperCase()); exp.sort((a,b) => (a.firma||'').localeCompare(b.firma||'')).forEach(i => { const v = window.isV(i.numune); const pc = (i.aciklama||'').split('|')[0]; const note = (i.aciklama||'').includes('|') ? (i.aciklama||'').split('|')[1] : i.aciklama; const excelAd = v ? (pc ? pc+'-'+window.dName(i.numune) : window.dName(i.numune)) : window.dName(i.numune); const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : ''; sh.addRow([i.firma||'', excelAd, i.fiyat||'-', i.durum||'', note||'-', dt]); }); const buf = await wb.xlsx.writeBuffer(); const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Yanteks_Numune_${new Date().toLocaleDateString('tr-TR')}.xlsx`; a.click(); };
     window.closePhotoViewer = function() { document.getElementById('photoViewer').classList.remove('open'); };
     window.pvNav = function(dir) { window.state.currentPvIndex += dir; if(window.state.currentPvIndex < 0) window.state.currentPvIndex = 0; if(window.state.currentPvIndex >= window.state.currentPvPhotos.length) window.state.currentPvIndex = window.state.currentPvPhotos.length - 1; document.getElementById('pvImage').src = window.state.currentPvPhotos[window.state.currentPvIndex].url; document.getElementById('pvCounter').innerText = `${window.state.currentPvIndex + 1} / ${window.state.currentPvPhotos.length}`; };
     window.deleteCurrentPhoto = async function() { const p = window.state.currentPvPhotos[window.state.currentPvIndex]; await window.deletePhoto(p.sampleId, p.path); window.closePhotoViewer(); };
 
     // ==========================================
-    // 5. BAŞLATICI (INIT)
+    // 6. BAŞLATICI (INIT)
     // ==========================================
     window.onload = function() {
       window.fetchData();
     };
-
   </script>
 </body>
 </html>
