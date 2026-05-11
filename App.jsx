@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 // ============================================================================
-// İKONLAR (SVG Formatında Korundu)
+// İKONLAR (Saf SVG - Boyut ve Renkler Garantili)
 // ============================================================================
-const SvgIcon = ({ children, size = 20, className = '', fill = 'none', ...props }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+const SvgIcon = ({ children, size = 20, color = 'currentColor', className = '' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     {children}
   </svg>
 );
@@ -68,19 +68,6 @@ const dName = (n) => typeof n === 'string' ? n.replace(/^↳\s*/, '').trim() : '
 const trl = (s) => (s || '').toString().replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 // ============================================================================
-// YER TUTUCU MODÜL (Diğer Sekmeler İçin)
-// ============================================================================
-const PlaceholderModule = ({ title, icon: Icon }) => (
-  <div className="flex flex-col items-center justify-center h-full p-8 text-center text-slate-500">
-    <div className="w-20 h-20 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm">
-       <Icon size={40} className="text-cyan-600" />
-    </div>
-    <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-    <p className="max-w-xs text-sm leading-relaxed">Bu modül entegrasyon aşamasındadır. Lütfen yan menüden "Numuneler" sekmesini seçin.</p>
-  </div>
-);
-
-// ============================================================================
 // ANA UYGULAMA (App.jsx Root)
 // ============================================================================
 export default function App() {
@@ -89,9 +76,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [dbError, setDbError] = useState(null);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
-  
-  // TASARIM YÜKLENDİ Mİ KONTROLÜ
-  const [isCssLoaded, setIsCssLoaded] = useState(false);
 
   const [customers, setCustomers] = useState([]);
   const [samples, setSamples] = useState([]);
@@ -106,22 +90,11 @@ export default function App() {
     { id: 'notes',     label: 'Notlarım',    icon: FileText },
   ];
 
-  // Supabase ve TAILWIND CSS Yükleme
+  // Supabase Yükleme
   useEffect(() => {
     let isMounted = true;
     let timeoutId;
 
-    // 1. Önce Tailwind CSS'i Zorla Yükle
-    if (!window.tailwind) {
-      const twScript = document.createElement('script');
-      twScript.src = 'https://cdn.tailwindcss.com';
-      twScript.onload = () => { if (isMounted) setIsCssLoaded(true); };
-      document.head.appendChild(twScript);
-    } else {
-      setIsCssLoaded(true);
-    }
-
-    // 2. Veri Yükleme Mantığı
     const applyMockData = () => {
       if(!isMounted) return;
       setCustomers(MOCK_CUSTOMERS);
@@ -189,155 +162,167 @@ export default function App() {
 
   const handleNavClick = (id) => {
     setActiveTab(id);
-    setIsSidebarOpen(false); // Mobilde menüyü kapat
+    setIsSidebarOpen(false); 
   };
-
-  // TASARIM YÜKLENMEDEN EKRANI AÇMA
-  if (!isCssLoaded) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F3F5F7', fontFamily: 'sans-serif', color: '#4A6880' }}>
-        <div style={{ width: 40, height: 40, border: '4px solid #0891B2', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 16 }}></div>
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-        <p style={{ fontWeight: 600 }}>Tasarım Dosyaları Yükleniyor...</p>
-      </div>
-    );
-  }
 
   return (
     <>
       <style>{`
-        /* Ekstra scrollbar ve pürüzsüzleştirme ayarları */
+        /* SAF CSS ALTYAPISI - Dış Kütüphaneye İhtiyaç Duymaz */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Inter', sans-serif; }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body, html, #root { width: 100%; height: 100%; font-family: 'Inter', sans-serif; background-color: #F3F5F7; color: #0A1520; overflow: hidden; }
+        
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
+
+        /* Ana İskelet */
+        .app-container { display: flex; width: 100%; height: 100dvh; overflow: hidden; position: relative; }
+        
+        /* Menü (Sidebar) */
+        .sidebar { width: 260px; background-color: #0F172A; color: #fff; display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-mobile-hidden { transform: translateX(-100%); position: absolute; inset: 0 auto 0 0; }
+        .sidebar-mobile-open { transform: translateX(0); position: absolute; inset: 0 auto 0 0; }
+        .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+        .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 12px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .nav-button:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-button.active { background: linear-gradient(135deg, #0891B2, #0284C7); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3); }
+
+        /* İçerik */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; background: #F3F5F7; }
+        .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 40; }
+        
+        .header { height: 64px; background: #fff; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 10; }
+        .scroll-area { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
+
+        @media (min-width: 1024px) {
+          .sidebar-mobile-hidden { transform: translateX(0); position: relative; }
+          .menu-toggle-btn { display: none !important; }
+          .overlay { display: none !important; }
+        }
+
+        /* Ortak Bileşenler */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background-color: #0891B2; color: #fff; box-shadow: 0 2px 10px rgba(8,145,178,0.2); }
+        .btn-primary:hover { background-color: #0E7490; }
+        .btn-outline { background-color: #fff; color: #4A6880; border: 1px solid rgba(30,45,61,0.2); }
+        .btn-outline:hover { background-color: #F8FAFC; color: #0A1520; }
+        .btn-danger { background-color: #FEE2E2; color: #DC2626; border: 1px solid rgba(220,38,38,0.2); }
+        .btn-danger:hover { background-color: #FECACA; }
+        .btn-icon { background: #fff; border: 1px solid rgba(30,45,61,0.15); border-radius: 8px; padding: 6px; cursor: pointer; color: #4A6880; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-icon:hover { background: #F3F5F7; color: #0A1520; }
+
+        .input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(30,45,61,0.2); font-family: inherit; font-size: 13px; outline: none; transition: all 0.2s; background: #fff; }
+        .input:focus { border-color: #0891B2; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
+        
+        .card { background: #fff; border-radius: 16px; border: 1px solid rgba(30,45,61,0.1); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 24px; }
+        .card-header { background: #F8FAFC; padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .list-item { padding: 16px; border-bottom: 1px solid rgba(30,45,61,0.06); display: flex; gap: 16px; transition: background 0.2s; }
+        .list-item:hover { background: #F8FAFC; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item.variant { margin-left: 32px; border-left: 3px solid rgba(30,45,61,0.1); }
+
+        .chip-filter { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(30,45,61,0.15); background: #fff; color: #4A6880; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+        .chip-filter.active { background: #0F172A; color: #fff; border-color: #0F172A; }
+        
+        .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 24px; z-index: 100; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); }
+        .drawer.open { transform: translateY(0); }
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+        /* Animasyonlar */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .anim-spin { animation: spin 1s linear infinite; }
+        .anim-fade { animation: fadeUp 0.3s ease forwards; }
       `}</style>
 
-      {/* Ana Konteyner - Tam Ekran (Responsive flex) 100dvh ile mobil adres çubuğu sorunu çözüldü */}
-      <div className="flex w-full bg-slate-50 text-slate-900 overflow-hidden relative" style={{ height: '100dvh' }}>
+      <div className="app-container">
         
-        {/* Mobil Karartma (Overlay) */}
-        {isSidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-slate-900/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
+        {isSidebarOpen && <div className="overlay" onClick={() => setIsSidebarOpen(false)} />}
 
-        {/* Yan Menü (Sidebar) */}
-        <aside className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out
-          lg:relative lg:translate-x-0
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}>
-          {/* Sidebar Başlık */}
-          <div className="h-16 px-5 flex items-center justify-between bg-slate-950 border-b border-slate-800/50 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
-                <Zap size={18} />
+        {/* Sidebar */}
+        <aside className={`sidebar ${isSidebarOpen ? 'sidebar-mobile-open' : 'sidebar-mobile-hidden'}`}>
+          <div className="sidebar-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #0891B2, #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(8,145,178,0.4)' }}>
+                <Zap size={18} color="#fff" />
               </div>
-              <span className="text-[17px] font-extrabold text-white tracking-tight">
-                Yanteks<span className="text-cyan-400">Pro</span>
+              <span style={{ fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+                Yanteks<span style={{ color: '#38BDF8' }}>Pro</span>
               </span>
             </div>
-            {/* Mobilde Kapat Butonu */}
-            <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
-              <X size={20} />
+            <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+              <X size={24} />
             </button>
           </div>
           
-          {/* Menü Linkleri */}
-          <nav className="flex-1 overflow-y-auto py-4 px-3 hide-scroll">
-            <p className="px-3 pb-2 text-[10px] font-bold text-slate-500 tracking-wider uppercase">ANA MENÜ</p>
-            {navItems.map(({ id, label, icon: Icon }) => {
-              const active = activeTab === id;
-              return (
-                <button 
-                  key={id} 
-                  onClick={() => handleNavClick(id)} 
-                  className={`
-                    w-full flex items-center gap-3 px-3 py-2.5 mb-1 rounded-xl text-sm font-semibold transition-all duration-200
-                    ${active ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
-                  `}
-                >
-                  <Icon size={18} className={active ? 'text-white' : 'opacity-70'} />
-                  <span>{label}</span>
-                  {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />}
-                </button>
-              );
-            })}
+          <nav className="hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+            <p style={{ padding: '0 16px 8px', fontSize: '10px', fontWeight: '700', color: '#64748B', letterSpacing: '1px' }}>ANA MENÜ</p>
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <button key={id} onClick={() => handleNavClick(id)} className={`nav-button ${activeTab === id ? 'active' : ''}`}>
+                <Icon size={18} color={activeTab === id ? '#fff' : 'currentColor'} />
+                <span>{label}</span>
+              </button>
+            ))}
           </nav>
-          
-          {/* Sidebar Alt */}
-          <div className="p-4 border-t border-slate-800/50 text-[10px] font-semibold text-slate-500 tracking-wider">
-            YANTEKS PRO v2.0
-          </div>
         </aside>
 
-        {/* Ana İçerik Alanı */}
-        <main className="flex-1 flex flex-col h-full min-w-0 bg-slate-50 relative">
-          
-          {/* Üst Bilgi Çubuğu (Header) */}
-          <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 z-10">
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* Mobil Menü Açma Butonu */}
-              <button 
-                onClick={() => setIsSidebarOpen(true)} 
-                className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <Menu size={22} />
+        {/* Main */}
+        <main className="main-content">
+          <header className="header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button className="menu-toggle-btn btn-icon" onClick={() => setIsSidebarOpen(true)} style={{ border: 'none', padding: '4px' }}>
+                <Menu size={24} color="#0A1520" />
               </button>
               <div>
-                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight leading-none">
-                  {navItems.find(i => i.id === activeTab)?.label}
-                </h2>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5 hidden sm:block">
-                  Sisteme hoş geldiniz, iyi çalışmalar.
-                </p>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{navItems.find(i => i.id === activeTab)?.label}</h2>
+                <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0', display: window.innerWidth > 600 ? 'block' : 'none' }}>Sisteme hoş geldiniz, iyi çalışmalar.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Durum Göstergesi */}
-              <button className="p-2 text-slate-400 hover:text-cyan-600 transition-colors rounded-lg flex items-center">
-                <span className={isLoading ? 'animate-spin' : ''}>
-                  <RefreshCw size={18} className={isOfflineMode ? 'text-amber-500' : 'text-slate-400'} />
-                </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ position: 'relative', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+                <Search size={16} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input type="text" placeholder="Arama yap..." className="input" style={{ paddingLeft: '36px', width: '240px', borderRadius: '20px' }} />
+              </div>
+              <button className="btn-icon" title="Yenile">
+                <RefreshCw size={18} className={isLoading ? 'anim-spin' : ''} color={isOfflineMode ? '#D97706' : '#16A34A'} />
               </button>
-              {/* Profil */}
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-cyan-600 to-cyan-500 flex items-center justify-center text-white font-bold text-xs sm:text-sm border-2 border-white shadow-sm cursor-pointer">
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #0891B2, #0284C7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
                 YP
               </div>
             </div>
           </header>
 
-          {/* Dinamik Sayfa İçeriği */}
-          <div className="flex-1 overflow-y-auto relative hide-scroll">
-            
+          <div className="scroll-area hide-scroll">
             {dbError && (
-              <div className="mx-4 sm:mx-6 lg:mx-8 mt-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl shadow-sm">
-                <div className="flex items-center gap-2 text-amber-700 font-bold mb-1">
-                  <AlertCircle size={18} /> Sistem Uyarısı
-                </div>
-                <p className="text-amber-900 text-sm font-medium">{dbError}</p>
+              <div style={{ background: '#FFFBEB', borderLeft: '4px solid #D97706', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <strong style={{ color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}><AlertCircle size={16}/> Sistem Uyarısı</strong>
+                <span style={{ color: '#92400E', fontSize: '13px' }}>{dbError}</span>
               </div>
             )}
             
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-64 gap-4">
-                <RefreshCw size={36} className="text-cyan-600 animate-spin" />
-                <p className="text-slate-500 font-medium">Sistem Hazırlanıyor…</p>
+              <div style={{ height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#0891B2' }}>
+                <RefreshCw size={32} className="anim-spin" />
+                <span style={{ fontWeight: '600', color: '#4A6880' }}>Sistem Hazırlanıyor...</span>
               </div>
             ) : (
-              <div className="h-full">
+              <>
                 {activeTab === 'samples' && <SamplesView initialData={samples} customers={customers} offline={isOfflineMode} />}
-                {activeTab === 'dashboard' && <PlaceholderModule title="Özet Panel" icon={LayoutDashboard} />}
-                {activeTab === 'customers' && <PlaceholderModule title="Müşteriler" icon={Users} />}
-                {activeTab === 'prices'    && <PlaceholderModule title="Fiyatlar" icon={CircleDollarSign} />}
-                {activeTab === 'cost'      && <PlaceholderModule title="Maliyet" icon={Calculator} />}
-                {activeTab === 'offers'    && <PlaceholderModule title="Teklifler" icon={Send} />}
-                {activeTab === 'notes'     && <PlaceholderModule title="Notlarım" icon={FileText} />}
-              </div>
+                {activeTab !== 'samples' && (
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
+                    <div style={{ width: '80px', height: '80px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+                      <Package size={40} color="#0891B2" />
+                    </div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#0A1520', marginBottom: '8px' }}>Bu modül entegrasyon aşamasında</h3>
+                    <p style={{ fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>Lütfen sol menüden "Numuneler" sekmesine geçiş yapın.</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>
@@ -347,7 +332,7 @@ export default function App() {
 }
 
 // ============================================================================
-// NUMUNELER GÖRÜNÜMÜ
+// NUMUNELER GÖRÜNÜMÜ (SAF CSS & INLINE STYLE HARMANI)
 // ============================================================================
 function SamplesView({ initialData, customers, offline }) {
   const [data, setData] = useState([]);
@@ -389,7 +374,6 @@ function SamplesView({ initialData, customers, offline }) {
       return tb - ta;
     });
     setData(sorted);
-    
     if (!offline) {
       const ids = sorted.slice(0, 50).map(r => r.id); 
       preloadPhotos(ids);
@@ -464,7 +448,6 @@ function SamplesView({ initialData, customers, offline }) {
     });
   }, [filteredData, sort]);
 
-  // --- Photo Functions ---
   const fetchPhotos = async (numeneId) => {
     if(offline || !supabase) return [];
     try {
@@ -714,11 +697,11 @@ function SamplesView({ initialData, customers, offline }) {
 
   const getStatusStyle = (st) => {
     const map = {
-      'Beklemede': { tw: 'bg-amber-100 text-amber-700 border-amber-200' },
-      'Takip Et':  { tw: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-      'Gönderildi':{ tw: 'bg-blue-100 text-blue-700 border-blue-200' },
-      'Onaylandı': { tw: 'bg-green-100 text-green-700 border-green-200' },
-      'Reddedildi':{ tw: 'bg-red-100 text-red-700 border-red-200' },
+      'Beklemede': { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A' },
+      'Takip Et':  { bg: '#CFFAFE', color: '#0E7490', border: '#A5F3FC' },
+      'Gönderildi':{ bg: '#DBEAFE', color: '#1D4ED8', border: '#BFDBFE' },
+      'Onaylandı': { bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0' },
+      'Reddedildi':{ bg: '#FEE2E2', color: '#B91C1C', border: '#FECACA' },
     };
     return map[st] || map['Beklemede'];
   };
@@ -726,214 +709,149 @@ function SamplesView({ initialData, customers, offline }) {
   const activeCount = data.filter(i => !i.arsiv).length;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto pb-24">
+    <div className="anim-fade" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
       
-      {/* 1. Üst Aksiyon Çubuğu (Flex wrap) */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <button onClick={openNewDrawer} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-md shadow-cyan-600/20 transition-all">
-            <Plus size={18} /> Yeni Ekle
-          </button>
-          <button onClick={exportData} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all">
-            <FileBarChart size={18} /> Excel
-          </button>
+      {/* 1. Üst Araç Çubuğu */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button onClick={openNewDrawer} className="btn btn-primary"><Plus size={18} /> Yeni Ekle</button>
+          <button onClick={exportData} className="btn btn-outline"><FileBarChart size={18} /> Excel</button>
         </div>
 
-        {/* Filtre Çipler (Yatay kaydırılabilir) */}
-        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scroll">
+        <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
           {['Hepsi', 'Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı', 'Reddedildi', 'Arşiv'].map(f => {
             const count = f === 'Hepsi' ? activeCount : f === 'Arşiv' ? data.filter(i => i.arsiv).length : data.filter(i => !i.arsiv && i.durum === f).length;
             const active = filter === f;
             return (
-              <button 
-                key={f} 
-                onClick={() => setFilter(f)} 
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border
-                  ${active ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-              >
-                {f} <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
+              <button key={f} onClick={() => setFilter(f)} className={`chip-filter ${active ? 'active' : ''}`}>
+                {f} <span style={{ padding: '2px 6px', borderRadius: '10px', fontSize: '10px', background: active ? 'rgba(255,255,255,0.2)' : '#F3F5F7' }}>{count}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 2. Toplu İşlem Çubuğu (Görünürse) */}
+      {/* 2. Toplu İşlemler */}
       {selectedIds.size > 0 && (
-        <div className="bg-slate-900 text-white p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center mb-6 shadow-xl animate-[fadeUp_0.2s_ease]">
-          <span className="font-bold text-sm bg-white/10 px-3 py-1 rounded-lg">{selectedIds.size} seçili</span>
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="anim-fade" style={{ background: '#0F172A', color: '#fff', padding: '12px 20px', borderRadius: '12px', display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+          <span style={{ fontWeight: '700', fontSize: '14px', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '8px' }}>{selectedIds.size} Seçili</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {['Beklemede', 'Takip Et', 'Gönderildi', 'Onaylandı'].map(s => (
-              <button key={s} onClick={() => handleBulkStatus(s)} className="bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">{s}</button>
+              <button key={s} onClick={() => handleBulkStatus(s)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>{s}</button>
             ))}
-            <button onClick={handleBulkDelete} className="bg-red-500/20 hover:bg-red-500/40 text-red-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors ml-auto sm:ml-2">Sil</button>
-            <button onClick={() => setSelectedIds(new Set())} className="p-1.5 text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+            <button onClick={handleBulkDelete} style={{ background: 'rgba(220,38,38,0.2)', color: '#FCA5A5', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+            <button onClick={() => setSelectedIds(new Set())} style={{ background: 'transparent', border: 'none', color: '#94A3B8', padding: '6px', cursor: 'pointer' }}><X size={16} /></button>
           </div>
         </div>
       )}
 
-      {/* 3. Arama & Sıralama */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1 group">
-          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" />
-          <input 
-            type="text" 
-            placeholder="Firma, kod veya not ile ara..." 
-            value={searchQuery} 
-            onChange={e => setSearchQuery(e.target.value)} 
-            className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:ring-2 focus:ring-cyan-600/20 focus:border-cyan-600 outline-none shadow-sm transition-all"
-          />
-          {searchQuery && (
-            <X size={16} onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer" />
-          )}
+      {/* 3. Arama ve Sıralama */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '24px' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+          <Search size={18} color="#94A3B8" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input type="text" placeholder="Kayıt arayın..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="input" style={{ paddingLeft: '40px' }} />
+          {searchQuery && <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={16} /></button>}
         </div>
         
-        <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
+        <div style={{ display: 'flex', background: '#fff', border: '1px solid rgba(30,45,61,0.15)', borderRadius: '8px', padding: '4px' }}>
           {[{id:'date', label:'Tarih'}, {id:'alpha', label:'A-Z'}, {id:'status', label:'Durum'}].map(s => (
-            <button 
-              key={s.id} 
-              onClick={() => setSort(s.id)} 
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${sort === s.id ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
-            >
+            <button key={s.id} onClick={() => setSort(s.id)} style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', border: 'none', background: sort === s.id ? '#F3F5F7' : 'transparent', color: sort === s.id ? '#0A1520' : '#64748B', cursor: 'pointer' }}>
               {s.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Firma Filtresi Aktifse Gösterilen Banner */}
       {firmaBanner && (
-        <div className="bg-cyan-50 border border-cyan-200 p-3 sm:p-4 rounded-xl flex justify-between items-center mb-6 text-cyan-800">
-          <span className="font-bold text-sm flex items-center gap-2">🏢 {firmaBanner} <span className="font-normal opacity-75 hidden sm:inline">firmasına ait kayıtlar listeleniyor</span></span>
-          <button onClick={() => setFirmaBanner('')} className="text-cyan-700 hover:text-cyan-900 font-bold text-xs bg-cyan-100 px-3 py-1.5 rounded-lg">Tümünü Göster</button>
+        <div style={{ background: '#ECFEFF', border: '1px solid #A5F3FC', padding: '12px 20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', color: '#0E7490' }}>
+          <span style={{ fontWeight: '700', fontSize: '14px' }}>🏢 {firmaBanner} filtreli görünüm</span>
+          <button onClick={() => setFirmaBanner('')} style={{ background: '#CFFAFE', border: 'none', color: '#0891B2', fontWeight: '700', fontSize: '12px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>Tümünü Göster</button>
         </div>
       )}
 
-      {/* 4. Liste Alanı */}
-      <div className="flex flex-col gap-6">
+      {/* 4. Veri Listesi */}
+      <div>
         {groupedData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-10 bg-white border border-slate-200 border-dashed rounded-2xl text-slate-500">
-            <Package size={48} className="opacity-20 mb-4" />
-            <p className="font-bold">Sonuç bulunamadı</p>
-            <p className="text-sm mt-1">Farklı bir arama yapın veya yeni kayıt ekleyin.</p>
+          <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: '16px', border: '1px dashed rgba(30,45,61,0.2)' }}>
+            <Package size={48} color="#94A3B8" style={{ opacity: 0.5, marginBottom: '16px' }} />
+            <p style={{ fontWeight: '700', color: '#0A1520', fontSize: '16px' }}>Kayıt Bulunamadı</p>
+            <p style={{ fontSize: '14px', color: '#64748B', marginTop: '4px' }}>Arama kriterlerini değiştirin veya yeni ekleyin.</p>
           </div>
         ) : (
           groupedData.map(({ firma, items, originalItems }) => (
-            <div key={firma} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div key={firma} className="card">
               
-              {/* Grup Başlığı (Firma) */}
-              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-extrabold text-slate-900 cursor-pointer hover:text-cyan-600 transition-colors" onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
-                  <div className="flex flex-wrap gap-1.5">
+              <div className="card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: '800', fontSize: '15px', color: '#0A1520', cursor: 'pointer' }} onClick={() => setFirmaBanner(firma)}>🏢 {firma}</span>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {['Onaylandı', 'Takip Et', 'Gönderildi', 'Reddedildi', 'Beklemede'].map(st => {
                       const c = originalItems.filter(i => i.durum === st).length;
                       if(c === 0) return null;
                       const s = getStatusStyle(st);
-                      return <span key={st} className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${s.tw}`}>{c} {st}</span>;
+                      return <span key={st} style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>{c} {st}</span>;
                     })}
                   </div>
                 </div>
-                <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-sm">{items.length} kayıt</span>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', padding: '4px 10px', borderRadius: '8px' }}>{items.length} Kayıt</span>
               </div>
 
-              {/* Grup İçeriği (Satırlar) */}
-              <div className="flex flex-col">
+              <div>
                 {items.map(item => {
                   const v = isV(item.numune);
                   const isSel = selectedIds.has(item.id);
                   const acParts = (item.aciklama || '').split('|');
                   const note = acParts.length > 1 ? acParts[1] : item.aciklama;
-                  const stStyle = getStatusStyle(item.durum);
+                  const s = getStatusStyle(item.durum);
                   const photos = photoCache[item.id] || [];
 
                   return (
-                    <div key={item.id} className={`p-3 sm:p-4 border-b border-slate-100 transition-colors ${isSel ? 'bg-cyan-50/50' : 'hover:bg-slate-50'} ${v ? 'ml-4 sm:ml-8 border-l-4 border-l-slate-200' : ''}`}>
-                      <div className="flex items-start gap-3">
-                        
-                        <input 
-                          type="checkbox" 
-                          checked={isSel} 
-                          onChange={(e) => {
-                            const n = new Set(selectedIds);
-                            e.target.checked ? n.add(item.id) : n.delete(item.id);
-                            setSelectedIds(n);
-                          }} 
-                          className="mt-1 w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-600 cursor-pointer shrink-0" 
-                        />
-                        
-                        <div className="flex-1 min-w-0">
-                          {/* Satır 1: Başlık & Tarih */}
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-bold text-slate-900 text-[13px] sm:text-sm break-words leading-tight">
-                              {dName(item.numune) || 'İsimsiz'}
-                              {item.fiyat && <span className="ml-2 font-mono text-green-700 bg-green-50 px-1.5 py-0.5 rounded text-xs border border-green-200">{item.fiyat}</span>}
-                            </h4>
-                            <span className="text-[10px] sm:text-xs font-medium text-slate-400 whitespace-nowrap shrink-0">{formatDate(item.updated_at || item.created_at)}</span>
-                          </div>
-                          
-                          {/* Satır 2: Not, Durum & Aksiyonlar (Mobilde alta kayar) */}
-                          <div className="mt-2.5 flex flex-col sm:flex-row gap-2 sm:items-center">
-                            
-                            {/* Not Input */}
-                            <input 
-                              type="text" 
-                              defaultValue={note} 
-                              placeholder="Not ekle..." 
-                              onBlur={(e) => {
-                                const val = e.target.value.trim();
-                                if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
-                              }}
-                              onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                              className="w-full sm:flex-1 text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all placeholder-slate-400" 
-                            />
-                            
-                            {/* Durum & Butonlar Grubu */}
-                            <div className="flex flex-wrap items-center gap-1.5 shrink-0 mt-1 sm:mt-0">
-                              <select 
-                                value={item.durum || 'Beklemede'} 
-                                onChange={(e) => updateField(item.id, 'durum', e.target.value)} 
-                                className={`appearance-none text-xs font-bold px-2.5 py-1.5 rounded-lg border outline-none cursor-pointer pr-6 ${stStyle.tw}`}
-                                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.25rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
-                              >
-                                {VALID_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
-                              </select>
-                              
-                              <label className={`cursor-pointer p-1.5 rounded-lg border flex items-center justify-center transition-colors relative ${photos.length ? 'bg-cyan-50 border-cyan-200 text-cyan-600 hover:bg-cyan-100' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}>
-                                <Camera size={14} />
-                                {photos.length > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-500 border-2 border-white"/>}
-                                <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} className="hidden" />
-                              </label>
-                              
-                              <button onClick={() => openEditDrawer(item.id)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center"><Edit2 size={14} /></button>
-                              <button onClick={() => toggleArchive(item.id, item.arsiv)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center"><Archive size={14} /></button>
-                              <button onClick={() => deleteSample(item.id)} className="p-1.5 rounded-lg bg-white border border-slate-200 text-red-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors flex items-center justify-center"><Trash2 size={14} /></button>
-                            </div>
-                          </div>
-
-                          {/* Fotoğraf Şeridi */}
-                          {photos.length > 0 && (
-                            <div className="flex gap-2 overflow-x-auto pt-3 mt-3 border-t border-slate-100 hide-scroll">
-                              {photos.map((p, pIdx) => (
-                                <div key={pIdx} className="relative shrink-0 group">
-                                  <img 
-                                    src={p.url} 
-                                    className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:border-cyan-400 transition-colors" 
-                                    onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} 
-                                    alt="Numune"
-                                  />
-                                  <button 
-                                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white border-2 border-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" 
-                                    onClick={() => handleDeletePhoto(item.id, p.path)}
-                                  >
-                                    <X size={10} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
+                    <div key={item.id} className={`list-item ${v ? 'variant' : ''}`} style={{ background: isSel ? '#F0F9FF' : '' }}>
+                      <input type="checkbox" checked={isSel} onChange={(e) => {
+                        const n = new Set(selectedIds); e.target.checked ? n.add(item.id) : n.delete(item.id); setSelectedIds(n);
+                      }} style={{ width: '16px', height: '16px', cursor: 'pointer', marginTop: '4px' }} />
+                      
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                          <h4 style={{ fontSize: '14px', fontWeight: '700', color: '#0A1520', margin: 0 }}>
+                            {dName(item.numune) || 'İsimsiz'}
+                            {item.fiyat && <span style={{ marginLeft: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#15803D', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>{item.fiyat}</span>}
+                          </h4>
+                          <span style={{ fontSize: '11px', fontWeight: '500', color: '#94A3B8', whiteSpace: 'nowrap' }}>{formatDate(item.updated_at || item.created_at)}</span>
                         </div>
+                        
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                          <input type="text" defaultValue={note} placeholder="Not ekle..." onBlur={(e) => {
+                            const val = e.target.value.trim(); if(val !== note) updateField(item.id, 'aciklama', v ? `${acParts[0]}|${val}` : val);
+                          }} onKeyDown={e => e.key === 'Enter' && e.target.blur()} className="input" style={{ flex: 1, minWidth: '150px', padding: '6px 10px', fontSize: '12px' }} />
+                          
+                          <select value={item.durum || 'Beklemede'} onChange={(e) => updateField(item.id, 'durum', e.target.value)} style={{ appearance: 'none', background: s.bg, color: s.color, border: `1px solid ${s.border}`, padding: '6px 28px 6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', outline: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 6px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px 16px' }}>
+                            {VALID_STATUS.map(st => <option key={st} value={st}>{st}</option>)}
+                          </select>
+                          
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <label className="btn-icon" style={{ background: photos.length ? '#ECFEFF' : '#fff', borderColor: photos.length ? '#A5F3FC' : '', color: photos.length ? '#0891B2' : '', position: 'relative' }}>
+                              <Camera size={14} />
+                              {photos.length > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#0891B2', borderRadius: '50%', border: '2px solid #fff' }} />}
+                              <input type="file" accept="image/*" multiple onChange={(e) => handlePhotoUpload(e, item.id)} style={{ display: 'none' }} />
+                            </label>
+                            <button onClick={() => openEditDrawer(item.id)} className="btn-icon"><Edit2 size={14} /></button>
+                            <button onClick={() => toggleArchive(item.id, item.arsiv)} className="btn-icon"><Archive size={14} /></button>
+                            <button onClick={() => deleteSample(item.id)} className="btn-icon" style={{ color: '#DC2626' }}><Trash2 size={14} /></button>
+                          </div>
+                        </div>
+
+                        {photos.length > 0 && (
+                          <div className="hide-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                            {photos.map((p, pIdx) => (
+                              <div key={pIdx} style={{ position: 'relative', flexShrink: 0 }}>
+                                <img src={p.url} onClick={() => { setPvPhotos(photos.map(x=>({...x, numeneId: item.id}))); setPvIndex(pIdx); setPvOpen(true); }} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)', cursor: 'pointer' }} alt=""/>
+                                <button onClick={() => handleDeletePhoto(item.id, p.path)} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '20px', height: '20px', background: '#DC2626', color: '#fff', border: '2px solid #fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={10} /></button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                       </div>
                     </div>
                   );
@@ -944,175 +862,88 @@ function SamplesView({ initialData, customers, offline }) {
         )}
       </div>
 
-      {/* --- Çekmeceler ve Modallar --- */}
-
-      {/* Drawer Arkaplan Karartması */}
-      {isDrawerOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/40 z-[90] backdrop-blur-sm transition-opacity" 
-          onClick={() => setIsDrawerOpen(false)} 
-        />
-      )}
+      {/* --- ÇEKMECE & MODALLAR --- */}
+      <div className={`drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={() => setIsDrawerOpen(false)} />
       
-      {/* Çekmece (Drawer / Bottom Sheet) */}
-      <div className={`
-        fixed inset-x-0 bottom-0 z-[100] bg-white rounded-t-3xl p-5 sm:p-8 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] 
-        transform transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto hide-scroll
-        ${isDrawerOpen ? 'translate-y-0' : 'translate-y-full'}
-      `}>
-        {/* Çekmece Tutamacı */}
-        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
-        
-        <h2 className="text-xl font-extrabold text-slate-900 mb-6">{editId ? '✏️ Kaydı Düzenle' : '📦 Yeni Numune Ekle'}</h2>
+      <div className={`drawer ${isDrawerOpen ? 'open' : ''}`}>
+        <div style={{ width: '40px', height: '6px', background: '#E2E8F0', borderRadius: '10px', margin: '0 auto 24px' }} />
+        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '24px', color: '#0A1520' }}>{editId ? '✏️ Düzenle' : '📦 Yeni Kayıt'}</h2>
 
-        {/* Firma Seçimi */}
         {!editId && (
-          <div className="mb-5 relative">
-            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Firma</label>
-            <div className="relative">
-              <input 
-                type="text" 
-                value={isFirmaDdOpen ? firmaSearchQ : formFirma} 
-                onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }}
-                onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }}
-                placeholder="Firma ara veya yeni isim yaz..." 
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all" 
-              />
-              {isFirmaDdOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl max-h-48 overflow-y-auto z-10 shadow-xl py-1 hide-scroll">
-                  {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,20).map((c, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} 
-                      className="px-4 py-2.5 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 text-sm font-semibold text-slate-700"
-                    >
-                      {c}
-                    </div>
-                  ))}
-                  {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).length === 0 && firmaSearchQ && (
-                    <div className="px-4 py-3 text-xs text-slate-500 font-medium italic">
-                      "{firmaSearchQ}" yeni firma olarak eklenecek.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+          <div style={{ marginBottom: '20px', position: 'relative' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Firma Seçimi</label>
+            <input type="text" value={isFirmaDdOpen ? firmaSearchQ : formFirma} onChange={(e) => { setFirmaSearchQ(e.target.value); setIsFirmaDdOpen(true); }} onFocus={() => { setFirmaSearchQ(formFirma); setIsFirmaDdOpen(true); }} placeholder="Firma adını yazın..." className="input" style={{ padding: '12px 16px', fontSize: '14px' }} />
+            {isFirmaDdOpen && (
+              <div className="hide-scroll" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '8px', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', maxHeight: '200px', overflowY: 'auto', zIndex: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                {uniqueCustomers.filter(c => c.toLowerCase().includes(firmaSearchQ.toLowerCase())).slice(0,10).map((c, i) => (
+                  <div key={i} onClick={() => { setFormFirma(c); setIsFirmaDdOpen(false); }} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>{c}</div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Form Satırları */}
         {formRows.map((r, i) => (
-          <div key={r.id} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-4 relative">
-            {!editId && formRows.length > 1 && (
-              <button 
-                onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} 
-                className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <X size={16}/>
-              </button>
-            )}
+          <div key={r.id} style={{ background: '#F8FAFC', border: '1px solid rgba(30,45,61,0.1)', borderRadius: '16px', padding: '16px', marginBottom: '16px', position: 'relative' }}>
+            {!editId && formRows.length > 1 && <button onClick={() => setFormRows(prev => prev.filter(x => x.id !== r.id))} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={18}/></button>}
             
-            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Kod / Fiyat</label>
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <input 
-                type="text" 
-                value={r.kod} 
-                onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} 
-                placeholder="Örn: FDY 100" 
-                className="flex-2 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none w-full" 
-              />
-              <input 
-                type="text" 
-                value={r.fiyat} 
-                onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} 
-                placeholder="Fiyat ($)" 
-                className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none w-full" 
-              />
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Kod & Fiyat</label>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <input type="text" value={r.kod} onChange={e => { const n = [...formRows]; n[i].kod = e.target.value; setFormRows(n); }} placeholder="Örn: X-100" className="input" style={{ flex: 2 }} />
+              <input type="text" value={r.fiyat} onChange={e => { const n = [...formRows]; n[i].fiyat = e.target.value; setFormRows(n); }} placeholder="Fiyat ($)" className="input" style={{ flex: 1, fontFamily: 'JetBrains Mono' }} />
             </div>
 
             {!editId && (
-              <div className="mb-4">
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Varyantlar <span className="normal-case opacity-70">(Virgülle ayırın)</span></label>
-                <input 
-                  type="text" 
-                  value={r.var} 
-                  onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} 
-                  placeholder="Siyah, Beyaz, Kırmızı..." 
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none" 
-                />
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Varyantlar (Virgülle)</label>
+                <input type="text" value={r.var} onChange={e => { const n = [...formRows]; n[i].var = e.target.value; setFormRows(n); }} placeholder="Siyah, Beyaz..." className="input" />
               </div>
             )}
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Not</label>
-              <input 
-                type="text" 
-                value={r.not} 
-                onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} 
-                placeholder="Açıklama veya detay girin..." 
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none" 
-              />
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px', textTransform: 'uppercase' }}>Not</label>
+              <input type="text" value={r.not} onChange={e => { const n = [...formRows]; n[i].not = e.target.value; setFormRows(n); }} placeholder="Açıklama girin..." className="input" />
             </div>
           </div>
         ))}
 
-        {!editId && (
-          <button 
-            onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} 
-            className="w-full mb-6 py-3.5 border-2 border-dashed border-cyan-200 text-cyan-600 rounded-2xl text-sm font-extrabold hover:bg-cyan-50 hover:border-cyan-300 transition-colors"
-          >
-            + YENİ SATIR EKLE
-          </button>
-        )}
+        {!editId && <button onClick={() => setFormRows([...formRows, { id: Date.now(), kod: '', fiyat: '', var: '', not: '' }])} style={{ width: '100%', padding: '14px', background: 'transparent', border: '2px dashed #A5F3FC', color: '#0891B2', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer', marginBottom: '24px' }}>+ SATIR EKLE</button>}
 
-        <div className="flex gap-3 pt-2">
-          <button onClick={() => setIsDrawerOpen(false)} className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">
-            İptal
-          </button>
-          <button onClick={handleSaveDrawer} className="flex-[2] py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-md transition-colors">
-            {editId ? 'Değişiklikleri Kaydet' : 'Numuneleri Ekle'}
-          </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button onClick={() => setIsDrawerOpen(false)} style={{ flex: 1, padding: '14px', background: '#F1F5F9', border: 'none', borderRadius: '12px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>İptal</button>
+          <button onClick={handleSaveDrawer} style={{ flex: 2, padding: '14px', background: '#0F172A', border: 'none', borderRadius: '12px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}>{editId ? 'Kaydet' : 'Numuneleri Oluştur'}</button>
         </div>
       </div>
 
-      {/* Fotoğraf Görüntüleyici (Lightbox) */}
+      {/* Fotoğraf Büyük Görüntüleme */}
       {pvOpen && (
-        <div className="fixed inset-0 bg-black/95 z-[200] flex flex-col backdrop-blur-sm">
-          <div className="p-4 sm:p-6 flex justify-between items-center text-white shrink-0">
-            <span className="font-bold bg-white/10 px-3 py-1.5 rounded-lg text-sm">{pvIndex + 1} / {pvPhotos.length}</span>
-            <button onClick={() => setPvOpen(false)} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><X size={20}/></button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: '#fff', fontWeight: '700', background: 'rgba(255,255,255,0.1)', padding: '6px 12px', borderRadius: '8px' }}>{pvIndex + 1} / {pvPhotos.length}</span>
+            <button onClick={() => setPvOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}><X size={24}/></button>
           </div>
-          
-          <div className="flex-1 flex items-center justify-center relative p-4 min-h-0">
-            {pvIndex > 0 && (
-              <button onClick={() => setPvIndex(p=>p-1)} className="absolute left-4 sm:left-8 bg-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center backdrop-blur-md transition-colors z-10 text-xl font-light">‹</button>
-            )}
-            <img src={pvPhotos[pvIndex]?.url} className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg" alt="Büyük Görünüm"/>
-            {pvIndex < pvPhotos.length - 1 && (
-              <button onClick={() => setPvIndex(p=>p+1)} className="absolute right-4 sm:right-8 bg-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center backdrop-blur-md transition-colors z-10 text-xl font-light">›</button>
-            )}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '24px' }}>
+            {pvIndex > 0 && <button onClick={() => setPvIndex(p=>p-1)} style={{ position: 'absolute', left: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>‹</button>}
+            <img src={pvPhotos[pvIndex]?.url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} alt=""/>
+            {pvIndex < pvPhotos.length - 1 && <button onClick={() => setPvIndex(p=>p+1)} style={{ position: 'absolute', right: '24px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>›</button>}
           </div>
-          
-          <div className="p-6 flex justify-center shrink-0">
-            <button onClick={() => handleDeletePhoto(pvPhotos[pvIndex].numeneId, pvPhotos[pvIndex].path)} className="bg-red-500/20 hover:bg-red-500/40 text-red-200 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors border border-red-500/20">
-              <Trash2 size={18}/> Fotoğrafı Sil
-            </button>
+          <div style={{ padding: '32px', textAlign: 'center' }}>
+            <button onClick={() => handleDeletePhoto(pvPhotos[pvIndex].numeneId, pvPhotos[pvIndex].path)} style={{ background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.3)', color: '#FECACA', padding: '12px 24px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}><Trash2 size={18}/> Bu Fotoğrafı Sil</button>
           </div>
         </div>
       )}
 
-      {/* Yükleme Bildirimi */}
+      {/* Yükleme ve Toast Bildirimleri */}
       {uploading && (
-        <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 bg-slate-900 text-white px-5 py-3.5 rounded-xl flex items-center gap-3 z-[999] shadow-xl border border-slate-700 animate-[fadeUp_0.3s_ease]">
-          <RefreshCw size={18} className="animate-spin text-cyan-400" />
-          <span className="text-sm font-bold">{uploadText}</span>
+        <div className="anim-fade" style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#0F172A', color: '#fff', padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 999, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+          <RefreshCw size={20} className="anim-spin" color="#38BDF8" />
+          <span style={{ fontSize: '14px', fontWeight: '700' }}>{uploadText}</span>
         </div>
       )}
 
-      {/* Başarı/Hata Bildirimi (Toast) */}
       {toastMsg && (
-        <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3.5 rounded-full text-white text-sm font-bold z-[999] shadow-xl flex items-center gap-2.5 animate-[fadeUp_0.2s_ease] ${toastMsg.type === 'err' ? 'bg-red-600' : 'bg-slate-900'}`}>
-          {toastMsg.type === 'err' ? <AlertCircle size={18} className="text-red-200" /> : <CheckCircle size={18} className="text-cyan-400" />}
+        <div className="anim-fade" style={{ position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)', background: toastMsg.type === 'err' ? '#DC2626' : '#0F172A', color: '#fff', padding: '14px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: '700', zIndex: 999, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {toastMsg.type === 'err' ? <AlertCircle size={20} color="#FECACA" /> : <CheckCircle size={20} color="#38BDF8" />}
           {toastMsg.msg}
         </div>
       )}
