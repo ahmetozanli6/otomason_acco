@@ -1,5 +1,5 @@
-const CACHE = 'yanteks-v19';
-const DATA_CACHE = 'yanteks-data-v19';
+const CACHE = 'yanteks-v18';
+const DATA_CACHE = 'yanteks-data-v18';
 
 const BASE_PATH = '/yanteks_pro'; // GitHub Pages alt dizin
 const STATIC = [
