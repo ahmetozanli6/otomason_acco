@@ -10,21 +10,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Yanteks Pro | Panel</title>
 
-<!-- Kullanıcının Kendi PWA, Çevrimdışı ve Tema Dosyaları -->
+<!-- PWA VE TEMA DOSYALARI -->
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="theme.css">
 <script src="offline.js"></script>
 <script src="pwa.js"></script>
 
-<!-- Kütüphaneler (Supabase, ExcelJS, PDF.js, Chart.js) -->
+<!-- SUPABASE VE EXCEL KÜTÜPHANELERİ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
-/* KULLANICININ ORİJİNAL CSS ŞABLONU VE DEĞİŞKENLERİ */
+/* ORİJİNAL CSS ŞABLONUNUZ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f4f6f8;
@@ -37,11 +34,14 @@
   --txt3:#a0aec0;
   --pri:#0891B2;
   --pri-hov:#067a96;
+  --dan:#e53e3e;
+  --succ:#38a169;
+  --warn:#d69e2e;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 body{background:var(--bg);color:var(--txt);font-family:var(--font);-webkit-tap-highlight-color:transparent}
 
-/* Orijinal Drawer (Yan Menü) Stilleri */
+/* Yan Menü (Drawer) Stilleri */
 #drw-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
 #drw-ov.on{opacity:1;pointer-events:auto}
 #drw{position:fixed;top:0;left:0;bottom:0;width:260px;background:var(--surf);z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(0,0,.2,1);display:flex;flex-direction:column;box-shadow:2px 0 8px rgba(0,0,0,.1)}
@@ -55,45 +55,54 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);-webkit-tap-h
 .drw-foot{padding:15px 20px;font-size:12px;color:var(--txt3);border-top:1px solid var(--brd)}
 .drw-sep{height:1px;background:var(--brd);margin:10px 20px}
 
-/* Topbar (Üst Bar) Stilleri */
+/* Topbar Stilleri */
 .topbar{height:60px;background:var(--surf);display:flex;align-items:center;padding:0 15px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:80;justify-content:space-between;}
 .topbar-left{display:flex;align-items:center;}
 .menu-btn{background:none;border:none;font-size:24px;color:var(--txt);padding:5px;cursor:pointer;margin-right:15px}
 .page-title{font-size:18px;font-weight:600}
-.sync-badge{font-size:12px;background:var(--surf2);padding:4px 8px;border-radius:12px;color:var(--txt2);display:none;}
 
 /* İçerik ve Kart Stilleri */
 .content{padding:20px;max-width:1000px;margin:0 auto}
 .card{background:var(--surf);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:20px;border:1px solid var(--brd)}
-.form-group{margin-bottom:15px}
-.form-group label{display:block;margin-bottom:5px;font-size:14px;font-weight:500;color:var(--txt2)}
-.form-control{width:100%;padding:10px;border:1px solid var(--brd2);border-radius:8px;font-family:inherit;font-size:15px;outline:none}
-.form-control:focus{border-color:var(--pri)}
-.btn{background:var(--pri);color:#fff;border:none;padding:10px 15px;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;display:inline-block;text-align:center;}
-.btn:active{background:var(--pri-hov)}
-.btn-outline{background:transparent;border:1px solid var(--brd2);color:var(--txt);}
 
 /* SPA Sekme Geçiş Stilleri */
 .tab-page{display:none; animation: fadeIn 0.2s ease-out;}
 .tab-page.active{display:block;}
 @keyframes fadeIn { from {opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
 
-/* Orijinal Tablo Yapısı */
+/* Form ve Tablo Stilleri (index.html'den) */
+.flex-between{display:flex; justify-content:space-between; align-items:center;}
+.gap-2{display:flex; gap:10px; flex-wrap:wrap;}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;margin-bottom:5px;font-size:14px;font-weight:500;color:var(--txt2)}
+.form-control{width:100%;padding:10px;border:1px solid var(--brd2);border-radius:8px;font-family:inherit;font-size:15px;outline:none;background:var(--surf);}
+.form-control:focus{border-color:var(--pri)}
+.btn{background:var(--pri);color:#fff;border:none;padding:10px 15px;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;display:inline-block;text-align:center;}
+.btn:active{background:var(--pri-hov)}
+.btn-outline{background:transparent;border:1px solid var(--brd2);color:var(--txt);}
+.btn-danger{background:var(--dan);color:#fff;}
+
 .table-responsive{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;min-width:600px;}
 th,td{padding:12px 15px;text-align:left;border-bottom:1px solid var(--brd);}
 th{color:var(--txt2);font-weight:600;font-size:14px;background:var(--surf2);}
 .status-badge{padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600;}
+
+/* Modal (Açılır Pencere) Stilleri */
+.modal-overlay {position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal {background:var(--surf);width:90%;max-width:500px;border-radius:12px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,0.15);max-height:90vh;overflow-y:auto;}
+.modal-header {display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--brd);padding-bottom:15px;margin-bottom:15px;}
+.modal-title {font-size:18px;font-weight:600;}
+.close-btn {background:none;border:none;font-size:24px;cursor:pointer;color:var(--txt3);}
 </style>
 </head>
 <body>
 
-<!-- ORİJİNAL DRAWER (YAN MENÜ) -->
+<!-- YAN MENÜ -->
 <div id="drw-ov" onclick="closeDrawer()"></div>
 <div id="drw">
   <div class="drw-head">Yanteks Pro</div>
   <nav class="drw-nav">
-    <!-- Eski href bağlantıları yerine onclick ile SPA yönlendirmesi eklendi, orijinal emojiler korundu -->
     <a onclick="go('numune')" class="drw-item on" id="nav-numune"><span class="di">📦</span><span class="dt">Numune</span></a>
     <a onclick="go('musteriler')" class="drw-item" id="nav-musteriler"><span class="di">👥</span><span class="dt">Müşteri</span></a>
     <a onclick="go('fiyatlar')" class="drw-item" id="nav-fiyatlar"><span class="di">💰</span><span class="dt">Fiyatlar</span></a>
@@ -103,27 +112,41 @@ th{color:var(--txt2);font-weight:600;font-size:14px;background:var(--surf2);}
     <a onclick="go('maliyet')" class="drw-item" id="nav-maliyet"><span class="di">🧮</span><span class="dt">Maliyet</span></a>
     <div class="drw-sep"></div>
   </nav>
-  <div class="drw-foot">Yanteks Pro v2.0 (SPA Modu)</div>
+  <div class="drw-foot">Yanteks Pro (Adım 2: Numune Aktif)</div>
 </div>
 
-<!-- TOPBAR -->
+<!-- ÜST BAR -->
 <div class="topbar">
   <div class="topbar-left">
     <button class="menu-btn" onclick="openDrawer()">☰</button>
-    <div class="page-title" id="top-title">Numune</div>
+    <div class="page-title" id="top-title">Numune Veritabanı</div>
   </div>
-  <div class="sync-badge" id="sync-status">Senkronize Ediliyor...</div>
 </div>
 
-<!-- ANA İÇERİK EKRANI (Tüm Orijinal Sayfalar Burada Toplandı) -->
+<!-- SAYFALAR -->
 <div class="content">
 
-  <!-- 1. NUMUNE EKRANI -->
+  <!-- ============================================== -->
+  <!-- NUMUNE EKRANI (İndex.html'den aktarıldı) -->
+  <!-- ============================================== -->
   <div id="page-numune" class="tab-page active">
-    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-      <h2 style="font-size:20px;">Numune Veritabanı</h2>
-      <button class="btn" onclick="exportNumuneExcel()">Excel İndir</button>
+    <div class="flex-between" style="margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+      <div class="gap-2" style="flex:1;">
+        <input type="text" id="srch-numune" class="form-control" style="max-width:300px;" placeholder="Firma veya numune ara..." oninput="renderNumuneler()">
+        <select id="flt-numune" class="form-control" style="width:auto;" onchange="renderNumuneler()">
+          <option value="Hepsi">Tüm Durumlar</option>
+          <option value="Bekliyor">Bekliyor</option>
+          <option value="Onaylandı">Onaylandı</option>
+          <option value="Reddedildi">Reddedildi</option>
+          <option value="Arşiv">Arşiv</option>
+        </select>
+      </div>
+      <div class="gap-2">
+        <button class="btn btn-outline" onclick="exportExcel()">Excel İndir</button>
+        <button class="btn" onclick="openModal()">+ Yeni Kayıt</button>
+      </div>
     </div>
+    
     <div class="card" style="padding:0; overflow:hidden;">
       <div class="table-responsive">
         <table>
@@ -134,111 +157,71 @@ th{color:var(--txt2);font-weight:600;font-size:14px;background:var(--surf2);}
               <th>Fiyat</th>
               <th>Durum</th>
               <th>Tarih</th>
+              <th>İşlem</th>
             </tr>
           </thead>
           <tbody id="tbl-numune">
-            <tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:20px;">Yükleniyor...</td></tr>
+            <tr><td colspan="6" style="text-align:center;color:var(--txt3);padding:20px;">Veriler Supabase'den çekiliyor...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- 2. MÜŞTERİ EKRANI -->
-  <div id="page-musteriler" class="tab-page">
-    <h2 style="font-size:20px; margin-bottom:15px;">Müşteri Listesi</h2>
-    <div id="list-musteriler" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:15px;">
-      <div class="card" style="text-align:center;color:var(--txt3);">Müşteriler Yükleniyor...</div>
-    </div>
-  </div>
-
-  <!-- 3. FİYATLAR EKRANI -->
-  <div id="page-fiyatlar" class="tab-page">
-    <h2 style="font-size:20px; margin-bottom:15px;">Güncel Fiyatlar</h2>
-    <div class="card">
-      <div style="margin-bottom:20px; font-weight:600; border-bottom:1px solid var(--brd); padding-bottom:10px;">İplik Fiyatları</div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Pamuk 30/1</span><strong style="color:var(--pri)">$3.20/kg</strong></div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Polyester 150D</span><strong style="color:var(--pri)">$1.80/kg</strong></div>
-    </div>
-    <div class="card">
-      <div style="margin-bottom:20px; font-weight:600; border-bottom:1px solid var(--brd); padding-bottom:10px;">Örme Fiyatları</div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Süprem</span><strong style="color:var(--pri)">$0.40/kg</strong></div>
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>İki İplik</span><strong style="color:var(--pri)">$0.45/kg</strong></div>
-    </div>
-  </div>
-
-  <!-- 4. TEKLİFLER EKRANI -->
-  <div id="page-fiyatteklifleri" class="tab-page">
-    <div class="card" style="text-align:center; padding:40px 20px;">
-      <div style="font-size:48px; margin-bottom:10px;">📤</div>
-      <h3 style="margin-bottom:10px;">Fiyat Teklifi Oluştur</h3>
-      <p style="color:var(--txt2); margin-bottom:20px;">Müşterilerinize PDF veya Excel formatında teklifler sunun.</p>
-      <button class="btn">Yeni Teklif Başlat</button>
-    </div>
-  </div>
-
-  <!-- 5. NOTLARIM EKRANI -->
-  <div id="page-notlarim" class="tab-page">
-    <div class="card" style="display:flex; gap:10px;">
-      <input type="text" id="inp-not" class="form-control" placeholder="Yeni bir not yazın..." onkeypress="event.key === 'Enter' && kaydetNot()">
-      <button class="btn" style="width:auto;" onclick="kaydetNot()">Ekle</button>
-    </div>
-    <div id="list-notlar" style="display:flex; flex-direction:column; gap:10px;">
-      <div class="card" style="text-align:center;color:var(--txt3);">Notlar Yükleniyor...</div>
-    </div>
-  </div>
-
-  <!-- 6. DÖNÜŞTÜRÜCÜ EKRANI -->
-  <div id="page-donusturucu" class="tab-page">
-    <h2 style="font-size:20px; margin-bottom:15px;">Kumaş Birim Dönüştürücü</h2>
-    <div class="card">
-      <div class="form-group">
-        <label>Miktar (Kg)</label>
-        <input type="number" id="d-kg" class="form-control" placeholder="Örn: 100" oninput="hesaplaDon()">
-      </div>
-      <div class="form-group">
-        <label>Kumaş Gramajı (gr/m²)</label>
-        <input type="number" id="d-gr" class="form-control" value="150" oninput="hesaplaDon()">
-      </div>
-      <div style="margin-top:20px; padding:15px; background:var(--surf2); border-radius:8px;">
-        <div style="color:var(--txt2); font-size:14px; margin-bottom:5px;">Sonuçlar:</div>
-        <div id="d-res" style="font-weight:600; font-size:18px;">Miktar Giriniz</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 7. MALİYET EKRANI -->
-  <div id="page-maliyet" class="tab-page">
-    <h2 style="font-size:20px; margin-bottom:15px;">Maliyet Hesaplayıcı</h2>
-    <div class="card">
-      <div class="form-group">
-        <label>İplik Maliyeti ($/kg)</label>
-        <input type="number" id="m-iplik" step="0.1" value="3.50" class="form-control" oninput="hesaplaMal()">
-      </div>
-      <div class="form-group">
-        <label>Örme Maliyeti ($/kg)</label>
-        <input type="number" id="m-orme" step="0.1" value="0.40" class="form-control" oninput="hesaplaMal()">
-      </div>
-      <div class="form-group">
-        <label>Boya Maliyeti ($/kg)</label>
-        <input type="number" id="m-boya" step="0.1" value="1.20" class="form-control" oninput="hesaplaMal()">
-      </div>
-      <div class="form-group">
-        <label>Fire Oranı (%)</label>
-        <input type="number" id="m-fire" value="5" class="form-control" oninput="hesaplaMal()">
-      </div>
-      <div style="margin-top:20px; padding:20px; background:var(--txt); color:var(--surf); border-radius:8px; text-align:center;">
-        <div style="font-size:14px; color:var(--txt3); margin-bottom:5px;">Toplam Tahmini Maliyet</div>
-        <div id="m-total" style="font-size:32px; font-weight:700;">$5.36</div>
-      </div>
-    </div>
-  </div>
+  <!-- Diğer Ekranlar (Şimdilik Boş) -->
+  <div id="page-musteriler" class="tab-page"><div class="card"><h2>👥 Müşteri Ekranı</h2><p style="color:var(--txt2); margin-top:10px;">Adım 3'te eklenecek.</p></div></div>
+  <div id="page-fiyatlar" class="tab-page"><div class="card"><h2>💰 Fiyatlar Ekranı</h2></div></div>
+  <div id="page-fiyatteklifleri" class="tab-page"><div class="card"><h2>📤 Fiyat Teklifleri Ekranı</h2></div></div>
+  <div id="page-notlarim" class="tab-page"><div class="card"><h2>📝 Notlarım Ekranı</h2></div></div>
+  <div id="page-donusturucu" class="tab-page"><div class="card"><h2>⇄ Dönüştürücü Ekranı</h2></div></div>
+  <div id="page-maliyet" class="tab-page"><div class="card"><h2>🧮 Maliyet Hesaplayıcı Ekranı</h2></div></div>
 
 </div>
 
-<!-- SİSTEM JAVASCRIPT KODLARI (SPA, Orijinal Drawer, Supabase) -->
+<!-- ============================================== -->
+<!-- NUMUNE EKLE/DÜZENLE MODALI -->
+<!-- ============================================== -->
+<div id="modal-ov" class="modal-overlay">
+  <div id="modal-numune" class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="mod-numune-title">Yeni Numune Kaydı</div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <input type="hidden" id="n-id">
+    <div class="form-group">
+      <label>Firma Adı</label>
+      <input type="text" id="n-firma" class="form-control" placeholder="Örn: LC Waikiki">
+    </div>
+    <div class="form-group">
+      <label>Numune Detayı / Kumaş Adı</label>
+      <input type="text" id="n-numune" class="form-control" placeholder="Örn: 30/1 Penye Süprem">
+    </div>
+    <div class="form-group">
+      <label>Fiyat ($)</label>
+      <input type="text" id="n-fiyat" class="form-control" placeholder="Örn: 3.50">
+    </div>
+    <div class="form-group">
+      <label>Durum</label>
+      <select id="n-durum" class="form-control">
+        <option value="Bekliyor">Bekliyor</option>
+        <option value="Onaylandı">Onaylandı</option>
+        <option value="Reddedildi">Reddedildi</option>
+        <option value="Arşiv">Arşiv</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Açıklama / Not</label>
+      <textarea id="n-aciklama" class="form-control" rows="2"></textarea>
+    </div>
+    <div style="text-align:right; margin-top:20px;">
+      <button class="btn btn-outline" style="margin-right:10px;" onclick="closeModal()">İptal</button>
+      <button class="btn" onclick="saveNumune()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// --- Orijinal Drawer Kontrolleri ---
+// --- ARAYÜZ VE GEÇİŞ KONTROLLERİ ---
 function openDrawer(){
   document.getElementById('drw-ov').classList.add('on');
   document.getElementById('drw').classList.add('on');
@@ -250,188 +233,198 @@ function closeDrawer(){
 }
 window.addEventListener('popstate',function(e){
   if(document.getElementById('drw').classList.contains('on')) closeDrawer();
+  if(document.getElementById('modal-ov').style.display === 'flex') closeModal();
 });
 
-// --- SPA (Sekme Yönlendirme) ---
 function go(pageId) {
-  // 1. Tüm sayfaları gizle, seçileni aç
   document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
-  
-  // 2. Menü aktiflik durumunu güncelle
   document.querySelectorAll('.drw-item').forEach(i => i.classList.remove('on'));
   document.getElementById('nav-' + pageId).classList.add('on');
   
-  // 3. Başlığı güncelle (Sizin Emojili mantığınız)
   const titles = {
-    'numune': 'Numune', 'musteriler': 'Müşteri', 'fiyatlar': 'Fiyatlar', 
-    'fiyatteklifleri': 'Teklifler', 'notlarim': 'Notlarım', 
-    'donusturucu': 'Dönüştürücü', 'maliyet': 'Maliyet'
+    'numune': 'Numune Veritabanı', 'musteriler': 'Müşteri Listesi', 'fiyatlar': 'Piyasa Fiyatları', 
+    'fiyatteklifleri': 'Fiyat Teklifleri', 'notlarim': 'Kişisel Notlarım', 
+    'donusturucu': 'Birim Dönüştürücü', 'maliyet': 'Maliyet Hesaplayıcı'
   };
   document.getElementById('top-title').innerText = titles[pageId] || '';
-  
   closeDrawer();
 }
 
-// --- SUPABASE VERİTABANI VE İŞLEMLER ---
+function openModal() {
+  document.getElementById('n-id').value = '';
+  document.getElementById('n-firma').value = '';
+  document.getElementById('n-numune').value = '';
+  document.getElementById('n-fiyat').value = '';
+  document.getElementById('n-durum').value = 'Bekliyor';
+  document.getElementById('n-aciklama').value = '';
+  document.getElementById('mod-numune-title').innerText = 'Yeni Numune Kaydı';
+  document.getElementById('modal-ov').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal-ov').style.display = 'none';
+}
+
+// --- SUPABASE VE NUMUNE İŞLEMLERİ ---
 const supabaseUrl = 'https://zmlbdpjcergcvcurihuy.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InptbGJkcGpjZXJnY3ZjdXJpaHV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTA2MzIsImV4cCI6MjA5MTA4NjYzMn0.Jh4e_UXSL7CH7EzLBhhXtQYM0-iQwrFU3GHnoe-njBM';
 let supabaseClient = null;
-
-let globalData = { numuneler: [], musteriler: [], notlar: [] };
+let allNumuneler = [];
 
 window.addEventListener('DOMContentLoaded', async () => {
   if (window.supabase) {
     supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-    await loadAllData();
+    await fetchNumuneler();
   } else {
-    console.error("Supabase yüklenemedi.");
+    document.getElementById('tbl-numune').innerHTML = '<tr><td colspan="6" style="text-align:center;">Veritabanı bağlantısı kurulamadı.</td></tr>';
   }
-  hesaplaMal(); // İlk açılışta maliyeti hesapla
 });
 
-async function loadAllData() {
-  document.getElementById('sync-status').style.display = 'block';
+async function fetchNumuneler() {
   try {
-    // Numuneler
-    const {data: nData} = await supabaseClient.from('numuneler').select('*').order('id', {ascending:false});
-    if(nData) { globalData.numuneler = nData; renderNumune(); }
-    
-    // Müşteriler
-    const {data: mData} = await supabaseClient.from('musteriler').select('*');
-    if(mData) { globalData.musteriler = mData; renderMusteri(); }
-    
-    // Notlar
-    await notlariGetir();
-  } catch(e) {
-    console.error(e);
-  } finally {
-    document.getElementById('sync-status').style.display = 'none';
+    const { data, error } = await supabaseClient.from('numuneler').select('*').order('id', {ascending: false});
+    if (error) throw error;
+    if (data) {
+      allNumuneler = data;
+      renderNumuneler();
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('tbl-numune').innerHTML = '<tr><td colspan="6" style="text-align:center;">Veri çekme hatası.</td></tr>';
   }
 }
 
-// Numune Render
-function renderNumune() {
+function renderNumuneler() {
   const tbody = document.getElementById('tbl-numune');
-  if(globalData.numuneler.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--txt3)">Kayıt yok.</td></tr>';
+  const search = document.getElementById('srch-numune').value.toLowerCase();
+  const filter = document.getElementById('flt-numune').value;
+
+  let filtered = allNumuneler.filter(n => {
+    const matchSearch = (n.firma || '').toLowerCase().includes(search) || (n.numune || '').toLowerCase().includes(search);
+    const matchFilter = (filter === 'Hepsi') ? true : (n.durum === filter);
+    return matchSearch && matchFilter;
+  });
+
+  if(filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt3)">Kayıt bulunamadı.</td></tr>';
     return;
   }
   
-  tbody.innerHTML = globalData.numuneler.map(n => {
+  tbody.innerHTML = filtered.map(n => {
     let bC = '#f1f3f5', tC = '#4a5568';
     if(n.durum === 'Onaylandı') { bC = '#e6fffa'; tC = '#2c7a7b'; }
     if(n.durum === 'Reddedildi') { bC = '#fff5f5'; tC = '#c53030'; }
+    if(n.durum === 'Arşiv') { bC = '#edf2f7'; tC = '#718096'; }
     
-    const dt = n.updated_at ? new Date(n.updated_at).toLocaleDateString('tr-TR') : '-';
+    const dt = n.updated_at || n.created_at ? new Date(n.updated_at || n.created_at).toLocaleDateString('tr-TR') : '-';
+    // Objeyi JSON'a çevirip düzenleme butonuna gönderiyoruz
+    const nStr = encodeURIComponent(JSON.stringify(n));
+
     return `
       <tr>
-        <td style="font-weight:500">${n.firma || '-'}</td>
-        <td>${n.numune || '-'}</td>
-        <td>${n.fiyat || '-'}</td>
+        <td style="font-weight:600; color:var(--txt)">${n.firma || '-'}</td>
+        <td style="color:var(--txt2)">${n.numune || '-'}</td>
+        <td style="font-weight:500">${n.fiyat || '-'}</td>
         <td><span class="status-badge" style="background:${bC};color:${tC}">${n.durum || 'Bekliyor'}</span></td>
         <td style="color:var(--txt3);font-size:13px">${dt}</td>
+        <td>
+           <button class="btn btn-outline" style="padding:4px 8px; font-size:12px; margin-right:5px;" onclick="editNumune('${nStr}')">Düzenle</button>
+           <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteNumune('${n.id}')">Sil</button>
+        </td>
       </tr>
     `;
   }).join('');
 }
 
-// Müşteri Render
-function renderMusteri() {
-  const list = document.getElementById('list-musteriler');
-  if(globalData.musteriler.length === 0) {
-    list.innerHTML = '<div class="card" style="text-align:center;color:var(--txt3);">Müşteri kaydı yok.</div>';
-    return;
-  }
-  list.innerHTML = globalData.musteriler.map(m => `
-    <div class="card" style="margin-bottom:0;">
-      <h3 style="font-size:16px; margin-bottom:5px;">${m.firma_adi || m.ad || 'İsimsiz'}</h3>
-      <div style="color:var(--txt2); font-size:14px;">📧 ${m.email || '-'}</div>
-      <div style="color:var(--txt2); font-size:14px; margin-top:5px;">📱 ${m.telefon || '-'}</div>
-    </div>
-  `).join('');
-}
+async function saveNumune() {
+  const id = document.getElementById('n-id').value;
+  const data = {
+    firma: document.getElementById('n-firma').value,
+    numune: document.getElementById('n-numune').value,
+    fiyat: document.getElementById('n-fiyat').value,
+    durum: document.getElementById('n-durum').value,
+    aciklama: document.getElementById('n-aciklama').value,
+    updated_at: new Date().toISOString()
+  };
 
-// Notlar Render & İşlem
-async function notlariGetir() {
-  const {data} = await supabaseClient.from('notlar').select('*').order('created_at', {ascending:false});
-  const list = document.getElementById('list-notlar');
-  if(data && data.length > 0) {
-    list.innerHTML = data.map(n => `
-      <div class="card" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0;">
-        <div style="flex:1;">
-          <p style="margin-bottom:5px;">${n.icerik || n.text}</p>
-          <span style="font-size:12px; color:var(--txt3);">${new Date(n.created_at).toLocaleString('tr-TR')}</span>
-        </div>
-        <button onclick="silNot('${n.id}')" style="background:none;border:none;color:var(--dan);cursor:pointer;padding:5px;">Sil</button>
-      </div>
-    `).join('');
-  } else {
-    list.innerHTML = '<div class="card" style="text-align:center;color:var(--txt3);">Notunuz yok.</div>';
+  if(!data.firma || !data.numune) { alert("Firma ve Numune Adı zorunludur."); return; }
+
+  try {
+    if(id) {
+      await supabaseClient.from('numuneler').update(data).eq('id', id);
+    } else {
+      await supabaseClient.from('numuneler').insert([data]);
+    }
+    closeModal();
+    await fetchNumuneler(); // Listeyi yenile
+  } catch(err) {
+    alert("Kaydedilirken hata oluştu.");
   }
 }
 
-async function kaydetNot() {
-  const val = document.getElementById('inp-not').value.trim();
-  if(!val || !supabaseClient) return;
-  document.getElementById('inp-not').value = '';
-  await supabaseClient.from('notlar').insert([{ icerik: val }]);
-  await notlariGetir();
+function editNumune(nStr) {
+  const n = JSON.parse(decodeURIComponent(nStr));
+  document.getElementById('n-id').value = n.id;
+  document.getElementById('n-firma').value = n.firma || '';
+  document.getElementById('n-numune').value = n.numune || '';
+  document.getElementById('n-fiyat').value = n.fiyat || '';
+  document.getElementById('n-durum').value = n.durum || 'Bekliyor';
+  document.getElementById('n-aciklama').value = n.aciklama || '';
+  document.getElementById('mod-numune-title').innerText = 'Numuneyi Düzenle';
+  document.getElementById('modal-ov').style.display = 'flex';
 }
 
-async function silNot(id) {
-  if(!confirm("Silmek istediğinize emin misiniz?")) return;
-  await supabaseClient.from('notlar').delete().eq('id', id);
-  await notlariGetir();
+async function deleteNumune(id) {
+  if(!confirm("Bu numuneyi silmek istediğinize emin misiniz?")) return;
+  try {
+    await supabaseClient.from('numuneler').delete().eq('id', id);
+    await fetchNumuneler(); // Listeyi yenile
+  } catch(err) {
+    alert("Silinirken hata oluştu.");
+  }
 }
 
-// Hesaplamalar
-function hesaplaDon() {
-  const kg = parseFloat(document.getElementById('d-kg').value);
-  const gr = parseFloat(document.getElementById('d-gr').value) || 150;
-  if(!kg) { document.getElementById('d-res').innerText = 'Miktar Giriniz'; return; }
-  
-  const metre = (kg * 1000 / gr).toFixed(2);
-  const lbs = (kg * 2.20462).toFixed(2);
-  document.getElementById('d-res').innerHTML = `
-    <span style="color:var(--pri)">${metre}</span> Metre <br>
-    <span style="color:var(--txt)">${lbs}</span> Lbs
-  `;
-}
-
-function hesaplaMal() {
-  const iplik = parseFloat(document.getElementById('m-iplik').value) || 0;
-  const orme = parseFloat(document.getElementById('m-orme').value) || 0;
-  const boya = parseFloat(document.getElementById('m-boya').value) || 0;
-  const fire = parseFloat(document.getElementById('m-fire').value) || 0;
-  const total = (iplik + orme + boya) * (1 + (fire / 100));
-  document.getElementById('m-total').innerText = '$' + total.toFixed(2);
-}
-
-// App.jsx içerisindeki ExcelJS Dışa Aktarma Mantığı
-async function exportNumuneExcel() {
+// --- EXCEL DIŞA AKTARMA ---
+async function exportExcel() {
   if (!window.ExcelJS) { alert("Excel modülü yüklenemedi."); return; }
-  if (globalData.numuneler.length === 0) { alert("Dışa aktarılacak veri yok."); return; }
-
-  const wb = new ExcelJS.Workbook();
-  const sh = wb.addWorksheet('Numuneler');
-  sh.addRow(['Firma Adı', 'Numune Adı', 'Fiyat', 'Durum', 'Tarih']);
-  sh.getRow(1).font = { bold: true };
   
-  globalData.numuneler.forEach(i => {
-    const dt = i.updated_at ? new Date(i.updated_at).toLocaleDateString('tr-TR') : '';
-    sh.addRow([i.firma || '', i.numune || '', i.fiyat || '', i.durum || '', dt]);
+  const search = document.getElementById('srch-numune').value.toLowerCase();
+  const filter = document.getElementById('flt-numune').value;
+  let toExport = allNumuneler.filter(n => {
+    const matchSearch = (n.firma || '').toLowerCase().includes(search) || (n.numune || '').toLowerCase().includes(search);
+    const matchFilter = (filter === 'Hepsi') ? true : (n.durum === filter);
+    return matchSearch && matchFilter;
   });
 
-  sh.columns.forEach(column => { column.width = 20; });
-  const buf = await wb.xlsx.writeBuffer();
-  const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Numuneler_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
-  a.click();
-  URL.revokeObjectURL(url);
+  if (toExport.length === 0) { alert("Dışa aktarılacak veri bulunamadı."); return; }
+
+  try {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Numuneler');
+    
+    // Başlıklar
+    sh.addRow(['Firma Adı', 'Numune Adı', 'Fiyat', 'Durum', 'Açıklama/Not', 'Tarih']);
+    sh.getRow(1).font = { bold: true };
+    
+    // Satırlar
+    toExport.forEach(i => {
+      const dt = i.updated_at || i.created_at ? new Date(i.updated_at || i.created_at).toLocaleDateString('tr-TR') : '';
+      sh.addRow([i.firma || '', i.numune || '', i.fiyat || '', i.durum || '', i.aciklama || '', dt]);
+    });
+
+    sh.columns.forEach(column => { column.width = 20; });
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Yanteks_Numuneler_${new Date().toLocaleDateString('tr-TR')}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("Excel oluşturulurken hata oluştu.");
+  }
 }
 </script>
 </body>
