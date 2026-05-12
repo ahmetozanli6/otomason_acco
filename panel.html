@@ -28,6 +28,20 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+  /* Animasyonlar */
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .ypSpin { animation:spin .9s linear infinite; display:inline-flex; }
+  @media (max-width:1023px) {
+    .ypDesk { display:none !important; }
+    .ypSidebarWrap { position:fixed !important; top:0; left:0; bottom:0;
+      transform:translateX(-100%); transition:transform .28s cubic-bezier(.32,.72,0,1); z-index:30; }
+    .ypSidebarWrap.open { transform:translateX(0) !important; }
+  }
+  @media (min-width:1024px) {
+    .ypMobile { display:none !important; }
+    .ypSidebarWrap { position:relative !important; transform:none !important; flex-shrink:0; }
+  }
 </style>
 </head>
 <body>
@@ -2595,8 +2609,8 @@ function OffersView({ data, customers, onRefresh }) {
     const rows = teklifler || filtered;
     rows.forEach(t => {
       const r = sh.addRow([t.firma_adi||'',t.urun||'',t.fiyat||'',t.durum||'',t.teklif_tarihi||'']);
-      if (t.durum === 'Onaylandi') r.getCell(4).font = { color:{argb:'FF15803D'},bold:true };
-      if (t.durum === 'Onaylanmadi') r.getCell(4).font = { color:{argb:'FF991B1B'},bold:true };
+      if (t.durum === 'Onaylandı') r.getCell(4).font = { color:{argb:'FF15803D'},bold:true };
+      if (t.durum === 'Onaylanmadı') r.getCell(4).font = { color:{argb:'FF991B1B'},bold:true };
     });
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -2698,6 +2712,7 @@ function OffersView({ data, customers, onRefresh }) {
               <button onClick={()=>setModal(null)} style={{ background:'none',border:'none',cursor:'pointer',color:C.txt2,display:'flex' }}><IcoX size={20}/></button>
             </div>
 
+            {/* Firma */}
             <div style={{ marginBottom:12 }}>
               <label style={{ fontSize:10,fontWeight:700,color:C.txt2,display:'block',marginBottom:5,textTransform:'uppercase',letterSpacing:'.08em' }}>Firma Adı *</label>
               <FirmaInput value={form.firma_adi} onChange={v=>setForm(f=>({...f,firma_adi:v}))}
@@ -2705,6 +2720,7 @@ function OffersView({ data, customers, onRefresh }) {
                 style={{ width:'100%',padding:'9px 12px',border:`1px solid ${C.border2}`,borderRadius:9,fontSize:13,fontFamily:'Inter,sans-serif',outline:'none',color:C.txt }} />
             </div>
 
+            {/* Ürün + Fiyat — multi-row when new, single when edit */}
             {modal === 'new' ? (
               <div style={{ marginBottom:12 }}>
                 <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6 }}>
@@ -2740,6 +2756,7 @@ function OffersView({ data, customers, onRefresh }) {
               </div>
             )}
 
+            {/* Fiyat (edit only) + Durum */}
             <div style={{ display:'grid', gridTemplateColumns: modal!=='new'?'1fr 1fr':'1fr', gap:10, marginBottom:12 }}>
               {modal !== 'new' && (
                 <div>
@@ -2750,4 +2767,174 @@ function OffersView({ data, customers, onRefresh }) {
               )}
               <div>
                 <label style={{ fontSize:10,fontWeight:700,color:C.txt2,display:'block',marginBottom:5,textTransform:'uppercase',letterSpacing:'.08em' }}>Durum</label>
-                <select value={form.durum} onChange={e=>setForm(f=>({...f,durum:e.target.value
+                <select value={form.durum} onChange={e=>setForm(f=>({...f,durum:e.target.value}))}
+                  style={{ width:'100%',padding:'9px 12px',border:`1px solid ${C.border2}`,borderRadius:9,fontSize:13,fontFamily:'Inter,sans-serif',outline:'none',color:C.txt,background:'#fff',cursor:'pointer' }}>
+                  {DURUMLAR.map(d=><option key={d}>{d}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Tarihler */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:12 }}>
+              {[['Teklif Tarihi','teklif_tarihi'],['Geçerlilik','gecerlilik_tarihi']].map(([lbl,key])=>(
+                <div key={key}>
+                  <label style={{ fontSize:10,fontWeight:700,color:C.txt2,display:'block',marginBottom:5,textTransform:'uppercase',letterSpacing:'.08em' }}>{lbl}</label>
+                  <input type="date" value={form[key]} onChange={e=>setForm(f=>({...f,[key]:e.target.value}))}
+                    style={{ width:'100%',padding:'9px 12px',border:`1px solid ${C.border2}`,borderRadius:9,fontSize:13,fontFamily:'Inter,sans-serif',outline:'none',color:C.txt }} />
+                </div>
+              ))}
+            </div>
+
+            {/* Notlar */}
+            <div style={{ marginBottom:18 }}>
+              <label style={{ fontSize:10,fontWeight:700,color:C.txt2,display:'block',marginBottom:5,textTransform:'uppercase',letterSpacing:'.08em' }}>Notlar</label>
+              <textarea value={form.notlar} onChange={e=>setForm(f=>({...f,notlar:e.target.value}))} rows={2}
+                style={{ width:'100%',padding:'9px 12px',border:`1px solid ${C.border2}`,borderRadius:9,fontSize:13,fontFamily:'Inter,sans-serif',outline:'none',color:C.txt,resize:'vertical' }} />
+            </div>
+
+            <div style={{ display:'flex',gap:10 }}>
+              <button onClick={()=>setModal(null)} style={{ flex:1,padding:10,border:`1px solid ${C.border2}`,borderRadius:10,cursor:'pointer',background:'none',fontSize:13,fontWeight:600,color:C.txt2 }}>İptal</button>
+              {(() => {
+                const disabled = saving || !form.firma_adi.trim() ||
+                  (modal !== 'new' ? !form.urun.trim() : !multiRows.some(r=>r.urun.trim()));
+                return (
+                  <button onClick={save} disabled={disabled}
+                    style={{ flex:2,padding:10,border:'none',borderRadius:10,cursor:'pointer',
+                      background:'linear-gradient(135deg,#0672A0,#0891B2)',color:'#fff',fontSize:13,fontWeight:700,
+                      opacity:disabled?0.5:1 }}>
+                    {saving?'Kaydediliyor…':'💾 Kaydet'}
+                  </button>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Başlık + Yeni buton */}
+      <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:10 }}>
+        <div>
+          <h2 style={{ fontSize:22,fontWeight:900,color:C.txt,letterSpacing:'-.02em' }}>Fiyat Teklifleri</h2>
+          <p style={{ fontSize:12,color:C.txt2,marginTop:2 }}>{filtered.length} / {data.length} teklif · {sortedFirms.length} firma</p>
+        </div>
+        <div style={{ display:'flex',gap:8 }}>
+          <button onClick={()=>exportFirmaXL('', filtered)} style={{ background:'none',border:`1px solid ${C.green}`,borderRadius:10,
+            padding:'8px 14px',fontSize:12,fontWeight:700,color:C.green,cursor:'pointer',
+            display:'flex',alignItems:'center',gap:5 }}>📊 Excel</button>
+          <button onClick={()=>setImpModal(true)} style={{ background:'none',border:`1px solid ${C.border2}`,borderRadius:10,
+            padding:'8px 14px',fontSize:12,fontWeight:700,color:C.txt2,cursor:'pointer',
+            display:'flex',alignItems:'center',gap:5 }}>📥 İçe Aktar</button>
+          <button onClick={()=>openAdd()} style={{ background:'linear-gradient(135deg,#0672A0,#0891B2)',
+            color:'#fff',border:'none',borderRadius:10,padding:'8px 16px',fontSize:13,
+            fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:5,
+            boxShadow:'0 4px 12px rgba(8,145,178,.3)' }}><IcoPlus size={16}/> Yeni Teklif</button>
+        </div>
+      </div>
+
+      {/* KPI satırı */}
+      <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:10 }}>
+        {[
+          ['📋 Toplam', total, C.teal, C.tealS],
+          ['⏳ Teklif Verildi', teklif, C.amber, C.amberS],
+          ['✅ Onaylanan', onay, C.green, C.greenS],
+          ['❌ Onaylanmadı', ret, C.red, C.redS],
+        ].map(([lbl,val,col,bg])=>(
+          <div key={lbl} style={{ background:bg,borderRadius:12,padding:'12px 16px',border:`1px solid ${col}30` }}>
+            <p style={{ fontSize:11,fontWeight:700,color:col,marginBottom:4 }}>{lbl}</p>
+            <p style={{ fontSize:26,fontWeight:900,color:col,fontFamily:'monospace',letterSpacing:'-.02em' }}>{val}</p>
+          </div>
+        ))}
+      </div>
+      {onayTutar > 0 && (
+        <div style={{ background:C.greenS,borderRadius:10,padding:'10px 16px',border:`1px solid rgba(21,128,61,.2)`,
+          fontSize:13,fontWeight:700,color:C.green }}>
+          💰 Onaylanan toplam tutar: <span style={{ fontFamily:'monospace',fontSize:15 }}>${onayTutar.toFixed(2)}</span>
+        </div>
+      )}
+
+      {/* Arama + Filtre */}
+      <div style={{ display:'flex',gap:10,flexWrap:'wrap' }}>
+        <div style={{ position:'relative',flex:1,minWidth:200 }}>
+          <span style={{ position:'absolute',left:11,top:'50%',transform:'translateY(-50%)',color:C.txt2,display:'flex' }}><IcoSearch size={14}/></span>
+          <input placeholder="Firma, ürün veya not ara…" value={q} onChange={e=>setQ(e.target.value)}
+            style={{ width:'100%',paddingLeft:34,paddingRight:12,paddingTop:9,paddingBottom:9,
+              border:`1px solid ${C.border2}`,borderRadius:10,fontSize:13,fontFamily:'Inter,sans-serif',
+              outline:'none',color:C.txt,background:C.surface }} />
+        </div>
+      </div>
+
+      {/* Durum filtre çipleri */}
+      <div style={{ display:'flex',gap:7,flexWrap:'wrap' }}>
+        {[['all','Tümü',total],['Teklif Verildi','⏳ Bekleyen',teklif],['Onaylandı','✅ Onaylanan',onay],['Onaylanmadı','❌ Reddedilen',ret]].map(([val,lbl,cnt])=>{
+          const active = sf === val;
+          const [bg,,col] = DCLR[val]||[C.tealS,C.teal,'rgba(8,145,178,.2)'];
+          return (
+            <button key={val} onClick={()=>setSf(val)}
+              style={{ padding:'6px 13px',borderRadius:18,border:`2px solid ${active?col:C.border}`,
+                background:active?bg:'transparent',color:active?(val==='all'?C.teal:Object.values(DCLR)[['all','Teklif Verildi','Onaylandı','Onaylanmadı'].indexOf(val)-1]?.[1]||C.teal):C.txt2,
+                fontSize:12,fontWeight:700,cursor:'pointer',transition:'all .15s',whiteSpace:'nowrap' }}>
+              {lbl} <span style={{ opacity:.7 }}>{cnt}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Firma grupları */}
+      {sortedFirms.length === 0
+        ? <div style={{ padding:32,textAlign:'center',color:C.txt2,background:C.surface,borderRadius:16,border:`1px solid ${C.border}` }}>
+            {q||sf!=='all'?'Filtreye uyan teklif yok.':'Henüz teklif kaydı yok.'}
+          </div>
+        : sortedFirms.map(([firmaAdi, teklifler]) => {
+          const isOpen = openFirms.has(firmaAdi) || q.length > 0;
+          const onayN   = teklifler.filter(t=>t.durum==='Onaylandı').length;
+          const teklifN = teklifler.filter(t=>t.durum==='Teklif Verildi').length;
+          const retN    = teklifler.filter(t=>t.durum==='Onaylanmadı').length;
+          return (
+            <div key={firmaAdi} style={{ background:C.surface,borderRadius:16,border:`1px solid ${C.border}`,overflow:'hidden' }}>
+
+              {/* Firma başlığı */}
+              <div onClick={()=>toggleFirm(firmaAdi)}
+                style={{ display:'flex',alignItems:'center',gap:14,padding:'14px 20px',
+                  cursor:'pointer',borderBottom:isOpen?`1px solid ${C.border}`:'none',
+                  transition:'background .15s' }}
+                onMouseEnter={e=>e.currentTarget.style.background=C.page}
+                onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <div style={{ width:40,height:40,borderRadius:11,background:C.tealS,
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  color:C.teal,fontWeight:900,fontSize:16,flexShrink:0 }}>
+                  {firmaAdi.charAt(0)}
+                </div>
+                <div style={{ flex:1,minWidth:0 }}>
+                  <h4 style={{ fontWeight:800,fontSize:14,color:C.txt,margin:0 }}>{firmaAdi}</h4>
+                  <div style={{ display:'flex',gap:8,marginTop:4,flexWrap:'wrap' }}>
+                    {teklifN>0&&<span style={{ fontSize:11,fontWeight:700,color:C.teal,background:C.tealS,padding:'2px 7px',borderRadius:5 }}>⏳ {teklifN}</span>}
+                    {onayN>0&&<span style={{ fontSize:11,fontWeight:700,color:C.green,background:C.greenS,padding:'2px 7px',borderRadius:5 }}>✅ {onayN}</span>}
+                    {retN>0&&<span style={{ fontSize:11,fontWeight:700,color:C.red,background:C.redS,padding:'2px 7px',borderRadius:5 }}>❌ {retN}</span>}
+                    <span style={{ fontSize:11,color:C.txt2 }}>{teklifler.length} teklif</span>
+                  </div>
+                </div>
+                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+                  <button onClick={e=>{e.stopPropagation();exportFirmaXL(firmaAdi, teklifler);}}
+                    style={{ background:'none',border:`1px solid ${C.green}`,color:C.green,
+                      borderRadius:8,padding:'5px 10px',cursor:'pointer',fontSize:11,fontWeight:700 }}
+                    onMouseEnter={e=>e.stopPropagation()} onMouseLeave={e=>e.stopPropagation()}>
+                    📊
+                  </button>
+                  <button onClick={e=>{e.stopPropagation();openAdd(firmaAdi);}}
+                    style={{ background:C.tealS,border:`1px solid rgba(8,145,178,.2)`,color:C.teal,
+                      borderRadius:8,padding:'5px 10px',cursor:'pointer',fontSize:11,fontWeight:700,
+                      display:'flex',alignItems:'center',gap:4 }}
+                    onMouseEnter={e=>e.stopPropagation()} onMouseLeave={e=>e.stopPropagation()}>
+                    <IcoPlus size={12}/> Ekle
+                  </button>
+                  <span style={{ color:C.txt2,fontSize:18,transform:isOpen?'rotate(180deg)':'none',transition:'transform .2s' }}>▾</span>
+                </div>
+              </div>
+
+              {/* Teklifler listesi */}
+              {isOpen && teklifler.map((t, ti) => {
+                const [dBg, dCol] = DCLR[t.durum]||[C.tealS,C.teal];
+                const diff = daysDiff(t.gecerlilik_tarihi);
+                const isBusy = busy === t.id;
+                return (
+                  <div key={t.id||ti} style={{
