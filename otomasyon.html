@@ -106,6 +106,7 @@
         .toast.closing { animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .toast.success { border-color: #10b981; }
         .toast.error { border-color: #f43f5e; }
+        .toast.warning { border-color: #f59e0b; }
         .toast.info { border-color: #3b82f6; }
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -519,9 +520,12 @@
                                             <i data-lucide="globe" class="absolute left-4 top-3.5 w-4 h-4 text-slate-500"></i>
                                             <input id="serverApiUrl" type="text" class="input-pro pl-11 font-mono text-sm border-white/10" placeholder="http://127.0.0.1:5000">
                                         </div>
-                                        <p class="text-[11px] text-slate-500 mt-2">
-                                            Uygulamayı 7/24 çalışacak bir bulut sunucusuna (VPS) taşıdığınızda buraya IP adresini yazın. (Örn: <span class="text-indigo-400">http://167.71.12.34:5000</span>). Varsayılan olarak lokal bilgisayarınızdır.
-                                        </p>
+                                        <div class="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-3">
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5"></i>
+                                            <p class="text-[11px] text-amber-200/80 leading-relaxed">
+                                                Arayüzünüzü <b>GitHub Pages (HTTPS)</b> üzerinden yayınlıyorsanız, bağlandığınız sunucu adresi de mutlaka <b>https://</b> ile başlamalıdır (Örn: Cloudflare veya Ngrok kullanabilirsiniz). Aksi takdirde tarayıcılar güvenlik gerekçesiyle "Mixed Content" hatası vererek HTTP IP adresinize bağlanmayı reddedecektir.
+                                            </p>
+                                        </div>
                                     </div>
                                     <div class="flex justify-end">
                                         <button onclick="saveServerSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all text-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
@@ -563,7 +567,14 @@
                 // Sona eklenen slash işaretlerini temizle
                 SERVER_URL = newUrl.replace(/\/$/, ""); 
                 localStorage.setItem('autotube_server_url', SERVER_URL);
-                showToast('success', 'Sunucu adresi güncellendi: ' + SERVER_URL);
+                
+                // GitHub Pages uyarısı (HTTPS'ten HTTP'ye istek)
+                if (window.location.protocol === 'https:' && SERVER_URL.startsWith('http://') && !SERVER_URL.includes('127.0.0.1') && !SERVER_URL.includes('localhost')) {
+                    showToast('warning', 'Dikkat: HTTPS siteden HTTP hedefine bağlanmak Mixed Content hatası yaratabilir!');
+                } else {
+                    showToast('success', 'Sunucu adresi güncellendi: ' + SERVER_URL);
+                }
+                
                 addLog(`Sunucu hedefi değiştirildi: ${SERVER_URL}`, 'info-blue');
             }
         }
@@ -576,6 +587,7 @@
             let icon = '';
             if (type === 'success') icon = '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>';
             else if (type === 'error') icon = '<i data-lucide="alert-circle" class="w-5 h-5 text-rose-500"></i>';
+            else if (type === 'warning') icon = '<i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>';
             else icon = '<i data-lucide="info" class="w-5 h-5 text-blue-500"></i>';
 
             toast.className = `toast ${type}`;
@@ -659,6 +671,11 @@
             if (!konu) {
                 showToast('error', 'Lütfen video konusunu giriniz.');
                 return;
+            }
+
+            // GitHub Pages HTTPS uyarısı (Eğer HTTP ip kullanıyorsa)
+            if (window.location.protocol === 'https:' && SERVER_URL.startsWith('http://') && !SERVER_URL.includes('127.0.0.1') && !SERVER_URL.includes('localhost')) {
+                showToast('warning', 'Mixed Content engellemesine takılabilirsiniz. Sunucunuzda HTTPS kullandığınızdan emin olun.');
             }
 
             // 1. UI Reset & Init
@@ -760,8 +777,6 @@
                 
                 videoIdle.classList.add('hidden');
                 
-                // Eğer sunucu lokalde değilse, videoyu sunucu IP'sinden çekmemiz gerekir
-                // Flask motorunda "static" file servisi eklenirse bu tam çalışacaktır.
                 videoElement.src = SERVER_URL + "/" + videoUrl + "?t=" + new Date().getTime(); 
                 videoElement.classList.remove('hidden');
                 videoElement.play().catch(e => console.log("Tarayıcı otomatik oynatmayı engelledi."));
@@ -772,7 +787,7 @@
             } catch (error) {
                 showToast('error', 'İşlem başarısız. Lütfen CMD ekranını kontrol edin.');
                 addLog(`❌ HATA: ${error.message}`, "error");
-                addLog(`💡 İPUCU: Hedef sunucu olan ${SERVER_URL} adresinin çalıştığından emin olun.`, "warning");
+                addLog(`💡 İPUCU: Hedef sunucu olan ${SERVER_URL} adresinin çalıştığından emin olun. Mixed Content engeli yemiş olabilirsiniz.`, "warning");
                 
                 statusLabel.innerText = "ERROR";
                 statusLabel.className = "text-[10px] font-bold text-rose-400 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20";
