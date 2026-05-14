@@ -306,9 +306,30 @@
                             </div>
                         </div>
 
-                        <!-- RIGHT COLUMN: Progress & Terminal -->
+                        <!-- RIGHT COLUMN: Progress, Preview & Terminal -->
                         <div class="lg:col-span-5 space-y-6 flex flex-col">
                             
+                            <!-- Video Preview Area -->
+                            <div class="glass-card rounded-2xl p-5">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                        <i data-lucide="play-square" class="w-4 h-4 text-indigo-400"></i> Sonuç Ekranı
+                                    </h3>
+                                    <span id="videoBadge" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 py-0.5 rounded bg-black/30 border border-white/5">BEKLİYOR</span>
+                                </div>
+                                
+                                <div class="relative w-full aspect-[9/16] max-h-[350px] bg-[#0a0a0f] rounded-xl overflow-hidden flex items-center justify-center border border-white/5 mx-auto shadow-inner">
+                                    <!-- Idle / Loading State -->
+                                    <div id="videoIdle" class="text-center text-slate-600 flex flex-col items-center">
+                                        <i data-lucide="film" class="w-10 h-10 mb-2 opacity-50"></i>
+                                        <span class="text-xs font-medium">Üretilen video burada görüntülenecek</span>
+                                    </div>
+                                    
+                                    <!-- Player -->
+                                    <video id="resultVideo" class="hidden w-full h-full object-contain bg-black" controls></video>
+                                </div>
+                            </div>
+
                             <!-- Pipeline Tracker -->
                             <div class="glass-card rounded-2xl p-5">
                                 <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
@@ -587,6 +608,10 @@
             
             const btn = document.getElementById('triggerBtn');
             const text = document.getElementById('triggerText');
+            const statusLabel = document.getElementById('statusLabel');
+            const videoElement = document.getElementById('resultVideo');
+            const videoIdle = document.getElementById('videoIdle');
+            const videoBadge = document.getElementById('videoBadge');
             
             if (!konu) {
                 showToast('error', 'Lütfen video konusunu giriniz.');
@@ -599,7 +624,16 @@
             
             const topBar = document.getElementById('topProgressBar');
             const vertBar = document.getElementById('vertical-progress');
-            const statusLabel = document.getElementById('statusLabel');
+
+            // Reset Video Player UI
+            videoElement.classList.add('hidden');
+            videoElement.pause();
+            videoElement.removeAttribute('src');
+            videoIdle.classList.remove('hidden');
+            videoIdle.innerHTML = '<i data-lucide="loader" class="w-10 h-10 mb-2 opacity-80 animate-spin text-indigo-400"></i><span class="text-xs font-medium text-indigo-300">Sistem çalışıyor, lütfen bekleyin...</span>';
+            lucide.createIcons();
+            videoBadge.innerText = "ÜRETİLİYOR";
+            videoBadge.className = "text-[10px] font-bold text-indigo-400 uppercase tracking-widest px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 animate-pulse";
 
             statusLabel.innerText = "RUNNING";
             statusLabel.className = "text-[10px] font-bold text-indigo-400 uppercase tracking-widest px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20";
@@ -675,13 +709,36 @@
                 addLog("Tüm işlemler başarıyla sonuçlandı.", "success");
                 addLog(`Kayıt Yolu: ${result.video_path}`, "success");
                 
-                alert("🎬 GÖREV TAMAMLANDI!\n\nDosya Yolu: " + result.video_path);
+                // Show Video in Player
+                let videoUrl = result.video_path.replace(/\\/g, '/');
+                if(videoUrl.includes('workspace')) {
+                    videoUrl = videoUrl.substring(videoUrl.indexOf('workspace'));
+                }
+                
+                videoIdle.classList.add('hidden');
+                videoElement.src = videoUrl + "?t=" + new Date().getTime(); // Prevent cache
+                videoElement.classList.remove('hidden');
+                videoElement.play().catch(e => console.log("Tarayıcı otomatik oynatmayı engelledi."));
+
+                videoBadge.innerText = "HAZIR";
+                videoBadge.className = "text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20";
+                
+                // Optional: alert can be annoying, toast is enough, but kept if user wants it
+                // alert("🎬 GÖREV TAMAMLANDI!\n\nDosya Yolu: " + result.video_path);
 
             } catch (error) {
-                showToast('error', 'Sunucuya ulaşılamadı veya hata oluştu.');
-                addLog(`Bağlantı/İşlem Hatası: ${error.message}`, "error");
+                showToast('error', 'İşlem başarısız. Lütfen CMD ekranını kontrol edin.');
+                addLog(`❌ HATA: ${error.message}`, "error");
+                addLog(`💡 İPUCU: Detaylı hata sebebi (Örn: Pexels API Key eksikliği) için arkadaki siyah CMD ekranına bakın.`, "warning");
+                
                 statusLabel.innerText = "ERROR";
                 statusLabel.className = "text-[10px] font-bold text-rose-400 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20";
+                
+                videoIdle.innerHTML = '<i data-lucide="alert-circle" class="w-10 h-10 mb-2 opacity-80 text-rose-400"></i><span class="text-xs font-medium text-rose-300">İşlem sırasında hata oluştu</span>';
+                lucide.createIcons();
+                videoBadge.innerText = "HATA";
+                videoBadge.className = "text-[10px] font-bold text-rose-400 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20";
+
             } finally {
                 // Reset Button
                 btn.disabled = false;
