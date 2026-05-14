@@ -192,7 +192,7 @@
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">Sistem</p>
                 
                 <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all">
-                    <i data-lucide="settings" class="w-5 h-5"></i> API Ayarları
+                    <i data-lucide="settings" class="w-5 h-5"></i> Ayarlar & Sunucu
                 </button>
             </div>
 
@@ -428,7 +428,7 @@
                         </div>
                     </div>
 
-                    <!-- Scheduler Form from Ultimate Version -->
+                    <!-- Scheduler Form -->
                     <div class="glass-card rounded-2xl p-6 mb-8 flex gap-4 items-end border border-indigo-500/20 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.05)]">
                         <div class="flex-1">
                             <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300 mb-2">Her Gün Otonom Çalışma Saati (Zamanlayıcı)</label>
@@ -473,7 +473,6 @@
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-                        <!-- Video Cards (Generated dynamically) -->
                         <script>
                             for(let i=1; i<=6; i++) {
                                 document.write(`
@@ -503,14 +502,38 @@
                     <div class="max-w-3xl mx-auto">
                         <div class="flex items-center justify-between mb-6">
                             <div>
-                                <h2 class="text-2xl font-bold text-white">API ve Sistem Ayarları</h2>
-                                <p class="text-sm text-slate-400 mt-1">Dış servis bağlantılarını ve bot ayarlarını yapılandırın.</p>
+                                <h2 class="text-2xl font-bold text-white">API ve Sunucu Ayarları</h2>
+                                <p class="text-sm text-slate-400 mt-1">Dış servis bağlantılarını ve bulut sunucu ayarlarını yapılandırın.</p>
                             </div>
                         </div>
                         <div class="space-y-6">
+                            <!-- Cloud Server Configuration -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-base font-semibold text-white mb-4 border-b border-white/5 pb-3 flex items-center gap-2">
+                                    <i data-lucide="cloud" class="w-5 h-5 text-indigo-400"></i> Bulut Sunucu (VPS) Bağlantısı
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-400 mb-2">API Endpoint Adresi</label>
+                                        <div class="relative">
+                                            <i data-lucide="globe" class="absolute left-4 top-3.5 w-4 h-4 text-slate-500"></i>
+                                            <input id="serverApiUrl" type="text" class="input-pro pl-11 font-mono text-sm border-white/10" placeholder="http://127.0.0.1:5000">
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 mt-2">
+                                            Uygulamayı 7/24 çalışacak bir bulut sunucusuna (VPS) taşıdığınızda buraya IP adresini yazın. (Örn: <span class="text-indigo-400">http://167.71.12.34:5000</span>). Varsayılan olarak lokal bilgisayarınızdır.
+                                        </p>
+                                    </div>
+                                    <div class="flex justify-end">
+                                        <button onclick="saveServerSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all text-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                            <i data-lucide="save" class="w-4 h-4"></i> Adresi Kaydet
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="glass-card rounded-2xl p-6">
                                 <p class="text-slate-400 text-sm leading-relaxed border-l-2 border-indigo-500 pl-4">
-                                    API anahtarlarınız (OpenAI, Pexels, vb.) doğrudan <b>motor.py</b> dosyası içerisinde saklanmaktadır. Web arayüzü üzerinden değiştirme özelliği Enterprise güvenlik politikaları gereği kapalıdır. Lütfen güncellemeleri Python dosyası üzerinden gerçekleştirin.
+                                    API anahtarlarınız (OpenAI, Pexels, vb.) doğrudan <b>motor.py</b> dosyası içerisinde saklanmaktadır. Kurumsal güvenlik politikaları gereği web üzerinden değiştirme kapalıdır.
                                 </p>
                             </div>
                         </div>
@@ -524,6 +547,26 @@
     <script>
         // Initialize Icons
         lucide.createIcons();
+
+        // --- GLOBAL SERVER URL SETTING ---
+        let SERVER_URL = localStorage.getItem('autotube_server_url') || 'http://127.0.0.1:5000';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlInput = document.getElementById('serverApiUrl');
+            if(urlInput) urlInput.value = SERVER_URL;
+        });
+
+        function saveServerSettings() {
+            const urlInput = document.getElementById('serverApiUrl');
+            const newUrl = urlInput.value.trim();
+            if(newUrl) {
+                // Sona eklenen slash işaretlerini temizle
+                SERVER_URL = newUrl.replace(/\/$/, ""); 
+                localStorage.setItem('autotube_server_url', SERVER_URL);
+                showToast('success', 'Sunucu adresi güncellendi: ' + SERVER_URL);
+                addLog(`Sunucu hedefi değiştirildi: ${SERVER_URL}`, 'info-blue');
+            }
+        }
 
         // --- Custom Toast Notification System ---
         function showToast(type, message) {
@@ -604,7 +647,7 @@
         async function triggerPipeline() {
             const konu = document.getElementById('inputKonu').value.trim();
             const keyword = document.getElementById('inputKeyword').value.trim();
-            const autoUpload = document.getElementById('toggleUpload').checked; // YouTube Upload Durumu
+            const autoUpload = document.getElementById('toggleUpload').checked; 
             
             const btn = document.getElementById('triggerBtn');
             const text = document.getElementById('triggerText');
@@ -646,8 +689,8 @@
             ['step-script', 'step-audio', 'step-visual', 'step-render', 'step-upload'].forEach(s => updateStep(s, 'reset'));
 
             try {
-                // Flask API İsteğini Başlat (Fakat cevabı hemen bekleme, arayüzü canlandır)
-                const fetchPromise = fetch('http://127.0.0.1:5000/api/generate', {
+                // Dinamik SERVER_URL kullanılıyor
+                const fetchPromise = fetch(`${SERVER_URL}/api/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ konu: konu, stok_video: keyword, auto_upload: autoUpload })
@@ -716,20 +759,20 @@
                 }
                 
                 videoIdle.classList.add('hidden');
-                videoElement.src = videoUrl + "?t=" + new Date().getTime(); // Prevent cache
+                
+                // Eğer sunucu lokalde değilse, videoyu sunucu IP'sinden çekmemiz gerekir
+                // Flask motorunda "static" file servisi eklenirse bu tam çalışacaktır.
+                videoElement.src = SERVER_URL + "/" + videoUrl + "?t=" + new Date().getTime(); 
                 videoElement.classList.remove('hidden');
                 videoElement.play().catch(e => console.log("Tarayıcı otomatik oynatmayı engelledi."));
 
                 videoBadge.innerText = "HAZIR";
                 videoBadge.className = "text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20";
-                
-                // Optional: alert can be annoying, toast is enough, but kept if user wants it
-                // alert("🎬 GÖREV TAMAMLANDI!\n\nDosya Yolu: " + result.video_path);
 
             } catch (error) {
                 showToast('error', 'İşlem başarısız. Lütfen CMD ekranını kontrol edin.');
                 addLog(`❌ HATA: ${error.message}`, "error");
-                addLog(`💡 İPUCU: Detaylı hata sebebi (Örn: Pexels API Key eksikliği) için arkadaki siyah CMD ekranına bakın.`, "warning");
+                addLog(`💡 İPUCU: Hedef sunucu olan ${SERVER_URL} adresinin çalıştığından emin olun.`, "warning");
                 
                 statusLabel.innerText = "ERROR";
                 statusLabel.className = "text-[10px] font-bold text-rose-400 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20";
@@ -751,7 +794,7 @@
         async function scheduleJob() {
             const time = document.getElementById('scheduleTime').value;
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/schedule', {
+                const response = await fetch(`${SERVER_URL}/api/schedule`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ time: time })
@@ -763,7 +806,7 @@
                 showToast('success', `Zamanlayıcı Kuruldu: Her gün saat ${time}`);
                 addLog(`⏰ Sistem Emri: Her gün saat ${time} için otonom üretim görevi Flask'a iletildi.`, "success");
             } catch (err) {
-                showToast('error', 'Sunucuya ulaşılamadı! Python motorunun (Flask) açık olduğundan emin olun.');
+                showToast('error', `Sunucuya ulaşılamadı (${SERVER_URL})`);
                 addLog(`❌ Zamanlayıcı kurulamadı.`, "error");
             }
         }
