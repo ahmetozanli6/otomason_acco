@@ -1,485 +1,586 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Play, Settings, Youtube, Clock, FileText, 
-  Video, BarChart3, Plus, Trash2, CheckCircle2, 
-  XCircle, Loader2, RefreshCw, LayoutDashboard,
-  Bell, Search, ChevronDown, MoreVertical, AlertCircle,
-  Activity, CreditCard, Users, Database, Server
-} from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar 
-} from 'recharts';
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoTubeOS</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-const MOCK_ANALYTICS_DATA = [
-  { name: 'Pzt', produced: 12, failed: 1, cost: 4.2 },
-  { name: 'Sal', produced: 19, failed: 0, cost: 6.5 },
-  { name: 'Çar', produced: 15, failed: 2, cost: 5.8 },
-  { name: 'Per', produced: 22, failed: 0, cost: 7.1 },
-  { name: 'Cum', produced: 28, failed: 1, cost: 9.3 },
-  { name: 'Cmt', produced: 35, failed: 0, cost: 11.5 },
-  { name: 'Paz', produced: 30, failed: 0, cost: 10.0 },
-];
-
-const MOCK_CAMPAIGNS = [
-  { id: 1, name: "Antik Tarih Serisi", target: "Tarih Sırları", status: "running", schedule: "08:00, 18:00", successRate: 98, lastRun: "10 dk önce", model: "GPT-4o", voice: "Antoni (Erkek)" },
-  { id: 2, name: "Kozmos ve Uzay", target: "AstroBilgi", status: "paused", schedule: "12:00", successRate: 100, lastRun: "Dün 12:05", model: "GPT-3.5", voice: "Rachel (Kadın)" },
-  { id: 3, name: "Motivasyon Shorts", target: "Girişimci Ruhu", status: "error", schedule: "Her 4 Saatte 1", successRate: 85, lastRun: "2 Saat önce", model: "Claude 3", voice: "Adam (Erkek)" }
-];
-
-const MOCK_SYSTEM_LOGS = [
-  { id: 'SYS-8902', task: "Video Render", detail: "Motivasyon_001.mp4", service: "MoviePy Engine", time: "10:42:05", status: "processing", duration: "2m 14s" },
-  { id: 'SYS-8901', task: "Upload", detail: "Roma'nın Çöküşü", service: "YouTube API", time: "10:35:12", status: "success", duration: "45s" },
-  { id: 'SYS-8900', task: "Voice Generation", detail: "Senaryo_ID_45", service: "ElevenLabs API", time: "10:33:01", status: "success", duration: "12s" },
-  { id: 'SYS-8899', task: "Script Prep", detail: "Kozmos Bölüm 4", service: "OpenAI API", time: "09:15:00", status: "failed", duration: "5s", error: "Rate Limit Exceeded" },
-];
-
-export default function EnterpriseAutomationPanel() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
-
-  // Sahte bir yükleme efekti
-  const triggerManualPipeline = () => {
-    setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 3500);
-  };
-
-  const StatusBadge = ({ status }) => {
-    const styles = {
-      running: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      paused: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-      error: "bg-red-500/10 text-red-400 border-red-500/20",
-      failed: "bg-red-500/10 text-red-400 border-red-500/20",
-      processing: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    };
-    
-    const labels = {
-      running: "Aktif", success: "Başarılı", paused: "Duraklatıldı", 
-      error: "Hata", failed: "Başarısız", processing: "İşleniyor"
-    };
-
-    return (
-      <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status]}`}>
-        {labels[status]}
-      </span>
-    );
-  };
-
-  const renderDashboard = () => (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Top Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { title: "Toplam Üretim (Bu Ay)", value: "3,248", sub: "+12.5% geçen aya göre", icon: Video, color: "text-indigo-400" },
-          { title: "Ortalama Başarı Oranı", value: "98.2%", sub: "Son 30 gün verisi", icon: Activity, color: "text-emerald-400" },
-          { title: "Tahmini API Maliyeti", value: "$142.50", sub: "OpenAI + ElevenLabs", icon: CreditCard, color: "text-rose-400" },
-          { title: "Aktif Otomasyonlar", value: "14", sub: "3 kanal üzerinde", icon: Server, color: "text-blue-400" },
-        ].map((metric, idx) => (
-          <div key={idx} className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-medium text-slate-400">{metric.title}</h3>
-              <div className={`p-2 rounded-lg bg-slate-800/50 ${metric.color}`}>
-                <metric.icon className="w-4 h-4" />
-              </div>
-            </div>
-            <p className="text-2xl font-semibold text-white mb-1">{metric.value}</p>
-            <p className="text-xs text-slate-500">{metric.sub}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-base font-semibold text-white">Üretim Hacmi (Son 7 Gün)</h3>
-            <select className="bg-slate-950 border border-slate-800 text-slate-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
-              <option>Tüm Kanallar</option>
-              <option>Tarih Sırları</option>
-              <option>AstroBilgi</option>
-            </select>
-          </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_ANALYTICS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorProduced" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
-                  itemStyle={{ color: '#e2e8f0' }}
-                />
-                <Area type="monotone" dataKey="produced" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorProduced)" name="Üretilen Video" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm flex flex-col">
-          <h3 className="text-base font-semibold text-white mb-6">Sistem Sağlığı & Kaynaklar</h3>
-          <div className="space-y-6 flex-1">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">OpenAI Kota Kullanımı</span>
-                <span className="text-white font-medium">75%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2">
-                <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">ElevenLabs Karakter Kotası</span>
-                <span className="text-white font-medium">42%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2">
-                <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '42%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-400">Sunucu CPU (Render)</span>
-                <span className="text-rose-400 font-medium">88%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2">
-                <div className="bg-rose-500 h-2 rounded-full" style={{ width: '88%' }}></div>
-              </div>
-            </div>
-          </div>
-          <button className="mt-6 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors border border-slate-700">
-            Kotaları Yönet
-          </button>
-        </div>
-      </div>
-
-      {/* Detailed System Logs */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-          <h3 className="text-base font-semibold text-white">Canlı İşlem Logları</h3>
-          <button 
-            onClick={triggerManualPipeline}
-            disabled={isGenerating}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-indigo-900/20"
-          >
-            {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2 fill-current" />}
-            Manuel Tetikle
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-950/50 text-slate-400">
-              <tr>
-                <th className="px-6 py-4 font-medium">İşlem ID</th>
-                <th className="px-6 py-4 font-medium">Servis</th>
-                <th className="px-6 py-4 font-medium">Görev Detayı</th>
-                <th className="px-6 py-4 font-medium">Zaman</th>
-                <th className="px-6 py-4 font-medium">Süre</th>
-                <th className="px-6 py-4 font-medium text-right">Durum</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800 text-slate-300">
-              {MOCK_SYSTEM_LOGS.map((log, idx) => (
-                <tr key={idx} className="hover:bg-slate-800/20 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs text-slate-500">{log.id}</td>
-                  <td className="px-6 py-4">{log.service}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {log.detail}
-                      {log.error && <AlertCircle className="w-4 h-4 text-red-400 ml-2" />}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">{log.time}</td>
-                  <td className="px-6 py-4 text-slate-500">{log.duration}</td>
-                  <td className="px-6 py-4 text-right">
-                    <StatusBadge status={log.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50 text-center">
-          <button className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">Tüm Logları Görüntüle &rarr;</button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderCampaigns = () => (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Otomasyon Kuralları</h2>
-          <p className="text-slate-400 text-sm mt-1">Sistemin otomatik olarak içerik üreteceği şablonları yönetin.</p>
-        </div>
-        <button 
-          onClick={() => setShowNewCampaignModal(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center transition-all shadow-lg shadow-indigo-900/20"
-        >
-          <Plus className="w-4 h-4 mr-2" /> Yeni Kural Oluştur
-        </button>
-      </div>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-950/50 text-slate-400">
-            <tr>
-              <th className="px-6 py-4 font-medium">Kampanya Adı</th>
-              <th className="px-6 py-4 font-medium">Hedef Kanal</th>
-              <th className="px-6 py-4 font-medium">Zamanlama</th>
-              <th className="px-6 py-4 font-medium">AI Yapılandırması</th>
-              <th className="px-6 py-4 font-medium">Başarı Oranı</th>
-              <th className="px-6 py-4 font-medium">Durum</th>
-              <th className="px-6 py-4 font-medium text-right">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800 text-slate-300">
-            {MOCK_CAMPAIGNS.map((camp) => (
-              <tr key={camp.id} className="hover:bg-slate-800/20 transition-colors group">
-                <td className="px-6 py-5">
-                  <p className="font-semibold text-white">{camp.name}</p>
-                  <p className="text-xs text-slate-500 mt-1">Son çalışma: {camp.lastRun}</p>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center">
-                    <Youtube className="w-4 h-4 text-red-500 mr-2" />
-                    {camp.target}
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center text-slate-400">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {camp.schedule}
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex flex-col space-y-1 text-xs text-slate-400">
-                    <span>Model: <span className="text-slate-300">{camp.model}</span></span>
-                    <span>Ses: <span className="text-slate-300">{camp.voice}</span></span>
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center">
-                    <div className="w-16 bg-slate-800 rounded-full h-1.5 mr-2">
-                      <div className={`h-1.5 rounded-full ${camp.successRate > 90 ? 'bg-emerald-500' : 'bg-yellow-500'}`} style={{ width: `${camp.successRate}%` }}></div>
-                    </div>
-                    <span className="text-xs font-medium">{camp.successRate}%</span>
-                  </div>
-                </td>
-                <td className="px-6 py-5">
-                  <StatusBadge status={camp.status} />
-                </td>
-                <td className="px-6 py-5 text-right">
-                  <button className="p-2 text-slate-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"><Settings className="w-4 h-4" /></button>
-                  <button className="p-2 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="w-4 h-4" /></button>
-                  <button className="p-2 text-slate-500 hover:text-white transition-colors"><MoreVertical className="w-4 h-4" /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const renderSettings = () => (
-    <div className="animate-in fade-in duration-500 max-w-4xl">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white tracking-tight">Sistem Tercihleri</h2>
-        <p className="text-slate-400 text-sm mt-1">API anahtarlarını, kanalları ve altyapı ayarlarını yönetin.</p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Integrations */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-800">
-            <h3 className="text-lg font-semibold text-white flex items-center">
-              <Database className="w-5 h-5 mr-2 text-indigo-400" /> Platform Entegrasyonları
-            </h3>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-950/50 border border-slate-800 rounded-lg">
-              <div className="flex items-center">
-                <Youtube className="w-8 h-8 text-red-500 mr-4" />
-                <div>
-                  <h4 className="font-medium text-white">YouTube Data API v3</h4>
-                  <p className="text-xs text-emerald-400 mt-1 flex items-center"><CheckCircle2 className="w-3 h-3 mr-1"/> Bağlandı (3 Kanal)</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium text-white rounded-lg transition-colors border border-slate-700">Yönet</button>
-            </div>
-          </div>
-        </div>
-
-        {/* API Keys */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-800">
-            <h3 className="text-lg font-semibold text-white flex items-center">
-              <Server className="w-5 h-5 mr-2 text-emerald-400" /> Yapay Zeka Servisleri (API Keys)
-            </h3>
-          </div>
-          <div className="p-6 space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">OpenAI (Senaryo & Meta Veri)</label>
-              <div className="flex gap-3">
-                <input type="password" value="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxx" readOnly className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:border-indigo-500 font-mono text-sm" />
-                <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium text-white rounded-lg transition-colors border border-slate-700">Değiştir</button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">ElevenLabs (Ses Sentezi)</label>
-              <div className="flex gap-3">
-                <input type="password" placeholder="API Anahtarınızı girin..." className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:border-indigo-500 font-mono text-sm" />
-                <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white rounded-lg transition-colors border border-indigo-500">Kaydet</button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Pexels (Stok Görsel/Video)</label>
-              <div className="flex gap-3">
-                <input type="password" value="563492ad6f91700001000001xxxx" readOnly className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:border-indigo-500 font-mono text-sm" />
-                <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium text-white rounded-lg transition-colors border border-slate-700">Değiştir</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30">
-      
-      {/* Top Navbar */}
-      <nav className="h-16 border-b border-slate-800 bg-slate-950/50 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
-        <div className="flex items-center">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mr-3 shadow-lg shadow-indigo-900/40">
-            <Video className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-white tracking-tight">AutoTube<span className="text-indigo-500 font-light">OS</span></span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5">
-            <Search className="w-4 h-4 text-slate-500 mr-2" />
-            <input type="text" placeholder="Arama yap..." className="bg-transparent border-none focus:outline-none text-sm w-48 text-slate-300 placeholder-slate-600" />
-          </div>
-          <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-slate-950"></span>
-          </button>
-          <div className="h-8 w-px bg-slate-800 mx-2"></div>
-          <div className="flex items-center cursor-pointer group">
-            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-medium text-white group-hover:border-indigo-500 transition-colors">
-              AK
-            </div>
-            <div className="ml-3 mr-1 hidden sm:block">
-              <p className="text-sm font-medium text-white leading-tight">Admin Kullanıcı</p>
-              <p className="text-xs text-slate-500">Enterprise Plan</p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-slate-500 hidden sm:block" />
-          </div>
-        </div>
-      </nav>
-
-      <div className="flex h-[calc(100vh-4rem)]">
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-slate-800 bg-slate-950/30 flex-shrink-0 flex flex-col justify-between hidden md:flex">
-          <div className="p-4 space-y-1 mt-2">
-            <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-indigo-600/10 text-indigo-400' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'}`}>
-              <LayoutDashboard className="w-4 h-4 mr-3" /> Genel Bakış
-            </button>
-            <button onClick={() => setActiveTab('campaigns')} className={`w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'campaigns' ? 'bg-indigo-600/10 text-indigo-400' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'}`}>
-              <FileText className="w-4 h-4 mr-3" /> Otomasyon Kuralları
-            </button>
-            <button className="w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-slate-200 transition-all">
-              <Users className="w-4 h-4 mr-3" /> Kanal Yönetimi
-            </button>
-            <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'settings' ? 'bg-indigo-600/10 text-indigo-400' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'}`}>
-              <Settings className="w-4 h-4 mr-3" /> Sistem Ayarları
-            </button>
-          </div>
-
-          <div className="p-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <div className="flex items-center text-emerald-400 mb-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></div>
-                <span className="text-xs font-semibold uppercase tracking-wider">Sistem Aktif</span>
-              </div>
-              <p className="text-xs text-slate-500">Tüm servisler (OpenAI, AWS, Youtube API) operasyonel durumda.</p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 bg-gradient-to-br from-[#020617] to-slate-950">
-          <div className="max-w-7xl mx-auto">
-            {activeTab === 'dashboard' && renderDashboard()}
-            {activeTab === 'campaigns' && renderCampaigns()}
-            {activeTab === 'settings' && renderSettings()}
-          </div>
-        </main>
-      </div>
-
-      {}
-      {showNewCampaignModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">Yeni Otomasyon Kuralı Oluştur</h3>
-              <button onClick={() => setShowNewCampaignModal(false)} className="text-slate-400 hover:text-white"><XCircle className="w-6 h-6" /></button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Kural/Kampanya Adı</label>
-                  <input type="text" placeholder="Örn: Günlük Teknoloji Haberleri" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Hedef YouTube Kanalı</label>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <option>Tarih Sırları</option>
-                    <option>AstroBilgi</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Yayın Sıklığı</label>
-                  <select className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <option>Günde 1 Kez (08:00)</option>
-                    <option>Günde 2 Kez (08:00, 18:00)</option>
-                    <option>Sadece Hafta Sonu</option>
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Anahtar Kelime / Konsept (Prompt)</label>
-                  <textarea rows="4" placeholder="Sisteme ne tür videolar üretmesini istediğinizi detaylıca anlatın..." className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
-                  <p className="text-xs text-slate-500 mt-2">Bu prompt, her döngüde benzersiz bir senaryo üretmek için GPT-4'e baz oluşturacaktır.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-slate-800 flex justify-end gap-3 bg-slate-900/50 rounded-b-2xl">
-              <button onClick={() => setShowNewCampaignModal(false)} className="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">İptal Et</button>
-              <button onClick={() => setShowNewCampaignModal(false)} className="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-900/20">Kuralı Başlat</button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Global Style for scrollbar to keep it clean */}
-      <style dangerouslySetInnerHTML={{__html: `
+    <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
-      `}} />
+        
+        /* Tab Animations */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .tab-content.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-300 font-sans selection:bg-indigo-500/30 overflow-hidden">
+
+    <!-- Top Navbar -->
+    <nav class="h-16 border-b border-slate-800 bg-slate-950/50 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
+        <div class="flex items-center">
+            <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mr-3 shadow-lg shadow-indigo-900/40">
+                <i data-lucide="video" class="w-5 h-5 text-white"></i>
+            </div>
+            <span class="text-xl font-bold text-white tracking-tight">AutoTube<span class="text-indigo-500 font-light">OS</span></span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center bg-slate-900 border border-slate-800 rounded-full px-4 py-1.5">
+                <i data-lucide="search" class="w-4 h-4 text-slate-500 mr-2"></i>
+                <input type="text" placeholder="Arama yap..." class="bg-transparent border-none focus:outline-none text-sm w-48 text-slate-300 placeholder-slate-600" />
+            </div>
+            <button class="relative p-2 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-slate-950"></span>
+            </button>
+            <div class="h-8 w-px bg-slate-800 mx-2"></div>
+            <div class="flex items-center cursor-pointer group">
+                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-sm font-medium text-white group-hover:border-indigo-500 transition-colors">
+                    AK
+                </div>
+                <div class="ml-3 mr-1 hidden sm:block">
+                    <p class="text-sm font-medium text-white leading-tight">Admin Kullanıcı</p>
+                    <p class="text-xs text-slate-500">Enterprise Plan</p>
+                </div>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500 hidden sm:block"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Layout Wrapper -->
+    <div class="flex h-[calc(100vh-4rem)]">
+        
+        <aside class="w-64 border-r border-slate-800 bg-slate-950/30 flex-shrink-0 flex flex-col justify-between hidden md:flex">
+            <div class="p-4 space-y-1 mt-2">
+                <button id="btn-dashboard" onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-indigo-600/10 text-indigo-400">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 mr-3"></i> Genel Bakış
+                </button>
+                <button id="btn-campaigns" onclick="switchTab('campaigns')" class="nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-200">
+                    <i data-lucide="file-text" class="w-4 h-4 mr-3"></i> Otomasyon Kuralları
+                </button>
+                <button class="nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-200">
+                    <i data-lucide="users" class="w-4 h-4 mr-3"></i> Kanal Yönetimi
+                </button>
+                <button id="btn-settings" onclick="switchTab('settings')" class="nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-200">
+                    <i data-lucide="settings" class="w-4 h-4 mr-3"></i> Sistem Ayarları
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                    <div class="flex items-center text-emerald-400 mb-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></div>
+                        <span class="text-xs font-semibold uppercase tracking-wider">Sistem Aktif</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Tüm servisler (OpenAI, AWS, Youtube API) operasyonel durumda.</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 bg-gradient-to-br from-[#020617] to-slate-950 custom-scrollbar">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- 1. DASHBOARD TAB -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="space-y-6">
+                        <!-- Top Metrics Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Metric 1 -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-sm font-medium text-slate-400">Toplam Üretim (Bu Ay)</h3>
+                                    <div class="p-2 rounded-lg bg-slate-800/50 text-indigo-400">
+                                        <i data-lucide="video" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                                <p class="text-2xl font-semibold text-white mb-1">3,248</p>
+                                <p class="text-xs text-slate-500">+12.5% geçen aya göre</p>
+                            </div>
+                            <!-- Metric 2 -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-sm font-medium text-slate-400">Ortalama Başarı Oranı</h3>
+                                    <div class="p-2 rounded-lg bg-slate-800/50 text-emerald-400">
+                                        <i data-lucide="activity" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                                <p class="text-2xl font-semibold text-white mb-1">98.2%</p>
+                                <p class="text-xs text-slate-500">Son 30 gün verisi</p>
+                            </div>
+                            <!-- Metric 3 -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-sm font-medium text-slate-400">Tahmini API Maliyeti</h3>
+                                    <div class="p-2 rounded-lg bg-slate-800/50 text-rose-400">
+                                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                                <p class="text-2xl font-semibold text-white mb-1">$142.50</p>
+                                <p class="text-xs text-slate-500">OpenAI + ElevenLabs</p>
+                            </div>
+                            <!-- Metric 4 -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h3 class="text-sm font-medium text-slate-400">Aktif Otomasyonlar</h3>
+                                    <div class="p-2 rounded-lg bg-slate-800/50 text-blue-400">
+                                        <i data-lucide="server" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                                <p class="text-2xl font-semibold text-white mb-1">14</p>
+                                <p class="text-xs text-slate-500">3 kanal üzerinde</p>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Chart Area -->
+                            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-base font-semibold text-white">Üretim Hacmi (Son 7 Gün)</h3>
+                                    <select class="bg-slate-950 border border-slate-800 text-slate-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+                                        <option>Tüm Kanallar</option>
+                                        <option>Tarih Sırları</option>
+                                        <option>AstroBilgi</option>
+                                    </select>
+                                </div>
+                                <div class="h-64 w-full relative">
+                                    <canvas id="productionChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- System Health -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm flex flex-col">
+                                <h3 class="text-base font-semibold text-white mb-6">Sistem Sağlığı & Kaynaklar</h3>
+                                <div class="space-y-6 flex-1">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="text-slate-400">OpenAI Kota Kullanımı</span>
+                                            <span class="text-white font-medium">75%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-800 rounded-full h-2">
+                                            <div class="bg-indigo-500 h-2 rounded-full" style="width: 75%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="text-slate-400">ElevenLabs Karakter Kotası</span>
+                                            <span class="text-white font-medium">42%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-800 rounded-full h-2">
+                                            <div class="bg-emerald-500 h-2 rounded-full" style="width: 42%;"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="text-slate-400">Sunucu CPU (Render)</span>
+                                            <span class="text-rose-400 font-medium">88%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-800 rounded-full h-2">
+                                            <div class="bg-rose-500 h-2 rounded-full" style="width: 88%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="mt-6 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors border border-slate-700">
+                                    Kotaları Yönet
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Logs Section -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                                <h3 class="text-base font-semibold text-white">Canlı İşlem Logları</h3>
+                                <button id="triggerBtn" onclick="triggerPipeline()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-all shadow-lg shadow-indigo-900/20">
+                                    <span id="triggerIcon" class="mr-2"><i data-lucide="play" class="w-4 h-4 fill-current"></i></span>
+                                    <span id="triggerText">Manuel Tetikle</span>
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead class="bg-slate-950/50 text-slate-400">
+                                        <tr>
+                                            <th class="px-6 py-4 font-medium">İşlem ID</th>
+                                            <th class="px-6 py-4 font-medium">Servis</th>
+                                            <th class="px-6 py-4 font-medium">Görev Detayı</th>
+                                            <th class="px-6 py-4 font-medium">Zaman</th>
+                                            <th class="px-6 py-4 font-medium">Süre</th>
+                                            <th class="px-6 py-4 font-medium text-right">Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-800 text-slate-300">
+                                        <tr class="hover:bg-slate-800/20 transition-colors">
+                                            <td class="px-6 py-4 font-mono text-xs text-slate-500">SYS-8902</td>
+                                            <td class="px-6 py-4">MoviePy Engine</td>
+                                            <td class="px-6 py-4">Motivasyon_001.mp4</td>
+                                            <td class="px-6 py-4 text-slate-500">10:42:05</td>
+                                            <td class="px-6 py-4 text-slate-500">2m 14s</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="px-2.5 py-1 text-xs font-medium rounded-full border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">İşleniyor</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-800/20 transition-colors">
+                                            <td class="px-6 py-4 font-mono text-xs text-slate-500">SYS-8901</td>
+                                            <td class="px-6 py-4">YouTube API</td>
+                                            <td class="px-6 py-4">Roma'nın Çöküşü</td>
+                                            <td class="px-6 py-4 text-slate-500">10:35:12</td>
+                                            <td class="px-6 py-4 text-slate-500">45s</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="px-2.5 py-1 text-xs font-medium rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Başarılı</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-800/20 transition-colors">
+                                            <td class="px-6 py-4 font-mono text-xs text-slate-500">SYS-8899</td>
+                                            <td class="px-6 py-4">OpenAI API</td>
+                                            <td class="px-6 py-4 flex items-center">Kozmos Bölüm 4 <i data-lucide="alert-circle" class="w-4 h-4 text-red-400 ml-2"></i></td>
+                                            <td class="px-6 py-4 text-slate-500">09:15:00</td>
+                                            <td class="px-6 py-4 text-slate-500">5s</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span class="px-2.5 py-1 text-xs font-medium rounded-full border bg-red-500/10 text-red-400 border-red-500/20">Başarısız</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="p-4 border-t border-slate-800 bg-slate-900/50 text-center">
+                                <button class="text-sm text-indigo-400 hover:text-indigo-300 font-medium">Tüm Logları Görüntüle &rarr;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CAMPAIGNS TAB -->
+                <div id="campaigns-tab" class="tab-content">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white tracking-tight">Otomasyon Kuralları</h2>
+                            <p class="text-slate-400 text-sm mt-1">Sistemin otomatik olarak içerik üreteceği şablonları yönetin.</p>
+                        </div>
+                        <button onclick="toggleModal(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center transition-all shadow-lg shadow-indigo-900/20">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Yeni Kural Oluştur
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-950/50 text-slate-400">
+                                <tr>
+                                    <th class="px-6 py-4 font-medium">Kampanya Adı</th>
+                                    <th class="px-6 py-4 font-medium">Hedef Kanal</th>
+                                    <th class="px-6 py-4 font-medium">Zamanlama</th>
+                                    <th class="px-6 py-4 font-medium">AI Yapılandırması</th>
+                                    <th class="px-6 py-4 font-medium">Başarı Oranı</th>
+                                    <th class="px-6 py-4 font-medium">Durum</th>
+                                    <th class="px-6 py-4 font-medium text-right">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300">
+                                <!-- Campaign 1 -->
+                                <tr class="hover:bg-slate-800/20 transition-colors group">
+                                    <td class="px-6 py-5">
+                                        <p class="font-semibold text-white">Antik Tarih Serisi</p>
+                                        <p class="text-xs text-slate-500 mt-1">Son çalışma: 10 dk önce</p>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center"><i data-lucide="youtube" class="w-4 h-4 text-red-500 mr-2"></i> Tarih Sırları</div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center text-slate-400"><i data-lucide="clock" class="w-4 h-4 mr-2"></i> 08:00, 18:00</div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex flex-col space-y-1 text-xs text-slate-400">
+                                            <span>Model: <span class="text-slate-300">GPT-4o</span></span>
+                                            <span>Ses: <span class="text-slate-300">Antoni (Erkek)</span></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center">
+                                            <div class="w-16 bg-slate-800 rounded-full h-1.5 mr-2">
+                                                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 98%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium">98%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <span class="px-2.5 py-1 text-xs font-medium rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Aktif</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-right">
+                                        <button class="p-2 text-slate-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                                        <button class="p-2 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        <button class="p-2 text-slate-500 hover:text-white transition-colors"><i data-lucide="more-vertical" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Campaign 2 -->
+                                <tr class="hover:bg-slate-800/20 transition-colors group">
+                                    <td class="px-6 py-5">
+                                        <p class="font-semibold text-white">Motivasyon Shorts</p>
+                                        <p class="text-xs text-slate-500 mt-1">Son çalışma: 2 Saat önce</p>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center"><i data-lucide="youtube" class="w-4 h-4 text-red-500 mr-2"></i> Girişimci Ruhu</div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center text-slate-400"><i data-lucide="clock" class="w-4 h-4 mr-2"></i> Her 4 Saatte 1</div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex flex-col space-y-1 text-xs text-slate-400">
+                                            <span>Model: <span class="text-slate-300">Claude 3</span></span>
+                                            <span>Ses: <span class="text-slate-300">Adam (Erkek)</span></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center">
+                                            <div class="w-16 bg-slate-800 rounded-full h-1.5 mr-2">
+                                                <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 85%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium">85%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <span class="px-2.5 py-1 text-xs font-medium rounded-full border bg-red-500/10 text-red-400 border-red-500/20">Hata</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-right">
+                                        <button class="p-2 text-slate-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                                        <button class="p-2 text-slate-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                        <button class="p-2 text-slate-500 hover:text-white transition-colors"><i data-lucide="more-vertical" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. SETTINGS TAB -->
+                <div id="settings-tab" class="tab-content max-w-4xl">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Sistem Tercihleri</h2>
+                        <p class="text-slate-400 text-sm mt-1">API anahtarlarını, kanalları ve altyapı ayarlarını yönetin.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Integrations -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                            <div class="p-6 border-b border-slate-800">
+                                <h3 class="text-lg font-semibold text-white flex items-center">
+                                    <i data-lucide="database" class="w-5 h-5 mr-2 text-indigo-400"></i> Platform Entegrasyonları
+                                </h3>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-slate-950/50 border border-slate-800 rounded-lg">
+                                    <div class="flex items-center">
+                                        <i data-lucide="youtube" class="w-8 h-8 text-red-500 mr-4"></i>
+                                        <div>
+                                            <h4 class="font-medium text-white">YouTube Data API v3</h4>
+                                            <p class="text-xs text-emerald-400 mt-1 flex items-center"><i data-lucide="check-circle" class="w-3 h-3 mr-1"></i> Bağlandı (3 Kanal)</p>
+                                        </div>
+                                    </div>
+                                    <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium text-white rounded-lg transition-colors border border-slate-700">Yönet</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Keys -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                            <div class="p-6 border-b border-slate-800">
+                                <h3 class="text-lg font-semibold text-white flex items-center">
+                                    <i data-lucide="server" class="w-5 h-5 mr-2 text-emerald-400"></i> Yapay Zeka Servisleri (API Keys)
+                                </h3>
+                            </div>
+                            <div class="p-6 space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">OpenAI (Senaryo & Meta Veri)</label>
+                                    <div class="flex gap-3">
+                                        <input type="password" value="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxx" readonly class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:border-indigo-500 font-mono text-sm" />
+                                        <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium text-white rounded-lg transition-colors border border-slate-700">Değiştir</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-400 mb-2">ElevenLabs (Ses Sentezi)</label>
+                                    <div class="flex gap-3">
+                                        <input type="password" placeholder="API Anahtarınızı girin..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:border-indigo-500 font-mono text-sm" />
+                                        <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-sm font-medium text-white rounded-lg transition-colors border border-indigo-500">Kaydet</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
-  );
-}
+
+    <!-- Modal Background -->
+    <div id="campaignModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Yeni Otomasyon Kuralı Oluştur</h3>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Kural/Kampanya Adı</label>
+                        <input type="text" placeholder="Örn: Günlük Teknoloji Haberleri" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Hedef YouTube Kanalı</label>
+                        <select class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option>Tarih Sırları</option>
+                            <option>AstroBilgi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Yayın Sıklığı</label>
+                        <select class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option>Günde 1 Kez (08:00)</option>
+                            <option>Günde 2 Kez (08:00, 18:00)</option>
+                            <option>Sadece Hafta Sonu</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Anahtar Kelime / Konsept (Prompt)</label>
+                        <textarea rows="4" placeholder="Sisteme ne tür videolar üretmesini istediğinizi detaylıca anlatın..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-800 flex justify-end gap-3 bg-slate-900/50 rounded-b-2xl">
+                <button onclick="toggleModal(false)" class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">İptal Et</button>
+                <button onclick="toggleModal(false)" class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-900/20">Kuralı Başlat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interaction Script -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('productionChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)'); // Indigo-500
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                datasets: [{
+                    label: 'Üretilen Video',
+                    data: [12, 19, 15, 22, 28, 35, 30],
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#0f172a',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        grid: { color: '#1e293b', borderDash: [3, 3] },
+                        ticks: { color: '#64748b' },
+                        beginAtZero: true
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#e2e8f0',
+                        borderColor: '#1e293b',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false
+                    }
+                }
+            }
+        });
+
+        // Tab Switch Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Show selected tab
+            document.getElementById(tabId + '-tab').classList.add('active');
+
+            // Reset all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:bg-slate-900 hover:text-slate-200";
+            });
+
+            // Activate current nav button
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn w-full flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all bg-indigo-600/10 text-indigo-400";
+            }
+        }
+
+        // Modal Logic
+        function toggleModal(show) {
+            const modal = document.getElementById('campaignModal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // Fake Manual Trigger Logic
+        function triggerPipeline() {
+            const btn = document.getElementById('triggerBtn');
+            const iconContainer = document.getElementById('triggerIcon');
+            const text = document.getElementById('triggerText');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+            
+            // Set loading icon
+            iconContainer.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin text-white"></i>';
+            lucide.createIcons();
+            text.innerText = "İşleniyor...";
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                
+                // Set play icon back
+                iconContainer.innerHTML = '<i data-lucide="play" class="w-4 h-4 fill-current"></i>';
+                lucide.createIcons();
+                text.innerText = "Manuel Tetikle";
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
