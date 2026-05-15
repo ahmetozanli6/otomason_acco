@@ -87,7 +87,16 @@
         }
 
         /* Toast Notifications */
-        #toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        #toast-container { 
+            position: fixed; 
+            top: 1rem; 
+            right: 1rem; 
+            z-index: 9999; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.5rem; 
+        }
+        
         .toast {
             min-width: 280px;
             padding: 1rem;
@@ -116,12 +125,18 @@
 
         /* Progress Steps */
         .step-icon { transition: all 0.3s; }
-        .step-active .step-icon { background: rgba(99, 102, 241, 0.2); color: #818cf8; border-color: #6366f1; transform: scale(1.1); box-shadow: 0 0 15px rgba(99,102,241,0.3); }
-        .step-done .step-icon { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: #10b981; }
-        
-        /* Checkbox Toggles */
-        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+        .step-active .step-icon { 
+            background: rgba(99, 102, 241, 0.2); 
+            color: #818cf8; 
+            border-color: #6366f1; 
+            transform: scale(1.1); 
+            box-shadow: 0 0 15px rgba(99,102,241,0.3); 
+        }
+        .step-done .step-icon { 
+            background: rgba(16, 185, 129, 0.2); 
+            color: #34d399; 
+            border-color: #10b981; 
+        }
         
         /* Mobile fixes */
         .mobile-nav-btn { transition: all 0.2s; }
@@ -188,19 +203,25 @@
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-2">Menü</p>
                 
                 <button onclick="switchTab('dashboard')" class="nav-btn active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-white/10 transition-all">
-                    <i data-lucide="zap" class="w-5 h-5"></i> Üretim İstasyonu
+                    <i data-lucide="zap" class="w-5 h-5"></i> 
+                    Üretim İstasyonu
                 </button>
+                
                 <button onclick="switchTab('campaigns')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 transition-all">
-                    <i data-lucide="calendar-clock" class="w-5 h-5"></i> Otomasyonlar
+                    <i data-lucide="calendar-clock" class="w-5 h-5"></i> 
+                    Otomasyonlar
                 </button>
+                
                 <button onclick="switchTab('library')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 transition-all">
-                    <i data-lucide="folder-video" class="w-5 h-5"></i> Kütüphane
+                    <i data-lucide="folder-video" class="w-5 h-5"></i> 
+                    Kütüphane
                 </button>
                 
                 <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">Sistem</p>
                 
                 <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 transition-all">
-                    <i data-lucide="settings" class="w-5 h-5"></i> Ayarlar & Sunucu
+                    <i data-lucide="settings" class="w-5 h-5"></i> 
+                    Ayarlar & Sunucu
                 </button>
             </div>
 
@@ -219,7 +240,7 @@
             </div>
         </aside>
 
-        <!-- Main Workspace (Added pb-20 for Mobile Bottom Nav clearance) -->
+        <!-- Main Workspace -->
         <main class="flex-1 overflow-y-auto custom-scrollbar p-4 pb-24 md:p-6 md:pb-6">
             <div class="max-w-[1400px] mx-auto">
 
@@ -241,12 +262,13 @@
                             
                             <!-- Config Card -->
                             <div class="glass-card rounded-2xl p-4 sm:p-6">
-                                <!-- Format Selection -->
+                                
+                                <!-- Format Selection (UZUN VİDEO DAHİL) -->
                                 <div class="mb-6">
                                     <label class="block text-sm font-medium text-slate-300 mb-3">Video Formatı</label>
                                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div class="relative">
-                                            <input type="radio" name="format" id="fmt-shorts" class="format-radio hidden" checked>
+                                            <input type="radio" name="format" id="fmt-shorts" value="portrait" class="format-radio hidden" checked>
                                             <label for="fmt-shorts" class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-white/10 bg-black/20 cursor-pointer transition-all hover:bg-white/5">
                                                 <i data-lucide="smartphone" class="w-5 h-5 sm:w-6 sm:h-6 mb-2"></i>
                                                 <span class="text-xs sm:text-sm font-semibold">Shorts / Reels</span>
@@ -254,11 +276,11 @@
                                             </label>
                                         </div>
                                         <div class="relative">
-                                            <input type="radio" name="format" id="fmt-long" class="format-radio hidden" disabled>
-                                            <label for="fmt-long" class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-white/10 bg-black/20 cursor-not-allowed opacity-50 transition-all">
+                                            <input type="radio" name="format" id="fmt-long" value="landscape" class="format-radio hidden">
+                                            <label for="fmt-long" class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-white/10 bg-black/20 cursor-pointer transition-all hover:bg-white/5">
                                                 <i data-lucide="monitor-play" class="w-5 h-5 sm:w-6 sm:h-6 mb-2"></i>
                                                 <span class="text-xs sm:text-sm font-semibold">Uzun Video</span>
-                                                <span class="text-[10px] sm:text-xs text-slate-500 mt-1">Yakında...</span>
+                                                <span class="text-[10px] sm:text-xs text-slate-500 mt-1">16:9 (Yatay)</span>
                                             </label>
                                         </div>
                                     </div>
@@ -276,12 +298,14 @@
                                         <input id="inputKeyword" type="text" class="input-pro text-sm" value="business woman office career" placeholder="Örn: space, galaxy, cinematic">
                                     </div>
 
-                                    <!-- Added Toggles -->
+                                    <!-- Toggles -->
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10">
                                         <!-- Subtitles Toggle -->
                                         <div class="flex items-center justify-between bg-black/20 p-3 sm:p-4 rounded-xl border border-white/5">
                                             <div>
-                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1"><i data-lucide="type" class="w-3.5 h-3.5 text-indigo-400"></i> Dinamik Altyazı</h4>
+                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1">
+                                                    <i data-lucide="type" class="w-3.5 h-3.5 text-indigo-400"></i> Dinamik Altyazı
+                                                </h4>
                                                 <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Ekrana büyük metinler basar.</p>
                                             </div>
                                             <input type="checkbox" id="toggleSubtitle" checked disabled class="w-4 h-4 sm:w-5 sm:h-5 accent-indigo-500 cursor-not-allowed opacity-70">
@@ -290,7 +314,9 @@
                                         <!-- Auto Upload Toggle -->
                                         <div class="flex items-center justify-between bg-black/20 p-3 sm:p-4 rounded-xl border border-white/5">
                                             <div>
-                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1"><i data-lucide="youtube" class="w-3.5 h-3.5 text-red-500"></i> Otomatik Yükleme</h4>
+                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1">
+                                                    <i data-lucide="youtube" class="w-3.5 h-3.5 text-red-500"></i> Otomatik Yükleme
+                                                </h4>
                                                 <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Kanala otonom olarak yükler.</p>
                                             </div>
                                             <input type="checkbox" id="toggleUpload" class="w-4 h-4 sm:w-5 sm:h-5 accent-indigo-500 cursor-pointer">
@@ -308,32 +334,53 @@
                             </div>
                         </div>
 
-                        <!-- RIGHT COLUMN: Progress, Preview & Terminal -->
+                        <!-- RIGHT COLUMN: Preview, Progress & Logs -->
                         <div class="lg:col-span-5 space-y-6 flex flex-col">
                             
                             <!-- Video Preview Area -->
                             <div class="glass-card rounded-2xl p-4 sm:p-5">
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                                        <i data-lucide="play-square" class="w-4 h-4 text-indigo-400"></i> Sonuç Ekranı
+                                        <i data-lucide="play-square" class="w-4 h-4 text-indigo-400"></i> 
+                                        Sonuç Ekranı
                                     </h3>
-                                    <span id="videoBadge" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 py-0.5 rounded bg-black/30 border border-white/5">BEKLİYOR</span>
+                                    <span id="videoBadge" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 py-0.5 rounded bg-black/30 border border-white/5">
+                                        BEKLİYOR
+                                    </span>
                                 </div>
                                 
                                 <div class="relative w-full aspect-[9/16] max-h-[400px] bg-[#0a0a0f] rounded-xl overflow-hidden flex items-center justify-center border border-white/5 mx-auto">
+                                    
+                                    <!-- Idle State -->
                                     <div id="videoIdle" class="text-center p-6 flex flex-col items-center">
                                         <i data-lucide="film" class="w-8 h-8 sm:w-10 sm:h-10 mb-2 opacity-50"></i>
-                                        <p id="idleText" class="text-[10px] sm:text-xs font-medium text-slate-500">Video burada görüntülenecek</p>
-                                        <button id="bypassBtn" class="hidden mt-4 bg-indigo-600 hover:bg-indigo-500 transition-colors text-white font-medium text-[10px] sm:text-xs px-4 py-2 rounded-lg shadow-lg">HTTPS Bağlantısını Onayla</button>
+                                        <p id="idleText" class="text-[10px] sm:text-xs font-medium text-slate-500">
+                                            Video burada görüntülenecek
+                                        </p>
+                                        <!-- Ngrok Güvenlik Bypass Butonu -->
+                                        <button id="bypassBtn" class="hidden mt-4 bg-indigo-600 hover:bg-indigo-500 transition-colors text-white font-medium text-[10px] sm:text-xs px-4 py-2 rounded-lg shadow-lg">
+                                            HTTPS Bağlantısını Onayla
+                                        </button>
                                     </div>
+                                    
+                                    <!-- HTML5 Video Player -->
                                     <video id="resultVideo" class="hidden w-full h-full object-contain bg-black" controls playsinline></video>
+                                </div>
+
+                                <!-- Ekstra İndirme / Yeni Sekme Butonu -->
+                                <div id="videoActions" class="hidden mt-4 flex gap-2 justify-center">
+                                     <a id="downloadVideoBtn" href="#" target="_blank" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                                         <i data-lucide="external-link" class="w-4 h-4"></i> 
+                                         Videoyu Yeni Sekmede Aç / İndir
+                                     </a>
                                 </div>
                             </div>
 
                             <!-- Pipeline Tracker -->
                             <div class="glass-card rounded-2xl p-4 sm:p-5">
                                 <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                                    <i data-lucide="git-merge" class="w-4 h-4 text-indigo-400"></i> Üretim Aşamaları
+                                    <i data-lucide="git-merge" class="w-4 h-4 text-indigo-400"></i> 
+                                    Üretim Aşamaları
                                 </h3>
                                 
                                 <div class="relative pl-3">
@@ -342,27 +389,51 @@
                                     <div id="vertical-progress" class="absolute left-[21px] top-4 w-0.5 bg-indigo-500 transition-all duration-1000 h-0 shadow-[0_0_8px_#6366f1]"></div>
 
                                     <div class="space-y-3 sm:space-y-4 relative z-10">
+                                        <!-- Step 1 -->
                                         <div id="step-script" class="flex items-center gap-3 sm:gap-4 step-item">
-                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
-                                            <div><p class="text-xs sm:text-sm font-medium text-slate-300">Senaryo Yazımı</p><p class="text-[9px] sm:text-xs text-slate-500">ChatGPT Prompting</p></div>
+                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0">
+                                                <i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs sm:text-sm font-medium text-slate-300">Senaryo Yazımı</p>
+                                                <p class="text-[9px] sm:text-xs text-slate-500">ChatGPT Prompting</p>
+                                            </div>
                                         </div>
+                                        <!-- Step 2 -->
                                         <div id="step-audio" class="flex items-center gap-3 sm:gap-4 step-item">
-                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="mic" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
-                                            <div><p class="text-xs sm:text-sm font-medium text-slate-300">Seslendirme (TTS)</p><p class="text-[9px] sm:text-xs text-slate-500">Google TTS API</p></div>
+                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0">
+                                                <i data-lucide="mic" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs sm:text-sm font-medium text-slate-300">Seslendirme (TTS)</p>
+                                                <p class="text-[9px] sm:text-xs text-slate-500">Google TTS API</p>
+                                            </div>
                                         </div>
+                                        <!-- Step 3 -->
                                         <div id="step-visual" class="flex items-center gap-3 sm:gap-4 step-item">
-                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="image" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
-                                            <div><p class="text-xs sm:text-sm font-medium text-slate-300">Medya Toplama</p><p class="text-[9px] sm:text-xs text-slate-500">Pexels Video İndirme</p></div>
+                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0">
+                                                <i data-lucide="image" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs sm:text-sm font-medium text-slate-300">Medya Toplama</p>
+                                                <p class="text-[9px] sm:text-xs text-slate-500">Pexels Video İndirme</p>
+                                            </div>
                                         </div>
+                                        <!-- Step 4 -->
                                         <div id="step-render" class="flex items-center gap-3 sm:gap-4 step-item">
-                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="cpu" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
-                                            <div><p class="text-xs sm:text-sm font-medium text-slate-300">Video Render</p><p class="text-[9px] sm:text-xs text-slate-500">MoviePy & Altyazı Kurgusu</p></div>
+                                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0">
+                                                <i data-lucide="cpu" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs sm:text-sm font-medium text-slate-300">Video Render</p>
+                                                <p class="text-[9px] sm:text-xs text-slate-500">MoviePy & Altyazı Kurgusu</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Terminal Logs -->
+                            <!-- Terminal Logs Ekranı (Detaylı Log Alanı) -->
                             <div class="glass-card rounded-2xl flex flex-col overflow-hidden h-[200px] sm:h-[250px]">
                                 <div class="px-4 py-2 border-b border-white/5 bg-black/20 flex justify-between items-center">
                                     <div class="flex items-center gap-2">
@@ -373,7 +444,9 @@
                                     </div>
                                 </div>
                                 <div id="logArea" class="flex-1 p-3 overflow-y-auto custom-scrollbar font-mono text-[9px] sm:text-[10px] space-y-1.5 bg-[#0a0a0f]">
-                                    <div class="text-slate-500">> Motor dinleniyor... Bekleniyor.</div>
+                                    <div class="text-slate-500">
+                                        > Motor dinleniyor... Emir bekleniyor.
+                                    </div>
                                 </div>
                             </div>
 
@@ -418,7 +491,7 @@
                     </div>
                 </div>
 
-                <!-- ================== 3. LIBRARY (GERİ EKLENEN KISIM) ================== -->
+                <!-- ================== 3. LIBRARY ================== -->
                 <div id="library-tab" class="tab-content">
                     <div class="mb-6">
                         <h2 class="text-xl sm:text-2xl font-bold text-white">Video Kütüphanesi</h2>
@@ -427,6 +500,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
                         <script>
+                            // 6 adet örnek kütüphane kartı oluşturuyoruz
                             for(let i=1; i<=6; i++) {
                                 document.write(`
                                 <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
@@ -483,7 +557,7 @@
         </main>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar (Updated for 4 tabs) -->
+    <!-- Mobile Bottom Navigation Bar (4 Menü Düğmeli) -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-around px-2 pb-safe">
         <button onclick="switchTab('dashboard')" class="mobile-nav-btn active flex flex-col items-center justify-center w-full h-full text-indigo-400">
             <i data-lucide="zap" class="w-5 h-5 mb-1"></i>
@@ -503,128 +577,174 @@
         </button>
     </div>
 
+    <!-- JavaScript Uygulama Mantığı -->
     <script>
+        // İkonları Render Et
         lucide.createIcons();
+        
+        // Sunucu Adresini Hafızadan Çek
         let SERVER_URL = localStorage.getItem('autotube_server_url') || 'http://127.0.0.1:5000';
         
         document.addEventListener('DOMContentLoaded', () => {
-            if(document.getElementById('serverApiUrl')) document.getElementById('serverApiUrl').value = SERVER_URL;
+            if(document.getElementById('serverApiUrl')) {
+                document.getElementById('serverApiUrl').value = SERVER_URL;
+            }
         });
 
+        // Sunucu Adresini Kaydet
         function saveServerSettings() {
             SERVER_URL = document.getElementById('serverApiUrl').value.trim().replace(/\/$/, "");
             localStorage.setItem('autotube_server_url', SERVER_URL);
-            showToast('success', 'Sunucu adresi güncellendi!');
+            showToast('success', 'Sunucu adresi başarıyla güncellendi!');
+            addLog(`Motor bağlantı adresi güncellendi: ${SERVER_URL}`, 'text-emerald-400');
         }
 
+        // Toast Bildirim Sistemi
         function showToast(type, message) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             let icon = type === 'success' ? 'check-circle-2' : (type === 'error' ? 'alert-circle' : 'info');
+            
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i><span class="text-[11px] sm:text-sm font-medium">${message}</span>`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i>
+                <span class="text-[11px] sm:text-sm font-medium">${message}</span>
+            `;
+            
             container.appendChild(toast);
             lucide.createIcons();
-            setTimeout(() => { toast.classList.add('closing'); setTimeout(() => toast.remove(), 300); }, 4000);
+            
+            setTimeout(() => { 
+                toast.classList.add('closing'); 
+                setTimeout(() => toast.remove(), 300); 
+            }, 4000);
         }
 
+        // Terminal Log Yazdırıcı
         function addLog(msg, color = "text-slate-400") {
             const area = document.getElementById('logArea');
             const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
-            area.innerHTML += `<div class="${color} flex gap-2"><span class="text-slate-600 shrink-0">[${time}]</span><span>${msg}</span></div>`;
+            
+            area.innerHTML += `
+                <div class="${color} flex gap-2">
+                    <span class="text-slate-600 shrink-0">[${time}]</span>
+                    <span>${msg}</span>
+                </div>
+            `;
             area.scrollTop = area.scrollHeight;
         }
 
+        // Menü (Sekme) Değiştirici
         function switchTab(tabId) {
-            // Content Sections
+            // İçerik Alanlarını Gizle/Göster
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId + '-tab').classList.add('active');
             
-            // Desktop Sidebar Highlights
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active', 'bg-white/10', 'text-white');
-                btn.classList.add('text-slate-400');
+            // Masaüstü Menü Seçim Efekti
+            document.querySelectorAll('.nav-btn').forEach(btn => { 
+                btn.classList.remove('active', 'bg-white/10', 'text-white'); 
+                btn.classList.add('text-slate-400'); 
             });
             const desktopBtn = document.querySelector(`.nav-btn[onclick="switchTab('${tabId}')"]`);
-            if (desktopBtn) {
-                desktopBtn.classList.remove('text-slate-400');
-                desktopBtn.classList.add('active', 'bg-white/10', 'text-white');
+            if (desktopBtn) { 
+                desktopBtn.classList.remove('text-slate-400'); 
+                desktopBtn.classList.add('active', 'bg-white/10', 'text-white'); 
             }
 
-            // Mobile Bottom Nav Highlights
+            // Mobil Alt Menü Seçim Efekti
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-                btn.classList.remove('active', 'text-indigo-400');
+                btn.classList.remove('active', 'text-indigo-400'); 
                 btn.classList.add('text-slate-500');
                 const span = btn.querySelector('span');
-                if(span) { span.classList.remove('font-semibold'); span.classList.add('font-medium'); }
+                if(span) { 
+                    span.classList.remove('font-semibold'); 
+                    span.classList.add('font-medium'); 
+                }
             });
             const mobileBtn = document.querySelector(`.mobile-nav-btn[onclick="switchTab('${tabId}')"]`);
             if (mobileBtn) {
-                mobileBtn.classList.remove('text-slate-500');
+                mobileBtn.classList.remove('text-slate-500'); 
                 mobileBtn.classList.add('active', 'text-indigo-400');
                 const span = mobileBtn.querySelector('span');
-                if(span) { span.classList.remove('font-medium'); span.classList.add('font-semibold'); }
+                if(span) { 
+                    span.classList.remove('font-medium'); 
+                    span.classList.add('font-semibold'); 
+                }
             }
             
-            // Scroll to top on mobile tab switch
+            // Mobil cihazlarda sekme değiştiğinde sayfanın en üstüne kaydır
             if(window.innerWidth < 768) {
                 window.scrollTo(0, 0);
             }
         }
 
+        // Animasyonlu İlerleme Adımı Güncelleyici
         function updateStep(stepId, status) {
             const el = document.getElementById(stepId);
             if (!el) return;
-            if (status === 'active') {
-                el.classList.add('step-active');
-                el.classList.remove('step-done');
-            } else if (status === 'done') {
-                el.classList.replace('step-active', 'step-done');
-            } else {
-                el.classList.remove('step-active', 'step-done');
+            
+            if (status === 'active') { 
+                el.classList.add('step-active'); 
+                el.classList.remove('step-done'); 
+            }
+            else if (status === 'done') { 
+                el.classList.replace('step-active', 'step-done'); 
+            }
+            else { 
+                el.classList.remove('step-active', 'step-done'); 
             }
         }
 
+        // Ana Üretim Motorunu Tetikleme Fonksiyonu
         async function triggerPipeline() {
             const konu = document.getElementById('inputKonu').value.trim();
             const keyword = document.getElementById('inputKeyword').value.trim();
             const upload = document.getElementById('toggleUpload').checked;
+            const format = document.querySelector('input[name="format"]:checked').value;
             
             const btn = document.getElementById('triggerBtn');
             const video = document.getElementById('resultVideo');
             const idle = document.getElementById('videoIdle');
-            const bypass = document.getElementById('bypassBtn');
+            const videoActions = document.getElementById('videoActions');
             const topBar = document.getElementById('topProgressBar');
             const vertBar = document.getElementById('vertical-progress');
             
-            if (!konu) return showToast('error', 'Lütfen video konusunu giriniz.');
+            if (!konu) {
+                return showToast('error', 'Lütfen video konusunu giriniz.');
+            }
 
+            // Arayüzü Üretime Hazırla
             btn.disabled = true;
             document.getElementById('triggerText').innerHTML = 'Üretiliyor <span class="blink">...</span>';
             video.classList.add('hidden');
             video.pause();
             video.removeAttribute('src');
+            videoActions.classList.add('hidden');
             idle.classList.remove('hidden');
-            bypass.classList.add('hidden');
             
             document.getElementById('idleText').innerText = "Sistem çalışıyor, lütfen bekleyin...";
             document.getElementById('videoBadge').innerText = "ÜRETİLİYOR";
             document.getElementById('videoBadge').className = "text-[10px] font-bold text-indigo-400 uppercase tracking-widest px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 animate-pulse";
 
             document.getElementById('logArea').innerHTML = ''; 
-            addLog(`Başlatıldı: Konu [${konu}], Yükleme: [${upload ? 'Açık' : 'Kapalı'}]`, "text-indigo-400");
+            addLog(`Başlatıldı: Konu [${konu}], Format: [${format}], Yükleme: [${upload ? 'Açık' : 'Kapalı'}]`, "text-indigo-400");
             showToast('info', 'Motor ateşlendi, üretim başlıyor...');
 
+            // Adımları Sıfırla
             ['step-script', 'step-audio', 'step-visual', 'step-render'].forEach(s => updateStep(s, 'reset'));
 
             try {
+                // Flask Sunucusuna İsteği Gönder (Ngrok Bypass Header Dahil)
                 const fetchPromise = fetch(`${SERVER_URL}/api/generate`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ konu: konu, stok_video: keyword, auto_upload: upload })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true' // NGROK Güvenlik Ekranını Atlar
+                    },
+                    body: JSON.stringify({ konu: konu, stok_video: keyword, auto_upload: upload, format: format })
                 });
                 
-                // UI Aşama Simülasyonu
+                // Görsel Aşamaları Simüle Et
                 topBar.style.width = "20%"; vertBar.style.height = "25%"; updateStep('step-script', 'active');
                 await new Promise(r => setTimeout(r, 2000)); updateStep('step-script', 'done');
                 
@@ -636,7 +756,7 @@
 
                 topBar.style.width = "80%"; vertBar.style.height = "100%"; updateStep('step-render', 'active');
 
-                // Gerçek Sunucu Cevabını Bekle
+                // Gerçek Sunucu Cevabını Al
                 const response = await fetchPromise;
                 const result = await response.json();
                 
@@ -646,49 +766,42 @@
                     addLog("İşlem tamamlandı! Video ekrana çekiliyor...", "text-emerald-400");
                     topBar.style.width = "100%";
                     
-                    // --- VİDEO YOLU DÜZELTME KODU (Ters Çizgi Hatası Çözümü) ---
-                    // Windows'tan gelen "workspace\FINAL.mp4" yolunu "workspace/FINAL.mp4" yapar
+                    // Windows Ters Çizgi Hatasını Engelle
                     let safePath = result.video_path.replace(/\\/g, '/');
-                    if(safePath.includes('workspace/')) {
-                        safePath = safePath.substring(safePath.indexOf('workspace/'));
-                    }
+                    if(safePath.includes('workspace/')) safePath = safePath.substring(safePath.indexOf('workspace/'));
                     if(safePath.startsWith('/')) safePath = safePath.substring(1);
                     
                     const videoSrc = `${SERVER_URL}/${safePath}?t=${new Date().getTime()}`;
-                    // -------------------------------------------------------------
                     
-                    video.src = videoSrc;
-                    
-                    // Ngrok Güvenlik Ekranı Yakalayıcı
-                    video.onerror = () => {
-                        addLog("HATA: Ngrok onay ekranı videoyu engelledi. Butona tıklayarak izin verin.", "text-rose-400");
-                        document.getElementById('idleText').innerText = "Güvenlik onayı gerekiyor!";
-                        idle.querySelector('i').setAttribute('data-lucide', 'shield-alert');
-                        idle.querySelector('i').classList.replace('text-slate-500', 'text-amber-500');
-                        lucide.createIcons();
-                        
-                        bypass.classList.remove('hidden');
-                        bypass.onclick = () => window.open(SERVER_URL, '_blank');
-                        
-                        document.getElementById('videoBadge').innerText = "ONAY BEKLİYOR";
-                        document.getElementById('videoBadge').className = "text-[10px] font-bold text-amber-400 uppercase tracking-widest px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20";
-                    };
+                    // İndirme Butonunun Linkini Ayarla
+                    document.getElementById('downloadVideoBtn').href = videoSrc;
+                    videoActions.classList.remove('hidden');
 
-                    video.onloadeddata = () => {
+                    // Ngrok Blob Fetch Yöntemi İle Videoyu Çek
+                    try {
+                        const videoResp = await fetch(videoSrc, { 
+                            headers: { 'ngrok-skip-browser-warning': 'true' } 
+                        });
+                        
+                        if(videoResp.ok) {
+                            const videoBlob = await videoResp.blob();
+                            video.src = URL.createObjectURL(videoBlob);
+                            
+                            idle.classList.add('hidden');
+                            video.classList.remove('hidden');
+                            video.play().catch(e => console.log("Otomatik oynatma tarayıcı tarafından engellendi."));
+                        } else {
+                            throw new Error("Video Blob çekilemedi");
+                        }
+                    } catch(blobErr) {
+                        // Eğer Blob başarısız olursa, standart src yapısını kullan (Bypass butonuna muhtaç olabilir)
+                        video.src = videoSrc;
                         idle.classList.add('hidden');
                         video.classList.remove('hidden');
-                        
-                        // Mobilde otomatik oynatma kısıtlamalarına karşı sessiz oynatma deneriz
-                        const playPromise = video.play();
-                        if (playPromise !== undefined) {
-                            playPromise.catch(error => {
-                                console.log("Otomatik oynatma tarayıcı tarafından engellendi.");
-                            });
-                        }
-                        
-                        document.getElementById('videoBadge').innerText = "HAZIR";
-                        document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20";
-                    };
+                    }
+
+                    document.getElementById('videoBadge').innerText = "HAZIR";
+                    document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20";
                 } else {
                     throw new Error(result.message);
                 }
@@ -710,6 +823,7 @@
             }
         }
 
+        // Zamanlayıcıyı (Cron) Tetikle
         async function scheduleJob() {
             const time = document.getElementById('scheduleTime').value;
             try {
@@ -718,10 +832,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ time: time })
                 });
+                
                 if(!response.ok) throw new Error("Sunucu hatası");
+                
                 showToast('success', `Zamanlayıcı Kuruldu: Her gün saat ${time}`);
+                addLog(`Zamanlayıcı Görevi Eklendi: ${time}`, "text-emerald-400");
             } catch (err) {
                 showToast('error', `Sunucuya ulaşılamadı (${SERVER_URL})`);
+                addLog(`Zamanlayıcı kurulamadı. Sunucuya ulaşılamadı.`, "text-rose-400");
             }
         }
     </script>
