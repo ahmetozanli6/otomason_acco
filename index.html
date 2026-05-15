@@ -289,22 +289,22 @@
                                 <!-- Inputs Grid -->
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Video Konusu (Yapay Zeka Senaryo Yazacak)</label>
-                                        <textarea id="inputKonu" rows="2" class="input-pro text-sm resize-none" placeholder="Örn: Evrenin genişlemesi hakkında ilginç bilgiler...">kadınların iş hayatına girişi</textarea>
+                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Video Konusu</label>
+                                        <textarea id="inputKonu" rows="2" class="input-pro text-sm resize-none">kadınların iş hayatına girişi</textarea>
                                     </div>
                                     
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Arka Plan Videoları İçin Anahtar Kelime (İngilizce)</label>
-                                        <input id="inputKeyword" type="text" class="input-pro text-sm" value="business woman office career" placeholder="Örn: space, galaxy, cinematic">
+                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Yapay Zeka Yönetmen Talimatı (Sistem Promptu)</label>
+                                        <textarea id="inputSystemPrompt" rows="3" class="input-pro text-sm resize-none text-indigo-200 border-indigo-500/30 bg-indigo-900/10" placeholder="Senaryonun dilini, tarzını ve uzunluğunu belirleyin...">Sen milyonlarca abonesi olan, belgesel ve tarih tarzında ilham verici içerikler üreten profesyonel bir YouTube metin yazarısın. Akıcı, ilham verici ve merak uyandırıcı bir dille yaz.</textarea>
+                                        <p class="text-[10px] text-slate-500 mt-1">Yapay zekanın senaryoyu hangi tarzda (komik, gizemli, belgesel vb.) yazacağını buradan belirleyin.</p>
                                     </div>
 
-                                    <!-- Toggles -->
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/10">
-                                        <!-- Subtitles Toggle -->
-                                        <div class="flex items-center justify-between bg-black/20 p-3 sm:p-4 rounded-xl border border-white/5">
-                                            <div>
-                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1">
-                                                    <i data-lucide="type" class="w-3.5 h-3.5 text-indigo-400"></i> Dinamik Altyazı
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Arka Plan Videoları İçin Anahtar Kelime (İngilizce)</label>
+                                        <input id="inputKeyword" type="text" class="input-pro text-sm" value="factory" placeholder="Örn: space, galaxy, cinematic">
+                                    </div>
+
+                                    <!-- Added Toggles -->
                                                 </h4>
                                                 <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Ekrana büyük metinler basar.</p>
                                             </div>
@@ -682,22 +682,19 @@
         function updateStep(stepId, status) {
             const el = document.getElementById(stepId);
             if (!el) return;
-            
-            if (status === 'active') { 
-                el.classList.add('step-active'); 
-                el.classList.remove('step-done'); 
-            }
-            else if (status === 'done') { 
-                el.classList.replace('step-active', 'step-done'); 
-            }
-            else { 
-                el.classList.remove('step-active', 'step-done'); 
+            if (status === 'active') {
+                el.classList.add('step-active');
+                el.classList.remove('step-done');
+            } else if (status === 'done') {
+                el.classList.replace('step-active', 'step-done');
+            } else {
+                el.classList.remove('step-active', 'step-done');
             }
         }
 
-        // Ana Üretim Motorunu Tetikleme Fonksiyonu
         async function triggerPipeline() {
             const konu = document.getElementById('inputKonu').value.trim();
+            const systemPrompt = document.getElementById('inputSystemPrompt').value.trim();
             const keyword = document.getElementById('inputKeyword').value.trim();
             const upload = document.getElementById('toggleUpload').checked;
             const format = document.querySelector('input[name="format"]:checked').value;
@@ -741,7 +738,7 @@
                         'Content-Type': 'application/json',
                         'ngrok-skip-browser-warning': 'true' // NGROK Güvenlik Ekranını Atlar
                     },
-                    body: JSON.stringify({ konu: konu, stok_video: keyword, auto_upload: upload, format: format })
+                    body: JSON.stringify({ konu: konu, system_prompt: systemPrompt, stok_video: keyword, auto_upload: upload, format: format })
                 });
                 
                 // Görsel Aşamaları Simüle Et
