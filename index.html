@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AutoTubeOS Pro | Enterprise YouTube Automation</title>
+    <title>AutoTubeOS Pro | ACCO Enterprise YouTube Automation</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -64,6 +64,13 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Select Options (Açılır Liste) Düzenlemesi */
+        select option, select optgroup {
+            background-color: var(--surface); /* Koyu Arka Plan */
+            color: #e2e8f0; /* Açık Renk Yazı */
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -184,7 +191,7 @@
             <!-- User Profile -->
             <div class="flex items-center gap-3">
                 <div class="text-right hidden lg:block">
-                    <p class="text-sm font-medium text-white">YANTEKS</p>
+                    <p class="text-sm font-medium text-white">ACCO</p>
                     <p class="text-xs text-indigo-400 font-medium">Enterprise Plan</p>
                 </div>
                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-indigo-500/50 transition-all shrink-0">
@@ -225,17 +232,46 @@
                 </button>
             </div>
 
-            <!-- Bottom Stats -->
+            <!-- Bottom Stats: API Quotas -->
             <div class="p-4 border-t border-white/5">
-                <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs text-indigo-300 font-medium">Sistem Kotası</span>
-                        <span class="text-xs text-indigo-200 font-bold">82%</span>
+                <div class="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-3.5 space-y-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">API Kotaları</span>
+                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                     </div>
-                    <div class="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-indigo-500 w-[82%] h-full rounded-full"></div>
+                    
+                    <!-- OpenAI -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] text-slate-300 font-medium">OpenAI (GPT)</span>
+                            <span class="text-[10px] text-emerald-400 font-bold">75%</span>
+                        </div>
+                        <div class="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 w-[75%] h-full rounded-full"></div>
+                        </div>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2">API Servisleri Sorunsuz.</p>
+
+                    <!-- ElevenLabs -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] text-slate-300 font-medium">ElevenLabs</span>
+                            <span class="text-[10px] text-amber-400 font-bold">42%</span>
+                        </div>
+                        <div class="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-amber-400 w-[42%] h-full rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Pexels -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] text-slate-300 font-medium">Pexels (Video)</span>
+                            <span class="text-[10px] text-indigo-400 font-bold">12%</span>
+                        </div>
+                        <div class="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-indigo-500 w-[12%] h-full rounded-full"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -263,7 +299,7 @@
                             <!-- Config Card -->
                             <div class="glass-card rounded-2xl p-4 sm:p-6">
                                 
-                                <!-- Format Selection (UZUN VİDEO DAHİL) -->
+                                <!-- Format Selection -->
                                 <div class="mb-6">
                                     <label class="block text-sm font-medium text-slate-300 mb-3">Video Formatı</label>
                                     <div class="grid grid-cols-2 gap-3 sm:gap-4">
@@ -288,40 +324,183 @@
 
                                 <!-- Inputs Grid -->
                                 <div class="space-y-4">
+                                    
+                                    <!-- YENİ: Video Süresi Seçimi -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2">
+                                            <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i> Hedef Video Süresi
+                                        </label>
+                                        <select id="selectDuration" class="input-pro text-sm bg-black/20 text-slate-300 border-white/5">
+                                            <optgroup label="📱 Shorts / Reels (Dikey)">
+                                                <option value="15">Maks. 15 Saniye (Çok Kısa / Viral)</option>
+                                                <option value="30" selected>Maks. 30 Saniye (Standart Kısa)</option>
+                                                <option value="60">Maks. 60 Saniye (Detaylı Anlatım)</option>
+                                            </optgroup>
+                                            <optgroup label="📺 Uzun Video (Yatay)">
+                                                <option value="120">2 Dakika (Hızlı Özet)</option>
+                                                <option value="300">5 Dakika (Standart İçerik)</option>
+                                                <option value="480">8 Dakika (Uzun Anlatım)</option>
+                                                <option value="600">10+ Dakika (Mini Belgesel)</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+
                                     <div>
                                         <label class="block text-sm font-medium text-slate-300 mb-1.5">Video Konusu</label>
-                                        <textarea id="inputKonu" rows="2" class="input-pro text-sm resize-none">kadınların iş hayatına girişi</textarea>
+                                        <textarea id="inputKonu" rows="2" class="input-pro text-sm resize-none" placeholder="Videonun konusunu buraya yazın...">kadınların iş hayatına girişi</textarea>
                                     </div>
                                     
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Yapay Zeka Yönetmen Talimatı (Sistem Promptu)</label>
-                                        <textarea id="inputSystemPrompt" rows="3" class="input-pro text-sm resize-none text-indigo-200 border-indigo-500/30 bg-indigo-900/10" placeholder="Senaryonun dilini, tarzını ve uzunluğunu belirleyin...">Sen milyonlarca abonesi olan, belgesel ve tarih tarzında ilham verici içerikler üreten profesyonel bir YouTube metin yazarısın. Akıcı, ilham verici ve merak uyandırıcı bir dille yaz.</textarea>
-                                        <p class="text-[10px] text-slate-500 mt-1">Yapay zekanın senaryoyu hangi tarzda (komik, gizemli, belgesel vb.) yazacağını buradan belirleyin.</p>
+                                        <div class="flex justify-between items-end mb-1.5">
+                                            <label class="block text-sm font-medium text-slate-300">Yapay Zeka Yönetmen Talimatı (Prompt)</label>
+                                        </div>
+                                        <!-- Hazır Şablon Butonları -->
+                                        <div class="flex flex-wrap gap-2 mb-2">
+                                            <button onclick="applyTemplate('gizem')" class="px-2.5 py-1 bg-purple-500/10 text-purple-300 rounded text-[10px] font-semibold border border-purple-500/20 hover:bg-purple-500/20 transition-colors flex items-center gap-1">🕵️ Gizem / Korku</button>
+                                            <button onclick="applyTemplate('motivasyon')" class="px-2.5 py-1 bg-orange-500/10 text-orange-300 rounded text-[10px] font-semibold border border-orange-500/20 hover:bg-orange-500/20 transition-colors flex items-center gap-1">🚀 Motivasyon</button>
+                                            <button onclick="applyTemplate('tarih')" class="px-2.5 py-1 bg-blue-500/10 text-blue-300 rounded text-[10px] font-semibold border border-blue-500/20 hover:bg-blue-500/20 transition-colors flex items-center gap-1">📜 Belgesel</button>
+                                            <button onclick="applyTemplate('romantik')" class="px-2.5 py-1 bg-rose-500/10 text-rose-300 rounded text-[10px] font-semibold border border-rose-500/20 hover:bg-rose-500/20 transition-colors flex items-center gap-1">❤️ Romantik</button>
+                                            <button onclick="applyTemplate('finans')" class="px-2.5 py-1 bg-green-500/10 text-green-300 rounded text-[10px] font-semibold border border-green-500/20 hover:bg-green-500/20 transition-colors flex items-center gap-1">📈 Finans & Kripto</button>
+                                            <button onclick="applyTemplate('psikoloji')" class="px-2.5 py-1 bg-teal-500/10 text-teal-300 rounded text-[10px] font-semibold border border-teal-500/20 hover:bg-teal-500/20 transition-colors flex items-center gap-1">🧠 Psikoloji</button>
+                                            <button onclick="applyTemplate('teknoloji')" class="px-2.5 py-1 bg-cyan-500/10 text-cyan-300 rounded text-[10px] font-semibold border border-cyan-500/20 hover:bg-cyan-500/20 transition-colors flex items-center gap-1">💻 Teknoloji</button>
+                                            <button onclick="applyTemplate('mizah')" class="px-2.5 py-1 bg-yellow-500/10 text-yellow-300 rounded text-[10px] font-semibold border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors flex items-center gap-1">😂 Mizah / Eğlence</button>
+                                        </div>
+                                        <textarea id="inputSystemPrompt" rows="4" class="input-pro text-sm resize-none text-indigo-200 border-indigo-500/30 bg-indigo-900/10" placeholder="Senaryonun dilini, tarzını ve uzunluğunu belirleyin...">Sen milyonlarca abonesi olan, belgesel ve tarih tarzında ilham verici içerikler üreten profesyonel bir YouTube metin yazarısın. Akıcı, ilham verici ve merak uyandırıcı bir dille yaz.</textarea>
+                                        <p class="text-[10px] text-slate-500 mt-1">Dilerseniz üstteki hazır şablonlara tıklayarak en iyi ayarları tek tıkla yükleyebilirsiniz.</p>
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-slate-300 mb-1.5">Arka Plan Videoları İçin Anahtar Kelime (İngilizce)</label>
                                         <input id="inputKeyword" type="text" class="input-pro text-sm" value="factory" placeholder="Örn: space, galaxy, cinematic">
                                     </div>
+                                    
+                                    <!-- YENİ: Genişletilmiş Gelişmiş Kurgu Seçenekleri -->
+                                    <div class="mt-6 pt-5 border-t border-white/5">
+                                        <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-400"></i> Gelişmiş Kurgu Ayarları
+                                        </h3>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            
+                                            <!-- Ses Seçimi -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="mic" class="w-3 h-3"></i> Yapay Zeka Ses Aktörü</label>
+                                                <select id="selectVoice" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="male_doc">Erkek (Kalın / Belgesel)</option>
+                                                    <option value="male_energetic">Erkek (Genç / Enerjik)</option>
+                                                    <option value="male_trailer">Erkek (Film Fragmanı / Derin)</option>
+                                                    <option value="male_chill">Erkek (Podcast / Sakin)</option>
+                                                    <option value="female_news">Kadın (Haber Spikeri / Resmi)</option>
+                                                    <option value="female_soft">Kadın (Yumuşak / Romantik)</option>
+                                                    <option value="female_vlogger">Kadın (Vlogger / Heyecanlı)</option>
+                                                    <option value="ai_neutral">Yapay Zeka (Nötr / Kurumsal)</option>
+                                                </select>
+                                            </div>
 
-                                    <!-- Added Toggles -->
+                                            <!-- Müzik Seçimi -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="music" class="w-3 h-3"></i> Arka Plan Müziği (BGM)</label>
+                                                <select id="selectMusic" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="none">Müzik Yok (Sadece Ses)</option>
+                                                    <option value="epic">Epik / Sinematik</option>
+                                                    <option value="lofi">Lofi / Rahatlatıcı</option>
+                                                    <option value="suspense">Gerilim / Gizem</option>
+                                                    <option value="emotional">Duygusal Keman</option>
+                                                    <option value="synthwave">Cyberpunk / Synthwave</option>
+                                                    <option value="corporate">Kurumsal / Upbeat (Finans)</option>
+                                                    <option value="happy">Neşeli / Akustik</option>
+                                                    <option value="dark_ambient">Dark Ambient (Suç / Korku)</option>
+                                                    <option value="action_rock">Aksiyon / Rock (Spor)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Altyazı Stili -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="type" class="w-3 h-3"></i> Altyazı Stili</label>
+                                                <select id="selectSubtitle" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="hormozi">Alex Hormozi (Sarı / Kalın)</option>
+                                                    <option value="documentary">Belgesel (Beyaz / İnce Zarif)</option>
+                                                    <option value="viral">TikTok Viral (Yeşil Vurgulu)</option>
+                                                    <option value="minimalist">Minimalist (Sade, Çizgisiz)</option>
+                                                    <option value="neon">Neon (Parlak Yazılar)</option>
+                                                    <option value="typewriter">Daktilo (Harf Harf Yazılma)</option>
+                                                    <option value="cinematic">Sinematik (Geniş Aralıklı)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Görsel Filtre -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="camera" class="w-3 h-3"></i> Görsel Filtre (Color Grading)</label>
+                                                <select id="selectFilter" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="none">Orijinal (Filtresiz)</option>
+                                                    <option value="cinematic">Sinematik (Sıcak & Kontrastlı)</option>
+                                                    <option value="cyberpunk">Cyberpunk (Neon / Soğuk)</option>
+                                                    <option value="vintage">Vintage (Nostaljik / Grenli)</option>
+                                                    <option value="bw">Siyah Beyaz (Dramatik)</option>
+                                                    <option value="vibrant">Vibrant (Canlı & Doygun Renkler)</option>
+                                                    <option value="matrix">Matrix (Hacker Yeşili)</option>
+                                                    <option value="sepia">Sepia (Eski Fotoğraf)</option>
+                                                    <option value="nordic">Nordic (Soğuk Mavi Tonlar)</option>
+                                                    <option value="golden">Golden Hour (Sıcak Güneş Işığı)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Giriş Kancası -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="magnet" class="w-3 h-3"></i> Giriş Kancası (Hook)</label>
+                                                <select id="selectHook" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="dynamic">AI Kararı (Dinamik)</option>
+                                                    <option value="question">Soru ile Başla (Merak)</option>
+                                                    <option value="statistic">Şok Edici İstatistik</option>
+                                                    <option value="quote">Ünlü Bir Alıntı / Söz</option>
+                                                    <option value="storytelling">Hikaye Anlatımı (Bir zamanlar...)</option>
+                                                    <option value="in_media_res">Aksiyonun Ortasından (Birden...)</option>
+                                                    <option value="problem_solution">Sorun & Çözüm (Şu sorunu mu yaşıyorsun?)</option>
+                                                    <option value="secret">Gizem & İfşa (Sana bir sır vereyim...)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Sahne Geçiş Hızı -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex justify-between items-center">
+                                                    <span class="flex items-center gap-1"><i data-lucide="fast-forward" class="w-3 h-3"></i> Sahne Hızı</span>
+                                                    <span id="pacingLabel" class="text-indigo-400 font-bold">Dinamik (3.0s)</span>
+                                                </label>
+                                                <div class="flex items-center h-[34px] px-2 bg-black/20 rounded-xl border border-white/5">
+                                                    <input type="range" id="sliderPacing" min="1" max="6" step="0.5" value="3.0" 
+                                                           class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                                           oninput="updatePacingLabel(this.value)">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <!-- Sağlamlaştırılmış Toggles Bölümü -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5 mt-4">
+                                        <!-- Altyazı Toggle -->
+                                        <div class="flex items-center justify-between bg-black/20 p-3 sm:p-4 rounded-xl border border-white/5">
+                                            <div>
+                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                                                    <i data-lucide="subtitles" class="w-4 h-4 text-indigo-400"></i> Altyazı Ekle
                                                 </h4>
-                                                <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Ekrana büyük metinler basar.</p>
+                                                <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Ekrana dinamik metin basar.</p>
                                             </div>
                                             <input type="checkbox" id="toggleSubtitle" checked disabled class="w-4 h-4 sm:w-5 sm:h-5 accent-indigo-500 cursor-not-allowed opacity-70">
                                         </div>
 
-                                        <!-- Auto Upload Toggle -->
+                                        <!-- Otomatik Yükleme Toggle -->
                                         <div class="flex items-center justify-between bg-black/20 p-3 sm:p-4 rounded-xl border border-white/5">
                                             <div>
-                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1">
-                                                    <i data-lucide="youtube" class="w-3.5 h-3.5 text-red-500"></i> Otomatik Yükleme
+                                                <h4 class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                                                    <i data-lucide="youtube" class="w-4 h-4 text-red-500"></i> Oto Yükleme
                                                 </h4>
                                                 <p class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Kanala otonom olarak yükler.</p>
                                             </div>
                                             <input type="checkbox" id="toggleUpload" class="w-4 h-4 sm:w-5 sm:h-5 accent-indigo-500 cursor-pointer">
                                         </div>
                                     </div>
+                                    <!-- Toggle Bölümü Sonu -->
+
                                 </div>
 
                                 <!-- Action Button -->
@@ -471,23 +650,25 @@
                         </button>
                     </div>
 
-                    <div class="glass-card rounded-2xl overflow-hidden border border-white/5 overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[500px]">
-                            <thead>
-                                <tr class="bg-black/20 border-b border-white/5 text-[10px] sm:text-xs uppercase tracking-wider text-slate-400">
-                                    <th class="p-3 sm:p-4 font-semibold">Tarih / Saat</th>
-                                    <th class="p-3 sm:p-4 font-semibold">Video Konusu</th>
-                                    <th class="p-3 sm:p-4 font-semibold">Durum</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-xs sm:text-sm divide-y divide-white/5">
-                                <tr class="hover:bg-white/[0.02] transition-colors">
-                                    <td class="p-3 sm:p-4 text-slate-300 whitespace-nowrap">Her Gün, 18:00</td>
-                                    <td class="p-3 sm:p-4 font-medium text-white truncate max-w-[150px]">Rastgele Uzay Bilgisi</td>
-                                    <td class="p-3 sm:p-4"><span class="px-2 py-1 text-[9px] sm:text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full whitespace-nowrap">AKTİF (BEKLİYOR)</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="glass-card rounded-2xl overflow-hidden border border-white/5 w-full">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
+                                <thead>
+                                    <tr class="bg-black/20 border-b border-white/5 text-[10px] sm:text-xs uppercase tracking-wider text-slate-400">
+                                        <th class="p-3 sm:p-4 font-semibold">Tarih / Saat</th>
+                                        <th class="p-3 sm:p-4 font-semibold">Video Konusu</th>
+                                        <th class="p-3 sm:p-4 font-semibold">Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs sm:text-sm divide-y divide-white/5">
+                                    <tr class="hover:bg-white/[0.02] transition-colors">
+                                        <td class="p-3 sm:p-4 text-slate-300 whitespace-nowrap">Her Gün, 18:00</td>
+                                        <td class="p-3 sm:p-4 font-medium text-white truncate max-w-[150px]">Rastgele Uzay Bilgisi</td>
+                                        <td class="p-3 sm:p-4"><span class="px-2 py-1 text-[9px] sm:text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full whitespace-nowrap">AKTİF (BEKLİYOR)</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -499,28 +680,72 @@
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-                        <script>
-                            // 6 adet örnek kütüphane kartı oluşturuyoruz
-                            for(let i=1; i<=6; i++) {
-                                document.write(`
-                                <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
-                                    <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
-                                        <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
-                                        <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:59</div>
-                                    </div>
-                                    <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
-                                        <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render ${i}</p>
-                                        <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
-                                            <span>workspace/</span>
-                                            <div class="flex gap-1">
-                                                <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
-                                            </div>
-                                        </div>
+                        
+                        <!-- Örnek Kütüphane Kartları (Statik) -->
+                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
+                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
+                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
+                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:59</div>
+                            </div>
+                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
+                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 1</p>
+                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
+                                    <span>workspace/</span>
+                                    <div class="flex gap-1">
+                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
                                     </div>
                                 </div>
-                                `);
-                            }
-                        </script>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
+                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
+                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
+                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:45</div>
+                            </div>
+                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
+                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 2</p>
+                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
+                                    <span>workspace/</span>
+                                    <div class="flex gap-1">
+                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
+                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
+                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
+                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:32</div>
+                            </div>
+                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
+                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 3</p>
+                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
+                                    <span>workspace/</span>
+                                    <div class="flex gap-1">
+                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
+                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
+                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
+                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:55</div>
+                            </div>
+                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
+                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 4</p>
+                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
+                                    <span>workspace/</span>
+                                    <div class="flex gap-1">
+                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -692,12 +917,52 @@
             }
         }
 
+        // YENİ: Genişletilmiş Hazır Şablon (Prompt) Doldurma Sistemi
+        const promptTemplates = {
+            gizem: "Sen karanlık sırlar ve bilinmeyen olaylar anlatan bir hikayecisin. Ses tonun ürpertici, gizemli ve fısıltılı olsun. Cümleleri kısa tut, izleyiciyi gerecek merak unsurları kullan.",
+            motivasyon: "Sen enerjik, yırtıcı ve ilham veren bir motivasyon konuşmacısısın. Alex Hormozi tarzında, kısa, vurucu, harekete geçiren ve uykudan uyandıran sert bir metin yaz.",
+            tarih: "Sen ödüllü bir TRT belgesel sunucususun. Akademik, ağırbaşlı, destansı ve geçmişin tozlu sayfalarını aralayan derin, bilgi dolu bir metin yaz.",
+            romantik: "Sen şiirsel ve kalbe dokunan bir aşk yazarı/şairisin. Duygusal, yumuşak, ruhu okşayan ve dinleyenin tüylerini diken diken edecek çok içten bir dille yaz.",
+            finans: "Sen bir Wall Street dehası ve finansal danışmansın. Zenginlik sırları, borsa, yatırım ve kripto paralar hakkında izleyiciye değer katan, ciddi ama akıcı bir dille konuş.",
+            psikoloji: "Sen insan zihninin derinliklerini analiz eden bir psikologsun. Manipülasyon, beden dili, insan davranışları ve zihinsel hileler hakkında sarsıcı ve bilimsel bir metin yaz.",
+            teknoloji: "Sen fütüristik bir teknoloji gurususun. Yapay zeka, gelecek teknolojileri ve inovasyonlar hakkında izleyicinin ufkunu açan, vizyoner ve enerjik bir metin oluştur.",
+            mizah: "Sen zeki ve ironik bir komedyensin. Stand-up tadında, güncel olaylarla veya insan halleriyle dalga geçen, eğlenceli ve sarkastik bir metin yaz."
+        };
+
+        function applyTemplate(type) {
+            const promptBox = document.getElementById('inputSystemPrompt');
+            promptBox.value = promptTemplates[type];
+            // Highlight efekti
+            promptBox.classList.add('ring-2', 'ring-indigo-500');
+            setTimeout(() => promptBox.classList.remove('ring-2', 'ring-indigo-500'), 500);
+            showToast('info', 'Yönetmen Şablonu Uygulandı.');
+            addLog(`Yeni AI Şablonu seçildi: ${type.toUpperCase()}`, "text-slate-400");
+        }
+
+        // YENİ: Slider Etiketi Güncelleyici
+        function updatePacingLabel(val) {
+            const label = document.getElementById('pacingLabel');
+            let text = "Dinamik (" + val + "s)";
+            if (val < 2.5) text = "Hızlı (" + val + "s)";
+            if (val > 4.0) text = "Yavaş (" + val + "s)";
+            label.innerText = text;
+        }
+
         async function triggerPipeline() {
             const konu = document.getElementById('inputKonu').value.trim();
             const systemPrompt = document.getElementById('inputSystemPrompt').value.trim();
             const keyword = document.getElementById('inputKeyword').value.trim();
             const upload = document.getElementById('toggleUpload').checked;
             const format = document.querySelector('input[name="format"]:checked').value;
+            
+            // YENİ: Gelişmiş ayarların değerlerini çekiyoruz
+            const duration = document.getElementById('selectDuration').value; // SÜRE BİLGİSİ
+            const voice = document.getElementById('selectVoice').value;
+            const music = document.getElementById('selectMusic').value;
+            const subtitleStyle = document.getElementById('selectSubtitle').value;
+            const pacing = document.getElementById('sliderPacing').value;
+            const filter = document.getElementById('selectFilter').value;
+            const hook = document.getElementById('selectHook').value;
             
             const btn = document.getElementById('triggerBtn');
             const video = document.getElementById('resultVideo');
@@ -725,20 +990,34 @@
 
             document.getElementById('logArea').innerHTML = ''; 
             addLog(`Başlatıldı: Konu [${konu}], Format: [${format}], Yükleme: [${upload ? 'Açık' : 'Kapalı'}]`, "text-indigo-400");
+            addLog(`Ayarlar: Süre [${duration}s], Ses [${voice}], Müzik [${music}], Kurgu [${pacing}s]`, "text-slate-500");
             showToast('info', 'Motor ateşlendi, üretim başlıyor...');
 
             // Adımları Sıfırla
             ['step-script', 'step-audio', 'step-visual', 'step-render'].forEach(s => updateStep(s, 'reset'));
 
             try {
-                // Flask Sunucusuna İsteği Gönder (Ngrok Bypass Header Dahil)
+                // Flask Sunucusuna İsteği Gönder (Yeni JSON Body Yapısı)
                 const fetchPromise = fetch(`${SERVER_URL}/api/generate`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'ngrok-skip-browser-warning': 'true' // NGROK Güvenlik Ekranını Atlar
                     },
-                    body: JSON.stringify({ konu: konu, system_prompt: systemPrompt, stok_video: keyword, auto_upload: upload, format: format })
+                    body: JSON.stringify({ 
+                        konu: konu, 
+                        system_prompt: systemPrompt, 
+                        stok_video: keyword, 
+                        auto_upload: upload, 
+                        format: format,
+                        duration: duration, // YENİ EKLENDİ
+                        voice: voice,
+                        music: music,
+                        subtitle_style: subtitleStyle,
+                        pacing: pacing,
+                        filter: filter,
+                        hook: hook
+                    })
                 });
                 
                 // Görsel Aşamaları Simüle Et
