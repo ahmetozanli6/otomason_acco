@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AutoTubeOS Pro | ACCO Enterprise YouTube Automation</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -147,6 +147,13 @@
         
         .mobile-nav-btn { transition: all 0.2s; }
         .mobile-nav-btn:active { transform: scale(0.95); }
+
+        /* Mobil Güvenli Alan (Safe Area) - iPhone X ve Sonrası İçin Uyum */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .pb-safe {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+            }
+        }
     </style>
 </head>
 <body class="overflow-hidden flex flex-col h-screen">
@@ -563,7 +570,7 @@
                                 </div>
                             </div>
 
-                            <!-- GÜNCELLENMİŞ 7 AŞAMALI PİPELİNE TRACKER -->
+                            <!-- 7 AŞAMALI PİPELİNE TRACKER -->
                             <div class="glass-card rounded-2xl p-4 sm:p-5">
                                 <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
                                     <i data-lucide="git-merge" class="w-4 h-4 text-indigo-400"></i> Üretim Aşamaları
@@ -583,12 +590,12 @@
                                             <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="mic" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
                                             <div><p class="text-xs sm:text-sm font-medium text-slate-300">Seslendirme (TTS-1)</p><p class="text-[9px] sm:text-xs text-slate-500">Stüdyo Kalitesinde Ses</p></div>
                                         </div>
-                                        <!-- Step 3 (YENİ) -->
+                                        <!-- Step 3 -->
                                         <div id="step-whisper" class="flex items-center gap-3 sm:gap-4 step-item">
                                             <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="waveform-lines" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
                                             <div><p class="text-xs sm:text-sm font-medium text-slate-300">Whisper Senkronizasyonu</p><p class="text-[9px] sm:text-xs text-slate-500">Milisaniyelik analiz</p></div>
                                         </div>
-                                        <!-- Step 4 (YENİ) -->
+                                        <!-- Step 4 -->
                                         <div id="step-thumb" class="flex items-center gap-3 sm:gap-4 step-item">
                                             <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="paintbrush" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
                                             <div><p class="text-xs sm:text-sm font-medium text-slate-300">AI Kapak Çizimi</p><p class="text-[9px] sm:text-xs text-slate-500">DALL-E 3 Thumbnail</p></div>
@@ -603,7 +610,7 @@
                                             <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="cpu" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
                                             <div><p class="text-xs sm:text-sm font-medium text-slate-300">Kurgu & Render</p><p class="text-[9px] sm:text-xs text-slate-500">MoviePy Efekt Motoru</p></div>
                                         </div>
-                                        <!-- Step 7 (YENİ) -->
+                                        <!-- Step 7 -->
                                         <div id="step-upload" class="flex items-center gap-3 sm:gap-4 step-item">
                                             <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center step-icon text-slate-500 shrink-0"><i data-lucide="youtube" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></div>
                                             <div><p class="text-xs sm:text-sm font-medium text-slate-300">Kanal Yayını</p><p class="text-[9px] sm:text-xs text-slate-500">YouTube API Yüklemesi</p></div>
@@ -724,7 +731,7 @@
     </div>
 
     <!-- Mobile Nav -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-around px-2 pb-safe">
+    <div class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-around px-2 pb-safe sm:pb-4">
         <button onclick="switchTab('dashboard')" class="mobile-nav-btn active flex flex-col items-center justify-center w-full h-full text-indigo-400">
             <i data-lucide="zap" class="w-5 h-5 mb-1"></i><span class="text-[9px] font-semibold tracking-wide">Üretim</span>
         </button>
@@ -936,7 +943,7 @@
             
             showToast('info', 'Motor ateşlendi, üretim başlıyor...');
 
-            // YENİ: 7 AŞAMALI GÖRSEL RESETLEME
+            // 7 AŞAMALI GÖRSEL RESETLEME
             ['step-script', 'step-audio', 'step-whisper', 'step-thumb', 'step-visual', 'step-render', 'step-upload'].forEach(s => updateStep(s, 'reset'));
 
             try {
@@ -955,7 +962,7 @@
                     })
                 });
                 
-                // YENİ: 7 AŞAMALI SİMÜLASYON
+                // 7 AŞAMALI SİMÜLASYON (UI Güncellemesi için)
                 topBar.style.width = "15%"; vertBar.style.height = "14%"; updateStep('step-script', 'active');
                 await new Promise(r => setTimeout(r, 1500)); updateStep('step-script', 'done');
                 
