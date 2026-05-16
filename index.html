@@ -325,24 +325,38 @@
                                 <!-- Inputs Grid -->
                                 <div class="space-y-4">
                                     
-                                    <!-- YENİ: Video Süresi Seçimi -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2">
-                                            <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i> Hedef Video Süresi
-                                        </label>
-                                        <select id="selectDuration" class="input-pro text-sm bg-black/20 text-slate-300 border-white/5">
-                                            <optgroup label="📱 Shorts / Reels (Dikey)">
-                                                <option value="15">Maks. 15 Saniye (Çok Kısa / Viral)</option>
-                                                <option value="30" selected>Maks. 30 Saniye (Standart Kısa)</option>
-                                                <option value="60">Maks. 60 Saniye (Detaylı Anlatım)</option>
-                                            </optgroup>
-                                            <optgroup label="📺 Uzun Video (Yatay)">
-                                                <option value="120">2 Dakika (Hızlı Özet)</option>
-                                                <option value="300">5 Dakika (Standart İçerik)</option>
-                                                <option value="480">8 Dakika (Uzun Anlatım)</option>
-                                                <option value="600">10+ Dakika (Mini Belgesel)</option>
-                                            </optgroup>
-                                        </select>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <!-- Video Süresi Seçimi -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2">
+                                                <i data-lucide="clock" class="w-4 h-4 text-indigo-400"></i> Hedef Süre
+                                            </label>
+                                            <select id="selectDuration" class="input-pro text-sm bg-black/20 text-slate-300 border-white/5">
+                                                <optgroup label="📱 Shorts / Reels">
+                                                    <option value="15">15 Saniye (Viral)</option>
+                                                    <option value="30" selected>30 Saniye (Standart)</option>
+                                                    <option value="60">60 Saniye (Detaylı)</option>
+                                                </optgroup>
+                                                <optgroup label="📺 Uzun Video">
+                                                    <option value="120">2 Dakika (Özet)</option>
+                                                    <option value="300">5 Dakika (Standart)</option>
+                                                    <option value="600">10+ Dakika (Belgesel)</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <!-- YENİ: Hedef Dil Seçimi -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2">
+                                                <i data-lucide="globe" class="w-4 h-4 text-indigo-400"></i> Hedef Dil (Yayın Dili)
+                                            </label>
+                                            <select id="selectLanguage" class="input-pro text-sm bg-black/20 text-slate-300 border-white/5">
+                                                <option value="tr">🇹🇷 Türkçe (Turkish)</option>
+                                                <option value="en">🇺🇸 İngilizce (English)</option>
+                                                <option value="de">🇩🇪 Almanca (German)</option>
+                                                <option value="es">🇪🇸 İspanyolca (Spanish)</option>
+                                                <option value="fr">🇫🇷 Fransızca (French)</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div>
@@ -374,12 +388,12 @@
                                         <input id="inputKeyword" type="text" class="input-pro text-sm" value="factory" placeholder="Örn: space, galaxy, cinematic">
                                     </div>
                                     
-                                    <!-- YENİ: Genişletilmiş Gelişmiş Kurgu Seçenekleri -->
+                                    <!-- Genişletilmiş Gelişmiş Kurgu Seçenekleri -->
                                     <div class="mt-6 pt-5 border-t border-white/5">
                                         <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
                                             <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-400"></i> Gelişmiş Kurgu Ayarları
                                         </h3>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-4">
                                             
                                             <!-- Ses Seçimi -->
                                             <div>
@@ -427,6 +441,27 @@
                                                 </select>
                                             </div>
 
+                                            <!-- YENİ: Altyazı Konumu -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="move-vertical" class="w-3 h-3"></i> Altyazı Konumu</label>
+                                                <select id="selectSubtitlePos" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="bottom">Alt Kısım (Güvenli Bölge)</option>
+                                                    <option value="center">Tam Orta (Dikkat Çekici)</option>
+                                                    <option value="top">Üst Kısım (Nadir Kullanım)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- YENİ: Altyazı Fontu -->
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="a-large-small" class="w-3 h-3"></i> Yazı Tipi (Font)</label>
+                                                <select id="selectSubtitleFont" class="input-pro text-xs py-2 bg-black/20 text-slate-300 border-white/5">
+                                                    <option value="Arial-Bold">Arial Bold (Modern/Klasik)</option>
+                                                    <option value="Impact">Impact (Kalın/Viral)</option>
+                                                    <option value="Courier-Bold">Daktilo (Eski/Gizem)</option>
+                                                    <option value="Times-Bold">Times (Belgesel/Tarih)</option>
+                                                </select>
+                                            </div>
+
                                             <!-- Görsel Filtre -->
                                             <div>
                                                 <label class="block text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1"><i data-lucide="camera" class="w-3 h-3"></i> Görsel Filtre (Color Grading)</label>
@@ -460,7 +495,7 @@
                                             </div>
 
                                             <!-- Sahne Geçiş Hızı -->
-                                            <div>
+                                            <div class="md:col-span-2">
                                                 <label class="block text-xs font-medium text-slate-400 mb-1.5 flex justify-between items-center">
                                                     <span class="flex items-center gap-1"><i data-lucide="fast-forward" class="w-3 h-3"></i> Sahne Hızı</span>
                                                     <span id="pacingLabel" class="text-indigo-400 font-bold">Dinamik (3.0s)</span>
@@ -674,78 +709,22 @@
 
                 <!-- ================== 3. LIBRARY ================== -->
                 <div id="library-tab" class="tab-content">
-                    <div class="mb-6">
-                        <h2 class="text-xl sm:text-2xl font-bold text-white">Video Kütüphanesi</h2>
-                        <p class="text-xs sm:text-sm text-slate-400 mt-1">Üretilen tüm videolarınız burada saklanır.</p>
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white">Video Kütüphanesi</h2>
+                            <p class="text-xs sm:text-sm text-slate-400 mt-1">Sistem tarafından üretilen tüm videolarınız.</p>
+                        </div>
+                        <button onclick="loadLibrary()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm flex items-center transition-colors border border-white/5">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> Yenile
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-                        
-                        <!-- Örnek Kütüphane Kartları (Statik) -->
-                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
-                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
-                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
-                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:59</div>
-                            </div>
-                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
-                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 1</p>
-                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
-                                    <span>workspace/</span>
-                                    <div class="flex gap-1">
-                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div id="libraryContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+                        <!-- Videolar buraya API'den dinamik olarak yüklenecek -->
+                        <div class="col-span-full text-center py-10 text-slate-500">
+                            <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-500"></i>
+                            Kütüphane sunucudan yükleniyor...
                         </div>
-
-                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
-                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
-                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
-                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:45</div>
-                            </div>
-                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
-                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 2</p>
-                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
-                                    <span>workspace/</span>
-                                    <div class="flex gap-1">
-                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
-                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
-                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
-                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:32</div>
-                            </div>
-                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
-                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 3</p>
-                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
-                                    <span>workspace/</span>
-                                    <div class="flex gap-1">
-                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="glass-card rounded-xl overflow-hidden group cursor-pointer border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
-                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center">
-                                <i data-lucide="play-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white/50 group-hover:text-white transition-colors group-hover:scale-110 duration-300"></i>
-                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold text-white border border-white/10">0:55</div>
-                            </div>
-                            <div class="p-2 sm:p-3 bg-black/20 flex-1 flex flex-col justify-between">
-                                <p class="text-[10px] sm:text-xs font-medium text-slate-200 line-clamp-2">AutoTube Render 4</p>
-                                <div class="mt-2 flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500">
-                                    <span>workspace/</span>
-                                    <div class="flex gap-1">
-                                        <button class="hover:text-indigo-400"><i data-lucide="download" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
@@ -822,6 +801,8 @@
             localStorage.setItem('autotube_server_url', SERVER_URL);
             showToast('success', 'Sunucu adresi başarıyla güncellendi!');
             addLog(`Motor bağlantı adresi güncellendi: ${SERVER_URL}`, 'text-emerald-400');
+            // Kütüphaneyi Yenile
+            loadLibrary();
         }
 
         // Toast Bildirim Sistemi
@@ -859,11 +840,71 @@
             area.scrollTop = area.scrollHeight;
         }
 
+        // Kütüphaneyi Sunucudan Dinamik Olarak Çekme İşlemi
+        async function loadLibrary() {
+            const container = document.getElementById('libraryContainer');
+            if(!container) return;
+
+            container.innerHTML = `
+                <div class="col-span-full text-center py-10 text-slate-500">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-500"></i>
+                    Sunucudan videolarınız taranıyor...
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                // Motor.py içindeki /api/videos uç noktasına istek atıyoruz.
+                const res = await fetch(`${SERVER_URL}/api/videos`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                if(!res.ok) throw new Error("Sunucuya ulaşılamadı");
+                
+                const data = await res.json();
+                
+                if(data.videos && data.videos.length > 0) {
+                    container.innerHTML = data.videos.map(v => `
+                        <div class="glass-card rounded-xl overflow-hidden group border border-white/5 hover:border-indigo-500/50 transition-all flex flex-col">
+                            <div class="aspect-[9/16] bg-black/40 relative flex items-center justify-center overflow-hidden">
+                                <!-- Önizleme İçin Yarı Saydam Video -->
+                                <video src="${SERVER_URL}/workspace/${v.filename}" class="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity" preload="metadata"></video>
+                                <a href="${SERVER_URL}/workspace/${v.filename}" target="_blank" class="absolute inset-0 flex items-center justify-center z-10 cursor-pointer">
+                                    <i data-lucide="play-circle" class="w-10 h-10 text-white/70 group-hover:text-white transition-colors group-hover:scale-110 duration-300 drop-shadow-lg"></i>
+                                </a>
+                                <div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-semibold text-white border border-white/10 z-10">${v.size}</div>
+                            </div>
+                            <div class="p-3 bg-black/20 flex-1 flex flex-col justify-between">
+                                <p class="text-xs font-medium text-slate-200 line-clamp-2" title="${v.filename}">${v.filename}</p>
+                                <div class="mt-2 flex justify-between items-center text-[10px] text-slate-500">
+                                    <span>${v.date}</span>
+                                    <a href="${SERVER_URL}/workspace/${v.filename}" download class="hover:text-indigo-400 p-1 bg-white/5 rounded transition-colors"><i data-lucide="download" class="w-4 h-4"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500 bg-black/20 rounded-xl border border-white/5">Motor (Workspace) klasörünüzde henüz video bulunamadı.</div>';
+                }
+                lucide.createIcons();
+            } catch(e) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-10 text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                        <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+                        Sunucu ile bağlantı kurulamadı. Ayarlar sekmesinden adresi kontrol edin.
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
         // Menü (Sekme) Değiştirici
         function switchTab(tabId) {
             // İçerik Alanlarını Gizle/Göster
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId + '-tab').classList.add('active');
+            
+            // Eğer Kütüphane sekmesine geçildiyse videoları çek
+            if(tabId === 'library') {
+                loadLibrary();
+            }
             
             // Masaüstü Menü Seçim Efekti
             document.querySelectorAll('.nav-btn').forEach(btn => { 
@@ -939,7 +980,7 @@
             addLog(`Yeni AI Şablonu seçildi: ${type.toUpperCase()}`, "text-slate-400");
         }
 
-        // YENİ: Slider Etiketi Güncelleyici
+        // Slider Etiketi Güncelleyici
         function updatePacingLabel(val) {
             const label = document.getElementById('pacingLabel');
             let text = "Dinamik (" + val + "s)";
@@ -955,11 +996,14 @@
             const upload = document.getElementById('toggleUpload').checked;
             const format = document.querySelector('input[name="format"]:checked').value;
             
-            // YENİ: Gelişmiş ayarların değerlerini çekiyoruz
-            const duration = document.getElementById('selectDuration').value; // SÜRE BİLGİSİ
+            // Gelişmiş ayarların değerlerini çekiyoruz
+            const duration = document.getElementById('selectDuration').value;
+            const language = document.getElementById('selectLanguage').value; // YENİ EKLENDİ
             const voice = document.getElementById('selectVoice').value;
             const music = document.getElementById('selectMusic').value;
             const subtitleStyle = document.getElementById('selectSubtitle').value;
+            const subtitlePos = document.getElementById('selectSubtitlePos').value; // YENİ EKLENDİ
+            const subtitleFont = document.getElementById('selectSubtitleFont').value; // YENİ EKLENDİ
             const pacing = document.getElementById('sliderPacing').value;
             const filter = document.getElementById('selectFilter').value;
             const hook = document.getElementById('selectHook').value;
@@ -989,15 +1033,15 @@
             document.getElementById('videoBadge').className = "text-[10px] font-bold text-indigo-400 uppercase tracking-widest px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 animate-pulse";
 
             document.getElementById('logArea').innerHTML = ''; 
-            addLog(`Başlatıldı: Konu [${konu}], Format: [${format}], Yükleme: [${upload ? 'Açık' : 'Kapalı'}]`, "text-indigo-400");
-            addLog(`Ayarlar: Süre [${duration}s], Ses [${voice}], Müzik [${music}], Kurgu [${pacing}s]`, "text-slate-500");
+            addLog(`Başlatıldı: Konu [${konu}], Format: [${format}], Dil: [${language.toUpperCase()}], Yükleme: [${upload ? 'Açık' : 'Kapalı'}]`, "text-indigo-400");
+            addLog(`Ayarlar: Süre [${duration}s], Ses [${voice}], Font [${subtitleFont}], Kurgu [${pacing}s]`, "text-slate-500");
             showToast('info', 'Motor ateşlendi, üretim başlıyor...');
 
             // Adımları Sıfırla
             ['step-script', 'step-audio', 'step-visual', 'step-render'].forEach(s => updateStep(s, 'reset'));
 
             try {
-                // Flask Sunucusuna İsteği Gönder (Yeni JSON Body Yapısı)
+                // Flask Sunucusuna İsteği Gönder
                 const fetchPromise = fetch(`${SERVER_URL}/api/generate`, {
                     method: 'POST',
                     headers: { 
@@ -1010,10 +1054,13 @@
                         stok_video: keyword, 
                         auto_upload: upload, 
                         format: format,
-                        duration: duration, // YENİ EKLENDİ
+                        duration: duration, 
+                        language: language,
                         voice: voice,
                         music: music,
                         subtitle_style: subtitleStyle,
+                        subtitle_position: subtitlePos,
+                        subtitle_font: subtitleFont,
                         pacing: pacing,
                         filter: filter,
                         hook: hook
@@ -1078,6 +1125,10 @@
 
                     document.getElementById('videoBadge').innerText = "HAZIR";
                     document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-400 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20";
+                    
+                    // Üretim Bittiğinde Kütüphaneyi Yenile
+                    loadLibrary();
+                    
                 } else {
                     throw new Error(result.message);
                 }
