@@ -347,9 +347,12 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
                                             <span>Arka Plan (B-Roll) Anahtar Kelimesi / Prompt</span>
+                                            <button onclick="setAiKeyword()" type="button" class="text-[10px] text-indigo-600 font-bold bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-md hover:bg-indigo-100 transition-colors flex items-center gap-1 shadow-sm">
+                                                <i data-lucide="sparkles" class="w-3 h-3"></i> AI Otomatik Seçsin
+                                            </button>
                                         </label>
-                                        <input id="inputKeyword" type="text" class="input-pro text-sm" value="dark space planet, cinematic lighting, ultra realistic 4k" placeholder="Pexels için 1 kelime, Runway için detaylı prompt...">
-                                        <p class="text-[10px] text-slate-500 mt-1">Eğer RunwayML seçiliyse İngilizce ve detaylı prompt girin.</p>
+                                        <input id="inputKeyword" type="text" class="input-pro text-sm font-medium" value="" placeholder="Siz yazın veya yukarıdaki butona tıklayarak AI'a bırakın...">
+                                        <p class="text-[10px] text-slate-500 mt-1">Kutuyu <span class="font-bold text-slate-600">boş bırakırsanız</span>, sistem konuya en uygun sinematik İngilizce promptu kendi yazacaktır.</p>
                                     </div>
                                     
                                     <div class="mt-6 pt-5 border-t border-slate-200">
@@ -1126,6 +1129,18 @@
             }
         }
 
+        function setAiKeyword() {
+            const keywordInput = document.getElementById('inputKeyword');
+            keywordInput.value = '';
+            keywordInput.placeholder = '✨ AI konuya göre en iyi İngilizce promptu kendi yazacak...';
+            keywordInput.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50');
+            setTimeout(() => {
+                keywordInput.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50');
+            }, 800);
+            showToast('info', 'Arka plan seçimi Yapay Zeka\'ya devredildi!');
+            addLog('Arka plan promptu AI tarafından otomatik üretilecek.', 'text-indigo-600');
+        }
+
         function updatePacingLabel(val) {
             const label = document.getElementById('pacingLabel');
             let text = "Dinamik (" + val + "s)";
@@ -1192,6 +1207,7 @@
             document.getElementById('logArea').innerHTML = ''; 
             addLog(`Başlatıldı: Konu [${konu}], Format: [${format}], Dil: [${language.toUpperCase()}]`, "text-blue-600");
             addLog(`Kurgu: Ses[${ttsProvider}], Video[${videoProvider}], Whisper[${karaoke}], Yükleme[${upload}]`, "text-slate-600");
+            if(keyword === '') addLog('Görsel Prompt: AI tarafından otomatik oluşturulacak', 'text-indigo-500 font-bold');
             
             showToast('info', 'Motor ateşlendi, üretim başlıyor...');
 
