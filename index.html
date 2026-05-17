@@ -182,9 +182,9 @@
         
         <div class="flex items-center gap-3 sm:gap-5">
             <div class="flex items-center gap-1.5 sm:gap-2 bg-emerald-50 px-2 sm:px-3 py-1.5 rounded-full border border-emerald-200">
-                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></div>
-                <span class="hidden sm:inline text-xs font-semibold text-emerald-600">Sistem Çevrimiçi</span>
-                <span class="sm:hidden text-[10px] font-semibold text-emerald-600">Aktif</span>
+                <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse status-dot"></div>
+                <span class="hidden sm:inline text-xs font-semibold text-emerald-600 status-text">Sistem Çevrimiçi</span>
+                <span class="sm:hidden text-[10px] font-semibold text-emerald-600 status-text-mobile">Aktif</span>
             </div>
             <div class="hidden sm:block w-px h-6 bg-slate-200"></div>
             <div class="flex items-center gap-3">
@@ -773,7 +773,7 @@
                         labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
                         datasets: [{
                             label: 'Üretilen Video',
-                            data: [0, 0, 0, 0, 0, 0, 0], // Başlangıçta sıfır
+                            data: [0, 0, 0, 0, 0, 0, 0],
                             borderColor: '#2563eb',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 2,
@@ -793,9 +793,24 @@
                 });
             }
 
-            // Sayfa yüklendiğinde gerçek istatistikleri ve kotaları sunucudan çek
             loadStats();
         });
+
+        function updateConnectionStatus(isOnline) {
+            const dots = document.querySelectorAll('.status-dot');
+            const texts = document.querySelectorAll('.status-text');
+            const mobileTexts = document.querySelectorAll('.status-text-mobile');
+            
+            if (isOnline) {
+                dots.forEach(d => d.className = 'w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse status-dot');
+                texts.forEach(t => { t.className = 'hidden sm:inline text-xs font-semibold text-emerald-600 status-text'; t.innerText = 'Sistem Çevrimiçi'; });
+                mobileTexts.forEach(t => { t.className = 'sm:hidden text-[10px] font-semibold text-emerald-600 status-text-mobile'; t.innerText = 'Aktif'; });
+            } else {
+                dots.forEach(d => d.className = 'w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e] status-dot');
+                texts.forEach(t => { t.className = 'hidden sm:inline text-xs font-semibold text-rose-600 status-text'; t.innerText = 'Bağlantı Yok'; });
+                mobileTexts.forEach(t => { t.className = 'sm:hidden text-[10px] font-semibold text-rose-600 status-text-mobile'; t.innerText = 'Koptu'; });
+            }
+        }
 
         async function loadStats() {
             try {
@@ -803,7 +818,8 @@
                 if (!res.ok) throw new Error("Stats alınamadı");
                 const data = await res.json();
                 
-                // Kotaları Güncelle
+                updateConnectionStatus(true);
+                
                 if(document.getElementById('quotaOpenaiText')) {
                     document.getElementById('quotaOpenaiText').innerText = data.quotas.openai + '%';
                     document.getElementById('quotaOpenaiBar').style.width = data.quotas.openai + '%';
@@ -813,7 +829,6 @@
                     document.getElementById('quotaPexelsBar').style.width = data.quotas.video + '%';
                 }
                 
-                // Analiz & Raporları Güncelle
                 if (document.getElementById('statTotalProduced')) {
                     document.getElementById('statTotalProduced').innerText = data.analytics.total_produced;
                     document.getElementById('statSuccessRate').innerText = data.analytics.success_rate + '%';
@@ -821,25 +836,32 @@
                     document.getElementById('statActiveTasks').innerText = data.analytics.active_tasks;
                 }
 
-                // Grafiği Güncelle
                 if (window.productionChartInstance && data.analytics.chart_data) {
                     window.productionChartInstance.data.datasets[0].data = data.analytics.chart_data;
                     window.productionChartInstance.update();
                 }
             } catch (e) {
-                console.error("Gerçek veriler sunucudan çekilemedi:", e);
+                console.warn("Sunucuya bağlanılamadı. Lütfen 'Ayarlar' sekmesinden doğru Ngrok adresini girin.");
+                updateConnectionStatus(false);
+                
+                if (document.getElementById('statTotalProduced')) {
+                    document.getElementById('statTotalProduced').innerText = "0";
+                    document.getElementById('statSuccessRate').innerText = "0%";
+                    document.getElementById('statApiCost').innerText = "$0.00";
+                    document.getElementById('statActiveTasks').innerText = "0";
+                }
             }
         }
 
         async function refreshQuotas() {
             showToast('info', 'Gerçek veriler sunucudan sorgulanıyor...');
-            document.getElementById('quotaOpenaiText').classList.add('opacity-50');
-            document.getElementById('quotaPexelsText').classList.add('opacity-50');
+            if(document.getElementById('quotaOpenaiText')) document.getElementById('quotaOpenaiText').classList.add('opacity-50');
+            if(document.getElementById('quotaPexelsText')) document.getElementById('quotaPexelsText').classList.add('opacity-50');
             
             await loadStats();
             
-            document.getElementById('quotaOpenaiText').classList.remove('opacity-50');
-            document.getElementById('quotaPexelsText').classList.remove('opacity-50');
+            if(document.getElementById('quotaOpenaiText')) document.getElementById('quotaOpenaiText').classList.remove('opacity-50');
+            if(document.getElementById('quotaPexelsText')) document.getElementById('quotaPexelsText').classList.remove('opacity-50');
             showToast('success', 'Tüm sistem verileri başarıyla güncellendi.');
         }
 
@@ -878,6 +900,7 @@
             try {
                 const res = await fetch(`${SERVER_URL}/api/videos`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
                 if(!res.ok) throw new Error("Bağlantı hatası");
+                updateConnectionStatus(true);
                 const data = await res.json();
                 if(data.videos && data.videos.length > 0) {
                     container.innerHTML = data.videos.map(v => `
@@ -903,6 +926,7 @@
                 }
                 lucide.createIcons();
             } catch(e) {
+                updateConnectionStatus(false);
                 container.innerHTML = `<div class="col-span-full text-center py-10 text-rose-600 bg-rose-50 border border-rose-200 rounded-xl font-medium"><i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2 text-rose-500"></i>Sunucu bağlantısı kurulamadı. Ayarlar sekmesini kontrol edin.</div>`;
                 lucide.createIcons();
             }
@@ -1102,7 +1126,6 @@
                     document.getElementById('videoBadge').innerText = "HAZIR";
                     document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-700 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200";
                     
-                    // İşlem bitince tüm istatistikleri ve kütüphaneyi yenile
                     loadLibrary();
                     loadStats();
                 } else {
@@ -1146,7 +1169,6 @@
                     </tr>
                 `);
                 
-                // İstatistikleri güncelle (aktif görev sayısını yakalamak için)
                 loadStats();
             } catch (err) {
                 showToast('error', `Sunucuya ulaşılamadı (${SERVER_URL})`);
