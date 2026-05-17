@@ -1095,7 +1095,12 @@
             video.classList.add('hidden'); video.pause(); video.removeAttribute('src');
             videoActions.classList.add('hidden'); idle.classList.remove('hidden');
             
-            document.getElementById('idleText').innerText = "Sistem çalışıyor, lütfen bekleyin...";
+            idle.innerHTML = `
+                <i data-lucide="loader-2" class="w-8 h-8 sm:w-10 sm:h-10 mb-2 text-blue-500 animate-spin"></i>
+                <p id="idleText" class="text-[10px] sm:text-xs font-semibold text-blue-500">Sistem çalışıyor, lütfen bekleyin...</p>
+            `;
+            lucide.createIcons();
+
             document.getElementById('videoBadge').innerText = "ÜRETİLİYOR";
             document.getElementById('videoBadge').className = "text-[10px] font-bold text-blue-700 uppercase tracking-widest px-2 py-0.5 rounded bg-blue-50 border border-blue-200 animate-pulse";
 
@@ -1218,9 +1223,11 @@
                 ['step-script', 'step-audio', 'step-whisper', 'step-thumb', 'step-visual', 'step-render', 'step-upload'].forEach(s => updateStep(s, 'reset'));
                 document.getElementById('videoBadge').innerText = "HATA";
                 document.getElementById('videoBadge').className = "text-[10px] font-bold text-rose-700 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-50 border border-rose-200";
-                document.getElementById('idleText').innerText = "İşlem sırasında hata oluştu";
-                idle.querySelector('i').setAttribute('data-lucide', 'alert-circle');
-                idle.querySelector('i').classList.replace('text-slate-300', 'text-rose-500');
+                
+                idle.innerHTML = `
+                    <i data-lucide="alert-circle" class="w-8 h-8 sm:w-10 sm:h-10 mb-2 text-rose-500"></i>
+                    <p id="idleText" class="text-[10px] sm:text-xs font-semibold text-rose-500">İşlem sırasında hata oluştu</p>
+                `;
                 lucide.createIcons();
 
                 btn.disabled = false;
