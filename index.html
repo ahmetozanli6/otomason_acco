@@ -1108,7 +1108,8 @@
             ['step-script', 'step-audio', 'step-whisper', 'step-thumb', 'step-visual', 'step-render', 'step-upload'].forEach(s => updateStep(s, 'reset'));
 
             try {
-                const fetchPromise = fetch(`${SERVER_URL}/api/generate`, {
+                // 1. Motora işi gönder ve hemen bir takip numarası al (TIMEOUT YOK!)
+                const fetchPromise = await fetch(`${SERVER_URL}/api/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                     body: JSON.stringify({ 
@@ -1123,83 +1124,110 @@
                     })
                 });
                 
-                topBar.style.width = "15%"; vertBar.style.height = "14%"; updateStep('step-script', 'active');
-                await new Promise(r => setTimeout(r, 1500)); updateStep('step-script', 'done');
+                const initResult = await fetchPromise.json();
                 
-                topBar.style.width = "30%"; vertBar.style.height = "28%"; updateStep('step-audio', 'active');
-                await new Promise(r => setTimeout(r, 1500)); updateStep('step-audio', 'done');
-
-                topBar.style.width = "45%"; vertBar.style.height = "42%"; updateStep('step-whisper', 'active');
-                await new Promise(r => setTimeout(r, 1500)); updateStep('step-whisper', 'done');
-
-                topBar.style.width = "60%"; vertBar.style.height = "56%"; updateStep('step-thumb', 'active');
-                await new Promise(r => setTimeout(r, 1500)); updateStep('step-thumb', 'done');
-
-                topBar.style.width = "75%"; vertBar.style.height = "70%"; updateStep('step-visual', 'active');
-                await new Promise(r => setTimeout(r, 1500)); updateStep('step-visual', 'done');
-
-                topBar.style.width = "90%"; vertBar.style.height = "84%"; updateStep('step-render', 'active');
-
-                const response = await fetchPromise;
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    updateStep('step-render', 'done');
-                    
-                    if(upload) {
-                        topBar.style.width = "95%"; vertBar.style.height = "100%"; updateStep('step-upload', 'active');
-                        await new Promise(r => setTimeout(r, 1000)); updateStep('step-upload', 'done');
-                    }
-                    
-                    showToast('success', 'Video Başarıyla Üretildi!');
-                    addLog("İşlem tamamlandı! Video ekrana çekiliyor...", "text-emerald-600");
-                    topBar.style.width = "100%"; vertBar.style.height = "100%";
-                    
-                    let safePath = result.video_path.replace(/\\/g, '/');
-                    if(safePath.includes('workspace/')) safePath = safePath.substring(safePath.indexOf('workspace/'));
-                    if(safePath.startsWith('/')) safePath = safePath.substring(1);
-                    
-                    const videoSrc = `${SERVER_URL}/${safePath}?t=${new Date().getTime()}`;
-                    
-                    document.getElementById('downloadVideoBtn').href = videoSrc;
-                    videoActions.classList.remove('hidden');
-
-                    try {
-                        const videoResp = await fetch(videoSrc, { headers: { 'ngrok-skip-browser-warning': 'true' } });
-                        if(videoResp.ok) {
-                            const videoBlob = await videoResp.blob();
-                            video.src = URL.createObjectURL(videoBlob);
-                            idle.classList.add('hidden'); video.classList.remove('hidden');
-                            video.play().catch(e => console.log("Oto oynatma engellendi."));
-                        } else { throw new Error("Blob çekilemedi"); }
-                    } catch(blobErr) {
-                        video.src = videoSrc;
-                        idle.classList.add('hidden'); video.classList.remove('hidden');
-                    }
-
-                    document.getElementById('videoBadge').innerText = "HAZIR";
-                    document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-700 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200";
-                    
-                    loadLibrary();
-                    loadStats();
-                } else {
-                    throw new Error(result.message);
+                if (initResult.status !== 'accepted') {
+                     throw new Error(initResult.message || "Görev başlatılamadı.");
                 }
+
+                const taskId = initResult.task_id;
+                let lastStep = "";
+
+                // 2. Canlı Görev Takibi (Polling)
+                const pollStatus = async () => {
+                    try {
+                        const statusRes = await fetch(`${SERVER_URL}/api/status/${taskId}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                        const statusData = await statusRes.json();
+
+                        // Ekrana Log Basma ve Çubuğu Güncelleme
+                        if (statusData.step !== lastStep) {
+                            lastStep = statusData.step;
+                            addLog(statusData.message || `Aşama: ${lastStep}`, "text-blue-500");
+
+                            if (lastStep === 'script') { topBar.style.width = "15%"; vertBar.style.height = "14%"; updateStep('step-script', 'active'); }
+                            else if (lastStep === 'audio') { updateStep('step-script', 'done'); topBar.style.width = "30%"; vertBar.style.height = "28%"; updateStep('step-audio', 'active'); }
+                            else if (lastStep === 'whisper') { updateStep('step-audio', 'done'); topBar.style.width = "45%"; vertBar.style.height = "42%"; updateStep('step-whisper', 'active'); }
+                            else if (lastStep === 'thumb') { updateStep('step-whisper', 'done'); topBar.style.width = "60%"; vertBar.style.height = "56%"; updateStep('step-thumb', 'active'); }
+                            else if (lastStep === 'visual') { updateStep('step-thumb', 'done'); topBar.style.width = "75%"; vertBar.style.height = "70%"; updateStep('step-visual', 'active'); }
+                            else if (lastStep === 'render') { updateStep('step-visual', 'done'); topBar.style.width = "90%"; vertBar.style.height = "84%"; updateStep('step-render', 'active'); }
+                            else if (lastStep === 'upload') { updateStep('step-render', 'done'); topBar.style.width = "95%"; vertBar.style.height = "92%"; updateStep('step-upload', 'active'); }
+                        }
+
+                        // Durum Kontrolü
+                        if (statusData.status === 'processing' || statusData.status === 'accepted') {
+                            setTimeout(pollStatus, 3000); // 3 saniyede bir tekrar sor (Asla kopmaz)
+                        } else if (statusData.status === 'success') {
+                            // İŞLEM TAMAMLANDI!
+                            updateStep('step-render', 'done');
+                            if(upload) updateStep('step-upload', 'done');
+
+                            showToast('success', 'Video Başarıyla Üretildi!');
+                            addLog("İşlem tamamlandı! Video ekrana çekiliyor...", "text-emerald-600");
+                            topBar.style.width = "100%"; vertBar.style.height = "100%";
+
+                            let safePath = statusData.video_path.replace(/\\/g, '/');
+                            if(safePath.includes('workspace/')) safePath = safePath.substring(safePath.indexOf('workspace/'));
+                            if(safePath.startsWith('/')) safePath = safePath.substring(1);
+
+                            const videoSrc = `${SERVER_URL}/${safePath}?t=${new Date().getTime()}`;
+
+                            document.getElementById('downloadVideoBtn').href = videoSrc;
+                            videoActions.classList.remove('hidden');
+
+                            try {
+                                const videoResp = await fetch(videoSrc, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                                if(videoResp.ok) {
+                                    const videoBlob = await videoResp.blob();
+                                    video.src = URL.createObjectURL(videoBlob);
+                                    idle.classList.add('hidden'); video.classList.remove('hidden');
+                                    video.play().catch(e => console.log("Oto oynatma engellendi."));
+                                } else { throw new Error("Blob çekilemedi"); }
+                            } catch(blobErr) {
+                                video.src = videoSrc;
+                                idle.classList.add('hidden'); video.classList.remove('hidden');
+                            }
+
+                            document.getElementById('videoBadge').innerText = "HAZIR";
+                            document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-700 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200";
+
+                            loadLibrary();
+                            loadStats();
+
+                            btn.disabled = false;
+                            document.getElementById('triggerText').innerText = "Videoyu Oluştur";
+                            setTimeout(() => topBar.style.width = "0%", 2000);
+
+                        } else if (statusData.status === 'error') {
+                            throw new Error(statusData.message);
+                        }
+                    } catch (pollErr) {
+                         handleError(pollErr);
+                    }
+                };
+
+                // Takibi başlat
+                setTimeout(pollStatus, 2000);
+
             } catch (err) {
+                handleError(err);
+            }
+
+            function handleError(err) {
                 showToast('error', 'Sunucu Hatası veya Bağlantı Koptu.');
                 addLog("HATA: " + err.message, "text-rose-600");
-                updateStep('step-render', 'reset'); updateStep('step-upload', 'reset');
+                ['step-script', 'step-audio', 'step-whisper', 'step-thumb', 'step-visual', 'step-render', 'step-upload'].forEach(s => updateStep(s, 'reset'));
                 document.getElementById('videoBadge').innerText = "HATA";
                 document.getElementById('videoBadge').className = "text-[10px] font-bold text-rose-700 uppercase tracking-widest px-2 py-0.5 rounded bg-rose-50 border border-rose-200";
                 document.getElementById('idleText').innerText = "İşlem sırasında hata oluştu";
                 idle.querySelector('i').setAttribute('data-lucide', 'alert-circle');
                 idle.querySelector('i').classList.replace('text-slate-300', 'text-rose-500');
                 lucide.createIcons();
-            } finally {
+
                 btn.disabled = false;
                 document.getElementById('triggerText').innerText = "Videoyu Oluştur";
                 setTimeout(() => topBar.style.width = "0%", 2000);
             }
+
         }
 
         async function scheduleJob() {
