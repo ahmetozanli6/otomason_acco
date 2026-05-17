@@ -370,7 +370,7 @@
                                                 <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1"><i data-lucide="clapperboard" class="w-3 h-3"></i> Görsel Motor (B-Roll)</label>
                                                 <select id="selectVideoProvider" class="input-pro text-xs py-2 bg-blue-50/50 border-blue-200">
                                                     <option value="runway">RunwayML Gen-3 (AI Video)</option>
-                                                    <option value="pexels">Pexels (Ücretsiz Stok)</option>
+                                                    <option value="pexels" selected>Pexels (Ücretsiz Stok)</option>
                                                 </select>
                                             </div>
                                             <div>
@@ -467,7 +467,7 @@
                                                 </div>
                                             </div>
 
-                                            <!-- ROW 5: EKSİK OLAN KUTUCUKLAR (GERİ EKLENDİ) -->
+                                            <!-- ROW 5: Hooks & Call to action -->
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1"><i data-lucide="magnet" class="w-3 h-3"></i> Giriş Kancası (Hook)</label>
                                                 <select id="selectHook" class="input-pro text-xs py-2">
@@ -750,31 +750,62 @@
                     </div>
                 </div>
 
-                <!-- ================== 5. SETTINGS ================== -->
+                <!-- ================== 5. SETTINGS (YENİLENDİ) ================== -->
                 <div id="settings-tab" class="tab-content">
-                    <div class="max-w-xl mx-auto">
+                    <div class="max-w-4xl mx-auto">
                         <div class="mb-6">
-                            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">API ve Sunucu Ayarları</h2>
-                            <p class="text-xs sm:text-sm text-slate-500 mt-1">Motor bağlantısını yapılandırın.</p>
+                            <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Sistem & API Ayarları</h2>
+                            <p class="text-xs sm:text-sm text-slate-500 mt-1">Sistem bağlantısını ve API anahtarlarınızı güvenle yapılandırın.</p>
                         </div>
                         
-                        <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-6">
-                            <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-3">
-                                <i data-lucide="link" class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600"></i> Motor Bağlantısı (Ngrok HTTPS)
-                            </h3>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-2">API Endpoint Adresi</label>
-                                <div class="relative">
-                                    <i data-lucide="globe" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
-                                    <input id="serverApiUrl" type="text" class="input-pro pl-10 font-mono text-xs sm:text-sm font-semibold" placeholder="https://xxxx.ngrok-free.app">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- API Anahtarları (Kompakt Tasarım) -->
+                            <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm border border-slate-200 bg-white/60">
+                                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-3">
+                                    <i data-lucide="key" class="w-4 h-4 text-emerald-600"></i> Güvenli API Anahtarları
+                                </h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">OpenAI (GPT-4 / DALL-E)</label>
+                                        <input id="keyOpenai" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="sk-...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">RunwayML (Video)</label>
+                                        <input id="keyRunway" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="key_...">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">ElevenLabs</label>
+                                            <input id="keyElevenlabs" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="...">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Pexels</label>
+                                            <input id="keyPexels" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="...">
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-[10px] text-slate-600 font-medium mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                    Bilgisayarınızda <span class="font-mono font-bold text-blue-700">py motor.py</span> çalıştırdığınızda verilen adresi buraya girin.
-                                </p>
                             </div>
-                            <button onclick="saveServerSettings()" class="bg-emerald-600 hover:bg-emerald-700 transition-colors text-white font-bold py-3 w-full rounded-xl text-sm shadow-md">
-                                Ayarları Kaydet
-                            </button>
+
+                            <!-- Sunucu Bağlantısı -->
+                            <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-sm border border-slate-200 bg-white/60">
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-3 mb-5">
+                                        <i data-lucide="server" class="w-4 h-4 text-blue-600"></i> Motor Bağlantısı (Local/Bulut)
+                                    </h3>
+                                    <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">API Endpoint Adresi</label>
+                                    <div class="relative">
+                                        <i data-lucide="globe" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                                        <input id="serverApiUrl" type="text" class="input-pro pl-10 font-mono text-xs sm:text-sm font-semibold bg-blue-50/30" placeholder="http://127.0.0.1:5000">
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 font-medium mt-3 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                        Yerel ağda (kendi bilgisayarınızda) çalışırken her zaman <span class="font-mono text-blue-600 font-bold bg-blue-100 px-1 py-0.5 rounded">http://127.0.0.1:5000</span> adresini kullanın. Sistemi buluta taşıdığınızda o sunucunun IP'sini girmelisiniz.
+                                    </p>
+                                </div>
+                                
+                                <button onclick="saveAllSettings()" class="mt-6 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold py-3.5 w-full rounded-xl text-sm shadow-md flex justify-center items-center gap-2">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Tüm Ayarları Kaydet
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -840,6 +871,7 @@
             }
 
             loadStats();
+            loadSettings(); // Ekran açıldığında API şifrelerini sunucudan getirir
         });
 
         function updateConnectionStatus(isOnline) {
@@ -878,7 +910,7 @@
                 if (document.getElementById('statTotalProduced')) {
                     document.getElementById('statTotalProduced').innerText = data.analytics.total_produced;
                     document.getElementById('statSuccessRate').innerText = data.analytics.success_rate + '%';
-                    document.getElementById('statApiCost').innerText = '$' + data.analytics.api_cost;
+                    document.getElementById('statApiCost').innerText = data.analytics.api_cost + ' ₺';
                     document.getElementById('statActiveTasks').innerText = data.analytics.active_tasks;
                 }
 
@@ -887,15 +919,30 @@
                     window.productionChartInstance.update();
                 }
             } catch (e) {
-                console.warn("Sunucuya bağlanılamadı. Lütfen 'Ayarlar' sekmesinden doğru Ngrok adresini girin.");
+                console.warn("Sunucuya bağlanılamadı. Lütfen 'Ayarlar' sekmesinden doğru adresi girin.");
                 updateConnectionStatus(false);
                 
                 if (document.getElementById('statTotalProduced')) {
                     document.getElementById('statTotalProduced').innerText = "0";
                     document.getElementById('statSuccessRate').innerText = "0%";
-                    document.getElementById('statApiCost').innerText = "$0.00";
+                    document.getElementById('statApiCost').innerText = "0.00 ₺";
                     document.getElementById('statActiveTasks').innerText = "0";
                 }
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch(`${SERVER_URL}/api/settings`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('keyOpenai').value = data.openai || '';
+                    document.getElementById('keyRunway').value = data.runway || '';
+                    document.getElementById('keyElevenlabs').value = data.elevenlabs || '';
+                    document.getElementById('keyPexels').value = data.pexels || '';
+                }
+            } catch (e) {
+                console.warn("API ayarları henüz sunucudan çekilemedi (veya sunucu kapalı).");
             }
         }
 
@@ -911,13 +958,39 @@
             showToast('success', 'Tüm sistem verileri başarıyla güncellendi.');
         }
 
-        function saveServerSettings() {
-            SERVER_URL = document.getElementById('serverApiUrl').value.trim().replace(/\/$/, "");
+        async function saveAllSettings() {
+            // Sunucu adresini kaydet
+            const urlInput = document.getElementById('serverApiUrl').value.trim().replace(/\/$/, "");
+            SERVER_URL = urlInput || 'http://127.0.0.1:5000';
             localStorage.setItem('autotube_server_url', SERVER_URL);
-            showToast('success', 'Sunucu adresi başarıyla güncellendi!');
-            addLog(`Motor bağlantı adresi güncellendi: ${SERVER_URL}`, 'text-emerald-600');
-            loadLibrary();
-            loadStats();
+
+            // API anahtarlarını topla
+            const apiData = {
+                openai: document.getElementById('keyOpenai').value.trim(),
+                runway: document.getElementById('keyRunway').value.trim(),
+                elevenlabs: document.getElementById('keyElevenlabs').value.trim(),
+                pexels: document.getElementById('keyPexels').value.trim()
+            };
+
+            try {
+                // Şifreleri motora gönder (config.json olarak kaydedecek)
+                const res = await fetch(`${SERVER_URL}/api/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+                    body: JSON.stringify(apiData)
+                });
+
+                if (!res.ok) throw new Error("Ayarlar sunucuya iletilemedi.");
+                
+                showToast('success', 'Bağlantı sağlandı ve API şifreleri sunucuya güvenle kaydedildi!');
+                addLog(`Sistem ve API ayarları başarıyla güncellendi.`, 'text-emerald-600');
+                
+                loadLibrary();
+                loadStats();
+            } catch (e) {
+                showToast('error', 'Sunucuya ulaşılamadı. Lütfen Motor (CMD) ekranının açık olduğundan ve bağlantı adresinin doğru olduğundan emin olun.');
+                addLog(`Ayarlar güncellenirken hata: ${e.message}`, 'text-rose-600');
+            }
         }
 
         function showToast(type, message) {
