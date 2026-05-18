@@ -943,38 +943,43 @@
             if(document.getElementById('serverApiUrl')) {
                 document.getElementById('serverApiUrl').value = SERVER_URL;
             }
-
-            const ctx = document.getElementById('productionChart');
-            if (ctx) {
-                window.productionChartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
-                        datasets: [{
-                            label: 'Üretilen Video',
-                            data: [0, 0, 0, 0, 0, 0, 0],
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
-                            x: { grid: { display: false }, border: { display: false } }
-                        }
-                    }
-                });
-            }
-
             loadStats();
-            loadSettings(); // Ekran açıldığında API şifrelerini sunucudan getirir
+            loadSettings();
         });
+
+        function initProductionChart(chartData) {
+            const ctx = document.getElementById('productionChart');
+            if (!ctx) return;
+            if (window.productionChartInstance) {
+                window.productionChartInstance.data.datasets[0].data = chartData || [0,0,0,0,0,0,0];
+                window.productionChartInstance.update();
+                return;
+            }
+            window.productionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                    datasets: [{
+                        label: 'Üretilen Video',
+                        data: chartData || [0,0,0,0,0,0,0],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
+                }
+            });
+        }
 
         function updateConnectionStatus(isOnline) {
             const dots = document.querySelectorAll('.status-dot');
@@ -1034,6 +1039,10 @@
                 if (window.productionChartInstance && data.analytics.chart_data) {
                     window.productionChartInstance.data.datasets[0].data = data.analytics.chart_data;
                     window.productionChartInstance.update();
+                } else if (data.analytics.chart_data) {
+                    // Analytics sekmesi açık değilse bile veriyi sakla, sekme açılınca çizilir
+                    window._pendingChartData = data.analytics.chart_data;
+                    initProductionChart(data.analytics.chart_data);
                 }
             } catch (e) {
                 console.warn("Sunucuya bağlanılamadı. Lütfen 'Ayarlar' sekmesinden doğru adresi girin.");
@@ -1173,7 +1182,12 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId + '-tab').classList.add('active');
-            if(tabId === 'library') loadLibrary();
+
+            // Her sekme için gerekli veriyi yükle
+            if (tabId === 'library')   loadLibrary();
+            if (tabId === 'analytics') { loadStats(); setTimeout(() => initProductionChart(window._pendingChartData), 100); }
+            if (tabId === 'settings')  loadSettings();
+            if (tabId === 'campaigns') loadCampaigns();
             
             document.querySelectorAll('.nav-btn').forEach(btn => { 
                 btn.classList.remove('active', 'bg-blue-50', 'text-blue-700', 'font-semibold'); 
@@ -1199,6 +1213,12 @@
                 if(span) { span.classList.remove('font-semibold'); span.classList.add('font-bold'); }
             }
             if(window.innerWidth < 768) window.scrollTo(0, 0);
+        }
+
+        // Kampanyalar tabı için basit yükleme fonksiyonu (tablo zaten HTML'de mevcut)
+        function loadCampaigns() {
+            // Tablo zaten HTML'de statik olarak var, ekstra yükleme gerekmez
+            // İleride sunucudan aktif görevler çekilebilir
         }
 
         function updateStep(stepId, status) {
