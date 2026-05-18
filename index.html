@@ -610,9 +610,20 @@
                                             <button onclick="getAIFeedback()" class="col-span-2 text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm">
                                                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI Geri Bildirim Al (Kendi Kendine Öğren)
                                             </button>
+                                            <button onclick="getTopicSuggestions()" class="col-span-2 text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm">
+                                                <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Sıradaki Video İçin AI Konu Önerisi Al
+                                            </button>
                                         </div>
                                         <div id="aiInsightBox" class="hidden bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-3 text-xs text-slate-700 space-y-1.5"></div>
                                         <div id="trendBox" class="hidden bg-rose-50 border border-rose-200 rounded-xl p-3 mt-2 text-xs text-slate-700 space-y-1"></div>
+
+                                        <!-- KONU ÖNERİLERİ KUTUSU -->
+                                        <div id="topicSuggestionBox" class="hidden mt-2 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-3 text-xs text-slate-700">
+                                            <p class="font-bold text-emerald-700 mb-2 flex items-center gap-1">
+                                                <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> AI Konu Önerileri
+                                            </p>
+                                            <div id="topicSuggestionList" class="space-y-2"></div>
+                                        </div>
                                     </div>
 
                                 <div class="mt-8">
@@ -1557,7 +1568,56 @@
             }
         });
 
-        // === TREND ANALİZİ ===
+        // === KONU ÖNERİSİ ===
+        async function getTopicSuggestions() {
+            const box    = document.getElementById('topicSuggestionBox');
+            const list   = document.getElementById('topicSuggestionList');
+            const lang   = document.getElementById('selectLanguage')?.value || 'tr';
+            box.classList.remove('hidden');
+            list.innerHTML = '<div class="flex items-center gap-2 text-emerald-600"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> AI konu önerileri üretiliyor...</div>';
+            lucide.createIcons();
+            try {
+                const r = await fetch(`${SERVER_URL}/api/topic-suggestions?language=${lang}`, {
+                    headers: {'ngrok-skip-browser-warning':'true'}
+                });
+                const data = await r.json();
+                if (data.status !== 'success' || !data.suggestions?.length) {
+                    list.innerHTML = `<p class="text-slate-500">${data.message || 'Öneri üretilemedi.'}</p>`;
+                    return;
+                }
+                list.innerHTML = data.suggestions.map((s, i) => `
+                    <div class="flex items-start gap-2 p-2 bg-white rounded-lg border border-emerald-100 hover:border-emerald-300 transition-colors cursor-pointer group"
+                         onclick="applyTopicSuggestion('${s.konu.replace(/'/g,"\\'")}')">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">${i+1}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-800 text-[11px] group-hover:text-emerald-700 transition-colors">${s.konu}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">${s.sebep}</p>
+                            ${s.nis ? `<span class="inline-block text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded mt-1">${s.nis.toUpperCase()}</span>` : ''}
+                        </div>
+                        <span class="text-[9px] text-emerald-500 font-bold shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">Uygula →</span>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+                showToast('success', `${data.suggestions.length} konu önerisi hazır!`);
+                addLog(`AI ${data.suggestions.length} konu önerisi üretti.`, "text-emerald-600");
+            } catch(e) {
+                list.innerHTML = `<p class="text-rose-600">Hata: ${e.message}</p>`;
+            }
+        }
+
+        // Önerilen konuyu konu alanına uygula
+        function applyTopicSuggestion(konu) {
+            const input = document.getElementById('inputKonu');
+            if (input) {
+                input.value = konu;
+                input.focus();
+                showToast('success', 'Konu uygulandı! Videoyu oluşturabilirsin.');
+                addLog(`Konu seçildi: "${konu}"`, "text-emerald-600");
+                // Konu alanını vurgula
+                input.classList.add('ring-2','ring-emerald-400');
+                setTimeout(() => input.classList.remove('ring-2','ring-emerald-400'), 2000);
+            }
+        }
         async function fetchTrends() {
             const box = document.getElementById('trendBox');
             box.classList.remove('hidden');
@@ -1629,6 +1689,7 @@
                     <p class="font-bold text-purple-700 mb-2 flex items-center gap-1">
                         <i data-lucide="brain" class="w-3.5 h-3.5"></i> AI Kanal Analizi
                     </p>
+                    ${data.last_learning ? `<div class="text-[10px] text-slate-400 mb-2">Son otomatik öğrenme: ${data.last_learning.tarih} (${data.last_learning.performans_guncellendi} video güncellendi)</div>` : ''}
                     ${f.best_performing_style ? `<div class="flex gap-2"><span class="text-emerald-600 font-bold">✓ En İyi:</span><span>${f.best_performing_style}</span></div>` : ''}
                     ${f.top_recommendation ? `<div class="flex gap-2 mt-1"><span class="text-blue-600 font-bold">💡 Öneri:</span><span>${f.top_recommendation}</span></div>` : ''}
                     ${f.hook_insight ? `<div class="flex gap-2 mt-1"><span class="text-amber-600 font-bold">🎯 Hook:</span><span>${f.hook_insight}</span></div>` : ''}
