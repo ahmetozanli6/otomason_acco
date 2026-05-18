@@ -896,7 +896,10 @@
                                             <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Fal.ai (B-Roll AI)</label>
                                             <input id="keyFal" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="fal_...">
                                         </div>
-                                        <div></div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">YouTube API Key <span class="text-emerald-600">(Trend)</span></label>
+                                            <input id="keyYoutubeApi" type="password" class="input-pro text-xs py-2.5 bg-slate-50 focus:bg-white" placeholder="AIza...">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1080,6 +1083,7 @@
                     document.getElementById('keyElevenlabs').value = data.elevenlabs || '';
                     document.getElementById('keyPexels').value = data.pexels || '';
                     if(document.getElementById('keyFal')) document.getElementById('keyFal').value = data.fal || '';
+                    if(document.getElementById('keyYoutubeApi')) document.getElementById('keyYoutubeApi').value = data.youtube_api_key || '';
                 }
             } catch (e) {
                 console.warn("API ayarları henüz sunucudan çekilemedi (veya sunucu kapalı).");
@@ -1110,7 +1114,8 @@
                 runway: document.getElementById('keyRunway').value.trim(),
                 elevenlabs: document.getElementById('keyElevenlabs').value.trim(),
                 pexels: document.getElementById('keyPexels').value.trim(),
-                fal: document.getElementById('keyFal').value.trim()
+                fal: document.getElementById('keyFal').value.trim(),
+                youtube_api_key: document.getElementById('keyYoutubeApi')?.value.trim() || ''
             };
 
             try {
