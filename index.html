@@ -396,10 +396,15 @@
                                                 <select id="selectMusic" class="input-pro text-xs py-2">
                                                     <option value="none">Müzik Yok</option>
                                                     <option value="epic">Epik / Sinematik</option>
-                                                    <option value="lofi">Lofi / Rahatlatıcı</option>
                                                     <option value="suspense" selected>Gerilim / Gizem</option>
+                                                    <option value="dramatic">Dramatik / Yoğun</option>
+                                                    <option value="emotional">Duygusal / Hüzün</option>
+                                                    <option value="inspiring">İlham Verici</option>
+                                                    <option value="dark">Karanlık / Ürpertici</option>
+                                                    <option value="lofi">Lofi / Sakin</option>
                                                     <option value="corporate">Kurumsal / Upbeat</option>
                                                 </select>
+                                                <p id="musicAutoNote" class="text-[10px] text-emerald-600 mt-1 hidden"><i data-lucide="download" class="w-2.5 h-2.5 inline mr-0.5"></i> İlk kullanımda otomatik indirilir (CC0)</p>
                                             </div>
                                             <div class="col-span-1 sm:col-span-2">
                                                 <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex justify-between items-center">
@@ -417,10 +422,12 @@
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1"><i data-lucide="type" class="w-3 h-3"></i> Altyazı Stili</label>
                                                 <select id="selectSubtitle" class="input-pro text-xs py-2">
-                                                    <option value="hormozi">Alex Hormozi (Sarı)</option>
-                                                    <option value="documentary">Belgesel (Beyaz/Sade)</option>
-                                                    <option value="viral">TikTok Viral (Yeşil)</option>
-                                                    <option value="neon">Neon (Parlak)</option>
+                                                    <option value="hormozi">Alex Hormozi (Altın Vurgu)</option>
+                                                    <option value="viral">Viral (Kırmızı Vurgu)</option>
+                                                    <option value="documentary">Belgesel (Temiz Beyaz)</option>
+                                                    <option value="neon">Neon (Cyan/Mor)</option>
+                                                    <option value="dark">Dark (Sarı/Kırmızı)</option>
+                                                    <option value="minimalist">Minimalist</option>
                                                 </select>
                                             </div>
                                             <div>
@@ -524,8 +531,29 @@
                                             </div>
                                             <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
                                                 <div>
-                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="image-plus" class="w-4 h-4 text-emerald-500"></i> DALL-E 3 Kapak</h4>
-                                                    <p class="text-[9px] text-slate-500">AI kapak (Thumbnail) üretir.</p>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="zoom-in" class="w-4 h-4 text-blue-500"></i> Ken Burns Efekti</h4>
+                                                    <p class="text-[9px] text-slate-500">Sahnelere yavaş zoom/pan uygular.</p>
+                                                </div>
+                                                <input type="checkbox" id="toggleKenBurns" checked class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                                <div>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="bar-chart-2" class="w-4 h-4 text-orange-500"></i> Ses Normalizasyon</h4>
+                                                    <p class="text-[9px] text-slate-500">Sesi -14dB LUFS'a normalize eder.</p>
+                                                </div>
+                                                <input type="checkbox" id="toggleNormalize" checked class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                                <div>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="layout-bottom" class="w-4 h-4 text-teal-500"></i> Alt Grafik Çubuğu</h4>
+                                                    <p class="text-[9px] text-slate-500">Sahne bazlı bilgi çubuğu ekler.</p>
+                                                </div>
+                                                <input type="checkbox" id="toggleLowerThird" checked class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                                <div>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="image-plus" class="w-4 h-4 text-emerald-500"></i> A/B Thumbnail (2 Versiyon)</h4>
+                                                    <p class="text-[9px] text-slate-500">Dramatik + gizemli iki thumbnail üretir.</p>
                                                 </div>
                                                 <input type="checkbox" id="toggleThumbnail" checked class="w-4 h-4 accent-blue-600 cursor-pointer">
                                             </div>
@@ -550,9 +578,42 @@
                                                 </div>
                                                 <input type="checkbox" id="toggleUpload" class="w-4 h-4 accent-blue-600 cursor-pointer">
                                             </div>
+                                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                                <div>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-rose-500"></i> Trend Analizi</h4>
+                                                    <p class="text-[9px] text-slate-500">YouTube trendleriyle konuyu optimize eder.</p>
+                                                </div>
+                                                <input type="checkbox" id="toggleTrends" class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                            </div>
+                                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                                <div>
+                                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-amber-500"></i> Rakip Analizi</h4>
+                                                    <p class="text-[9px] text-slate-500">En çok izlenen rakipleri analiz eder.</p>
+                                                </div>
+                                                <input type="checkbox" id="toggleCompetitor" class="w-4 h-4 accent-blue-600 cursor-pointer">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+
+                                    <!-- PERFORMANS & AI GERİ BİLDİRİM BÖLÜMÜ -->
+                                    <div class="mt-6 pt-5 border-t border-slate-200">
+                                        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                            <i data-lucide="brain" class="w-4 h-4 text-purple-500"></i> AI Öğrenme Motoru
+                                        </h3>
+                                        <div class="grid grid-cols-2 gap-2 mb-3">
+                                            <button onclick="fetchTrends()" class="text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                                                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Trendleri Gör
+                                            </button>
+                                            <button onclick="checkPerformance()" class="text-xs font-bold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                                                <i data-lucide="bar-chart" class="w-3.5 h-3.5"></i> Performans Güncelle
+                                            </button>
+                                            <button onclick="getAIFeedback()" class="col-span-2 text-xs font-bold bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-sm">
+                                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI Geri Bildirim Al (Kendi Kendine Öğren)
+                                            </button>
+                                        </div>
+                                        <div id="aiInsightBox" class="hidden bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-3 text-xs text-slate-700 space-y-1.5"></div>
+                                        <div id="trendBox" class="hidden bg-rose-50 border border-rose-200 rounded-xl p-3 mt-2 text-xs text-slate-700 space-y-1"></div>
+                                    </div>
 
                                 <div class="mt-8">
                                     <button id="triggerBtn" onclick="triggerPipeline()" class="btn-primary w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-md">
@@ -586,6 +647,35 @@
                                      <a id="downloadVideoBtn" href="#" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
                                          <i data-lucide="external-link" class="w-4 h-4"></i> Videoyu İndir / İzle
                                      </a>
+                                </div>
+
+                                <!-- A/B THUMBNAIL BÖLÜMÜ -->
+                                <div id="abThumbnailContainer" class="hidden mt-4 pt-4 border-t border-slate-200">
+                                    <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                                        <i data-lucide="image" class="w-3.5 h-3.5 text-emerald-500"></i>
+                                        A/B Thumbnail — İkisini Test Et, En İyisini Yükle
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="text-center">
+                                            <div class="text-[10px] font-bold text-rose-600 mb-1.5 flex items-center justify-center gap-1">
+                                                <span class="w-4 h-4 rounded-full bg-rose-100 text-rose-600 text-[9px] font-black flex items-center justify-center">A</span>
+                                                Dramatik / Şok
+                                            </div>
+                                            <a id="thumbALink" href="#" target="_blank" title="Thumbnail A'yı indir">
+                                                <img id="thumbAImg" src="" alt="Thumbnail A" class="w-full rounded-lg border-2 border-rose-200 hover:border-rose-400 transition-colors shadow-sm object-cover aspect-[9/16]">
+                                            </a>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-[10px] font-bold text-purple-600 mb-1.5 flex items-center justify-center gap-1">
+                                                <span class="w-4 h-4 rounded-full bg-purple-100 text-purple-600 text-[9px] font-black flex items-center justify-center">B</span>
+                                                Gizemli / Merak
+                                            </div>
+                                            <a id="thumbBLink" href="#" target="_blank" title="Thumbnail B'yi indir">
+                                                <img id="thumbBImg" src="" alt="Thumbnail B" class="w-full rounded-lg border-2 border-purple-200 hover:border-purple-400 transition-colors shadow-sm object-cover aspect-[9/16]">
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-slate-400 text-center mt-2">Üzerine tıklayarak indirebilirsin. İkisini YouTube'a yükleyip hangisinin daha fazla tıklandığını test et.</p>
                                 </div>
                             </div>
 
@@ -1205,6 +1295,11 @@
             const watermark = document.getElementById('toggleWatermark').checked;
             const humanLoop = document.getElementById('toggleHumanLoop').checked;
             const upload = document.getElementById('toggleUpload').checked;
+            const kenBurns = document.getElementById('toggleKenBurns').checked;
+            const normalize = document.getElementById('toggleNormalize').checked;
+            const lowerThird = document.getElementById('toggleLowerThird').checked;
+            const useTrends = document.getElementById('toggleTrends').checked;
+            const useCompetitor = document.getElementById('toggleCompetitor').checked;
             
             const btn = document.getElementById('triggerBtn');
             const video = document.getElementById('resultVideo');
@@ -1251,7 +1346,9 @@
                         subtitle_style: subtitleStyle, subtitle_position: subtitlePos, subtitle_font: subtitleFont,
                         pacing: pacing, filter: filter, hook: hook, transition: transition,
                         broll_strategy: broll, cta: cta, add_subtitle: addSubtitle, karaoke_effect: karaoke, 
-                        ai_thumbnail: thumbnail, watermark: watermark, human_approval: humanLoop, auto_upload: upload
+                        ai_thumbnail: thumbnail, watermark: watermark, human_approval: humanLoop, auto_upload: upload,
+                        ken_burns: kenBurns, normalize_audio: normalize, lower_third: lowerThird,
+                        use_trends: useTrends, use_competitor: useCompetitor
                     })
                 });
                 
@@ -1292,9 +1389,14 @@
                             updateStep('step-render', 'done');
                             if(upload) updateStep('step-upload', 'done');
 
-                            showToast('success', 'Video Başarıyla Üretildi!');
-                            addLog("İşlem tamamlandı! Video ekrana çekiliyor...", "text-emerald-600");
+                            showToast('success', 'Viral Video Üretildi! ✅');
+                            addLog("Video tamamlandı! Ekrana çekiliyor...", "text-emerald-600");
                             topBar.style.width = "100%"; vertBar.style.height = "100%";
+
+                            // Niş bilgisi varsa logla
+                            if (statusData.nis) {
+                                addLog(`Tespit edilen niş: ${statusData.nis.toUpperCase()}`, "text-purple-600 font-bold");
+                            }
 
                             let safePath = statusData.video_path.replace(/\\/g, '/');
                             if(safePath.includes('workspace/')) safePath = safePath.substring(safePath.indexOf('workspace/'));
@@ -1318,8 +1420,32 @@
                                 idle.classList.add('hidden'); video.classList.remove('hidden');
                             }
 
-                            document.getElementById('videoBadge').innerText = "HAZIR";
+                            document.getElementById('videoBadge').innerText = "HAZIR ✓";
                             document.getElementById('videoBadge').className = "text-[10px] font-bold text-emerald-700 uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200";
+
+                            // A/B Thumbnail göster
+                            const abContainer = document.getElementById('abThumbnailContainer');
+                            if (abContainer) {
+                                const thumbA = statusData.thumbnail_a;
+                                const thumbB = statusData.thumbnail_b;
+                                if (thumbA || thumbB) {
+                                    abContainer.classList.remove('hidden');
+                                    if (thumbA) {
+                                        const aPath = thumbA.replace(/\\/g, '/');
+                                        const aSafe = aPath.includes('workspace/') ? aPath.substring(aPath.indexOf('workspace/')) : aPath;
+                                        document.getElementById('thumbAImg').src = `${SERVER_URL}/${aSafe}?t=${Date.now()}`;
+                                        document.getElementById('thumbALink').href = `${SERVER_URL}/${aSafe}`;
+                                        addLog("Thumbnail A (Dramatik) hazır — indir!", "text-emerald-600");
+                                    }
+                                    if (thumbB) {
+                                        const bPath = thumbB.replace(/\\/g, '/');
+                                        const bSafe = bPath.includes('workspace/') ? bPath.substring(bPath.indexOf('workspace/')) : bPath;
+                                        document.getElementById('thumbBImg').src = `${SERVER_URL}/${bSafe}?t=${Date.now()}`;
+                                        document.getElementById('thumbBLink').href = `${SERVER_URL}/${bSafe}`;
+                                        addLog("Thumbnail B (Gizemli) hazır — indir!", "text-emerald-600");
+                                    }
+                                }
+                            }
 
                             loadLibrary();
                             loadStats();
@@ -1388,6 +1514,114 @@
             } catch (err) {
                 showToast('error', `Sunucuya ulaşılamadı (${SERVER_URL})`);
                 addLog(`Zamanlayıcı kurulamadı. Sunucuya ulaşılamadı.`, "text-rose-600");
+            }
+        }
+
+        // Müzik seçilince otomatik indirme notunu göster
+        document.addEventListener('DOMContentLoaded', () => {
+            const musicSel = document.getElementById('selectMusic');
+            const musicNote = document.getElementById('musicAutoNote');
+            if (musicSel && musicNote) {
+                const updateNote = () => {
+                    if (musicSel.value !== 'none') {
+                        musicNote.classList.remove('hidden');
+                        lucide.createIcons();
+                    } else {
+                        musicNote.classList.add('hidden');
+                    }
+                };
+                musicSel.addEventListener('change', updateNote);
+                updateNote();
+            }
+        });
+
+        // === TREND ANALİZİ ===
+        async function fetchTrends() {
+            const box = document.getElementById('trendBox');
+            box.classList.remove('hidden');
+            box.innerHTML = '<div class="flex items-center gap-2 text-rose-600"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> YouTube trendleri çekiliyor...</div>';
+            lucide.createIcons();
+            try {
+                const r = await fetch(`${SERVER_URL}/api/trends?country=TR`, {
+                    headers: {'ngrok-skip-browser-warning':'true'}
+                });
+                const data = await r.json();
+                const trends = data.data?.trends || [];
+                if (trends.length === 0) {
+                    box.innerHTML = '<p class="text-slate-500">Trend verisi alınamadı. YouTube OAuth gerekli olabilir.</p>';
+                    return;
+                }
+                box.innerHTML = `
+                    <p class="font-bold text-rose-700 mb-2 flex items-center gap-1">
+                        <i data-lucide="flame" class="w-3.5 h-3.5"></i> Bugünün Türkiye Trendleri
+                    </p>
+                    ${trends.slice(0,8).map((t,i) => `
+                        <div class="flex items-start gap-2 py-1 border-b border-rose-100 last:border-0">
+                            <span class="text-[10px] font-black text-rose-400 w-4 shrink-0">#${i+1}</span>
+                            <span class="text-[11px] text-slate-700 font-medium">${t.title?.substring(0,60) || ''}</span>
+                            ${t.views > 0 ? `<span class="ml-auto text-[9px] text-slate-400 shrink-0">${(t.views/1000).toFixed(0)}K</span>` : ''}
+                        </div>
+                    `).join('')}
+                `;
+                lucide.createIcons();
+                showToast('success', `${trends.length} trend video yüklendi!`);
+            } catch(e) {
+                box.innerHTML = `<p class="text-rose-600">Hata: ${e.message}</p>`;
+            }
+        }
+
+        // === PERFORMANS GÜNCELLE ===
+        async function checkPerformance() {
+            showToast('info', 'Performans verileri güncelleniyor...');
+            try {
+                const r = await fetch(`${SERVER_URL}/api/performance/check`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+                    body: JSON.stringify({})
+                });
+                const data = await r.json();
+                showToast('success', `${data.updated || 0} video güncellendi!`);
+                addLog(`Performans kontrolü: ${data.updated} video güncellendi.`, "text-purple-600");
+            } catch(e) {
+                showToast('error', 'Performans güncellenemedi.');
+            }
+        }
+
+        // === AI GERİ BİLDİRİM ===
+        async function getAIFeedback() {
+            const box = document.getElementById('aiInsightBox');
+            box.classList.remove('hidden');
+            box.innerHTML = '<div class="flex items-center gap-2 text-purple-600"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> AI analiz yapıyor...</div>';
+            lucide.createIcons();
+            try {
+                const r = await fetch(`${SERVER_URL}/api/feedback`, {
+                    headers: {'ngrok-skip-browser-warning':'true'}
+                });
+                const data = await r.json();
+                if (data.status !== 'success') {
+                    box.innerHTML = `<p class="text-slate-500">${data.message || 'Yeterli veri yok.'}</p>`;
+                    return;
+                }
+                const f = data.feedback;
+                box.innerHTML = `
+                    <p class="font-bold text-purple-700 mb-2 flex items-center gap-1">
+                        <i data-lucide="brain" class="w-3.5 h-3.5"></i> AI Kanal Analizi
+                    </p>
+                    ${f.best_performing_style ? `<div class="flex gap-2"><span class="text-emerald-600 font-bold">✓ En İyi:</span><span>${f.best_performing_style}</span></div>` : ''}
+                    ${f.top_recommendation ? `<div class="flex gap-2 mt-1"><span class="text-blue-600 font-bold">💡 Öneri:</span><span>${f.top_recommendation}</span></div>` : ''}
+                    ${f.hook_insight ? `<div class="flex gap-2 mt-1"><span class="text-amber-600 font-bold">🎯 Hook:</span><span>${f.hook_insight}</span></div>` : ''}
+                    ${f.music_insight ? `<div class="flex gap-2 mt-1"><span class="text-rose-600 font-bold">🎵 Müzik:</span><span>${f.music_insight}</span></div>` : ''}
+                    ${f.next_video_suggestions?.length ? `
+                        <div class="mt-2 pt-2 border-t border-purple-200">
+                            <p class="font-bold text-purple-700 mb-1">📹 Sonraki Video Önerileri:</p>
+                            ${f.next_video_suggestions.map(s => `<div class="text-[11px] py-0.5">• ${s}</div>`).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                lucide.createIcons();
+                showToast('success', 'AI geri bildirim hazır!');
+            } catch(e) {
+                box.innerHTML = `<p class="text-rose-600">Hata: ${e.message}</p>`;
             }
         }
     </script>
